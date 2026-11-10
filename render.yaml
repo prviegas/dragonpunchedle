@@ -1,0 +1,27 @@
+# Render Blueprint: the production setup, kept in the repo next to the code.
+# In Render: New > Blueprint > pick this repo. It reads this file and creates
+# the service; later changes here are applied when the Blueprint syncs.
+#
+# The database is Neon's free PostgreSQL (Render's free database is deleted
+# after 30 days). Use Neon's DIRECT connection string, not the "-pooler" one:
+# the pooler hands out connections per transaction, which breaks the
+# session-level lock that keeps migrations from running twice at once.
+services:
+  - type: web
+    name: dragonpunchedle
+    runtime: docker # builds the Dockerfile in the repo root
+    plan: free # sleeps after ~15 idle minutes; the first visit then takes about a minute
+    region: virginia # next to the database (Neon: AWS US East, N. Virginia)
+    branch: main
+    healthCheckPath: /api/health
+    # Deploy only commits whose GitHub Actions checks passed, so a broken
+    # commit never goes live.
+    autoDeployTrigger: checksPass
+    envVars:
+      # Secret: typed into Render's dashboard, never committed.
+      - key: DATABASE_URL
+        sync: false
+      # Render's proxy sits in front of the app; trust it for each player's real
+      # address, which the login rate limit needs.
+      - key: TRUST_PROXY
+        value: "true"
