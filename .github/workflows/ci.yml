@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Only read access: this workflow checks code, it never writes to the repo.
+permissions:
+  contents: read
+
+# A newer push to the same branch cancels the run it makes outdated.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # A real PostgreSQL next to the job, the same version as docker-compose.yml,
+    # so the database tests run against the real thing rather than a fake.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: dragonpunchedle
+          POSTGRES_PASSWORD: dragonpunchedle
+          POSTGRES_DB: dragonpunchedle
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dragonpunchedle -d dragonpunchedle"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+
+    env:
+      DATABASE_URL: postgres://dragonpunchedle:dragonpunchedle@localhost:5432/dragonpunchedle
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # `npm ci` installs exactly what package-lock.json lists, and fails if the
+      # lock file and package.json disagree.
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
