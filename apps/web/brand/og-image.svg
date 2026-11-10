@@ -1,0 +1,22 @@
+<!-- Source for public/og-image.png, the preview shown when the link is shared.
+     Regenerate the PNG with `npm run brand -w apps/web` after editing. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#141311"/>
+  <!-- skewX gives the italic slant: the logo font has no real italic. -->
+  <text transform="skewX(-12)" x="650" y="235" text-anchor="middle" textLength="1000" lengthAdjust="spacingAndGlyphs"
+        font-family="Arial Black, Arial, Helvetica, sans-serif" font-weight="900"
+        font-size="96" fill="#f0583f">DRAGONPUNCHEDLE</text>
+  <text x="600" y="310" text-anchor="middle" font-family="Segoe UI, Arial, Helvetica, sans-serif"
+        font-size="40" fill="#f1ece4">Guess today's fighting game character</text>
+  <g>
+    <rect x="173" y="370" width="110" height="80" rx="12" fill="#4d4943"/>
+    <rect x="297" y="370" width="110" height="80" rx="12" fill="#b8860b"/>
+    <rect x="421" y="370" width="110" height="80" rx="12" fill="#4d4943"/>
+    <rect x="545" y="370" width="110" height="80" rx="12" fill="#2f8f55"/>
+    <rect x="669" y="370" width="110" height="80" rx="12" fill="#b8860b"/>
+    <rect x="793" y="370" width="110" height="80" rx="12" fill="#2f8f55"/>
+    <rect x="917" y="370" width="110" height="80" rx="12" fill="#4d4943"/>
+  </g>
+  <text x="600" y="545" text-anchor="middle" font-family="Segoe UI, Arial, Helvetica, sans-serif"
+        font-size="30" fill="#a39b8f">274 fighters · 17 franchises · a new puzzle every day</text>
+</svg>
