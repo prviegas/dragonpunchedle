@@ -11,6 +11,10 @@ A daily guessing game for fighting game characters. Every day there's one myster
 
 Play as a guest, or make an account to keep your board on every device, build a streak and appear on the leaderboards. When you win, share a spoiler-free grid of squares.
 
+The guess box suggests names as you type. It ignores capitals, accents and punctuation, and works from the keyboard or a screen reader.
+
+![The guess box suggesting characters whose names contain "ch", each with its franchise](docs/screenshot-search.png)
+
 ## Stack
 
 | | |
