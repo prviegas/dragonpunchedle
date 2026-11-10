@@ -53,3 +53,48 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+  # Builds the production Docker image and starts it against a real database:
+  # proves the image boots, migrates, loads the roster and serves both the
+  # page and the API, not just that it compiles.
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: dragonpunchedle
+          POSTGRES_PASSWORD: dragonpunchedle
+          POSTGRES_DB: dragonpunchedle
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dragonpunchedle -d dragonpunchedle"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - run: docker build -t dragonpunchedle .
+
+      - name: Start the image and check it answers
+        run: |
+          docker run -d --name app --network host \
+            -e DATABASE_URL=postgres://dragonpunchedle:dragonpunchedle@localhost:5432/dragonpunchedle \
+            -e SECURE_COOKIES=false \
+            dragonpunchedle
+          for attempt in $(seq 1 30); do
+            curl -fsS http://localhost:3000/api/health && break
+            sleep 2
+          done
+          curl -fsS http://localhost:3000/api/puzzles/today
+          curl -fsS http://localhost:3000/ | grep -q "<title>Dragonpunchedle</title>"
+          test "$(docker inspect --format '{{.Config.User}}' dragonpunchedle)" = "node"
+
+      - name: Show the container's log if anything failed
+        if: failure()
+        run: docker logs app

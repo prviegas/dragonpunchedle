@@ -1,4 +1,6 @@
-# Local development database. Start it with `npm run db:up` from the repo root.
+# Local development. `npm run db:up` starts just the database (the usual setup,
+# with the API and page run by `npm run dev:*`). `npm run app:up` also builds
+# and starts the production image, to try the real thing at http://localhost:8180.
 # The password here is for local development only; production uses its own secret.
 services:
   db:
@@ -18,6 +20,21 @@ services:
       interval: 2s
       timeout: 5s
       retries: 15
+
+  app:
+    # Only started when asked for (`--profile app`), so `db:up` stays database-only.
+    profiles: ["app"]
+    build: .
+    environment:
+      # "db" is the database service's name on the network compose creates.
+      DATABASE_URL: postgres://dragonpunchedle:dragonpunchedle@db:5432/dragonpunchedle
+      # Plain http on localhost, so cookies can't require HTTPS here.
+      SECURE_COOKIES: "false"
+    ports:
+      - "8180:3000"
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   db-data:
