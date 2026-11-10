@@ -89,6 +89,36 @@ export const submitGuess = (date: string, characterId: string) =>
 /** A logged-in player's guesses for today, newest first. */
 export const fetchMyGuesses = () => request<GuessResult[]>("/api/puzzles/today/guesses");
 
+export interface PlayerStats {
+  played: number;
+  solved: number;
+  averageGuesses: number | null;
+  currentStreak: number;
+  maxStreak: number;
+  solvedToday: boolean;
+}
+
+export interface TodayEntry {
+  rank: number;
+  username: string;
+  guesses: number;
+  solvedAt: string;
+  you: boolean;
+}
+
+export interface StreakEntry {
+  rank: number;
+  username: string;
+  streak: number;
+  you: boolean;
+}
+
+export const fetchMyStats = () => request<PlayerStats>("/api/me/stats");
+
+export const fetchTodayLeaderboard = () => request<TodayEntry[]>("/api/leaderboards/today");
+
+export const fetchStreakLeaderboard = () => request<StreakEntry[]>("/api/leaderboards/streaks");
+
 export const fetchMe = () => request<{ user: User | null }>("/api/auth/me");
 
 export const logIn = (username: string, password: string) =>

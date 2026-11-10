@@ -5,8 +5,9 @@ import { matchCharacters } from "./search";
 interface GuessInputProps {
   characters: readonly CharacterSummary[];
   excludedIds: ReadonlySet<string>;
-  /** A guess is being checked. The input stays enabled (disabling it would
-   *  drop keyboard focus mid-typing); picks are just ignored until it's done. */
+  /** A guess is being checked. Only announced to screen readers: the input
+   *  stays usable (disabling it would drop keyboard focus mid-typing), and
+   *  picks made meanwhile are queued by the parent rather than ignored. */
   busy: boolean;
   onGuess: (characterId: string) => void;
 }
@@ -27,7 +28,6 @@ export function GuessInput({ characters, excludedIds, busy, onGuess }: GuessInpu
   const showList = open && matches.length > 0;
 
   function pick(character: CharacterSummary) {
-    if (busy) return;
     onGuess(character.id);
     setQuery("");
     setActive(0);
@@ -39,10 +39,16 @@ export function GuessInput({ characters, excludedIds, busy, onGuess }: GuessInpu
       if (!showList) return setOpen(true);
       const step = event.key === "ArrowDown" ? 1 : -1;
       setActive((index) => (index + step + matches.length) % matches.length);
-    } else if (event.key === "Enter" && showList) {
-      event.preventDefault();
-      const choice = matches[active];
-      if (choice) pick(choice);
+    } else if (event.key === "Enter") {
+      // Match against what's in the box right now, not the list from the last
+      // render: a fast typist (or a paste followed by Enter) can press Enter
+      // before React has re-rendered with the final text.
+      const current = matchCharacters(event.currentTarget.value, characters, excludedIds);
+      const choice = current[active] ?? current[0];
+      if (choice) {
+        event.preventDefault();
+        pick(choice);
+      }
     } else if (event.key === "Escape") {
       setOpen(false);
     }
