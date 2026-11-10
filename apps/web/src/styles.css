@@ -388,6 +388,20 @@ body {
   color: var(--correct);
 }
 
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 12px;
+  margin-top: 14px;
+}
+
+.share-feedback {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
 .win-cta {
   margin-top: 10px !important;
   font-size: 0.875rem;

@@ -1,0 +1,53 @@
+import { describe, expect, it } from "vitest";
+import type { ClueStatus, GuessResult } from "./api";
+import { buildShareText, puzzleNumber } from "./share";
+
+function guess(name: string, statuses: ClueStatus[], solved = false): GuessResult {
+  return {
+    guess: {
+      id: name,
+      name,
+      franchise: "Test",
+      developer: "Test",
+      debutYear: 2000,
+      archetypes: ["rushdown"],
+      species: "Human",
+      homeCountry: null,
+      gamesAppearedIn: 1,
+    },
+    solved,
+    clues: statuses.map((status, i) => ({ key: `clue${i}`, status })),
+  };
+}
+
+describe("puzzleNumber", () => {
+  it("counts days from launch, starting at 1", () => {
+    expect(puzzleNumber("2026-11-10")).toBe(1);
+    expect(puzzleNumber("2026-11-11")).toBe(2);
+    expect(puzzleNumber("2027-11-10")).toBe(366);
+  });
+});
+
+describe("buildShareText", () => {
+  it("shows one row of squares per guess, oldest first, ending with the link", () => {
+    const newestFirst = [
+      guess("Answer", ["correct", "correct", "correct"], true),
+      guess("Second", ["correct", "partial", "unknown"]),
+      guess("First", ["wrong", "partial", "wrong"]),
+    ];
+
+    expect(buildShareText("2026-11-12", newestFirst, "https://example.com")).toBe(
+      ["Dragonpunchedle #3: 3 guesses", "⬛🟨⬛", "🟩🟨⬜", "🟩🟩🟩", "https://example.com"].join("\n"),
+    );
+  });
+
+  it("says guess, not guesses, for a first-try solve", () => {
+    const text = buildShareText("2026-11-10", [guess("Answer", ["correct"], true)], "https://example.com");
+    expect(text.split("\n")[0]).toBe("Dragonpunchedle #1: 1 guess");
+  });
+
+  it("never includes character names", () => {
+    const text = buildShareText("2026-11-10", [guess("Ryu", ["correct"], true)], "https://example.com");
+    expect(text).not.toContain("Ryu");
+  });
+});

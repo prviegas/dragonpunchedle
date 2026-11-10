@@ -18,6 +18,7 @@ import { AuthPanel } from "./AuthPanel";
 import { Board } from "./Board";
 import { GuessInput } from "./GuessInput";
 import { Leaderboard } from "./Leaderboard";
+import { ShareButton } from "./ShareButton";
 import { StatsPanel } from "./StatsPanel";
 
 type Load =
@@ -208,6 +209,7 @@ export function App() {
             It was <strong>{winner.guess.name}</strong> ({winner.guess.franchise}), in {guesses.length}{" "}
             {guesses.length === 1 ? "guess" : "guesses"}. A new character arrives tomorrow.
           </p>
+          <ShareButton date={puzzle.date} guesses={guesses} />
           {user && stats ? (
             <StatsPanel stats={stats} />
           ) : (
