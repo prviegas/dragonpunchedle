@@ -17,6 +17,7 @@
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
     "db:migrate": "npm run db:migrate -w apps/api",
-    "db:seed": "npm run db:seed -w apps/api"
+    "db:seed": "npm run db:seed -w apps/api",
+    "job:daily": "npm run job:daily -w apps/api"
   }
 }
