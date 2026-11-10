@@ -51,26 +51,50 @@ export class ApiError extends Error {
   }
 }
 
+export interface User {
+  id: number;
+  username: string;
+}
+
+// Requests go to the same site that served the page, so the browser attaches
+// the session cookie automatically; no token handling is needed here.
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, init);
   const body: unknown = await response.json().catch(() => undefined);
   if (!response.ok) {
-    const message =
-      body && typeof body === "object" && "error" in body && typeof body.error === "string"
-        ? body.error
-        : "Something went wrong. Please try again.";
+    let message = "Something went wrong. Please try again.";
+    if (response.status === 429) {
+      message = "Too many attempts. Please wait a minute and try again.";
+    } else if (body && typeof body === "object" && "error" in body && typeof body.error === "string") {
+      message = body.error;
+    }
     throw new ApiError(message, response.status);
   }
   return body as T;
 }
+
+const postJson = (body: object): RequestInit => ({
+  method: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify(body),
+});
 
 export const fetchPuzzle = () => request<Puzzle>("/api/puzzles/today");
 
 export const fetchCharacters = () => request<CharacterSummary[]>("/api/characters");
 
 export const submitGuess = (date: string, characterId: string) =>
-  request<GuessResult>(`/api/puzzles/${date}/guesses`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ characterId }),
-  });
+  request<GuessResult>(`/api/puzzles/${date}/guesses`, postJson({ characterId }));
+
+/** A logged-in player's guesses for today, newest first. */
+export const fetchMyGuesses = () => request<GuessResult[]>("/api/puzzles/today/guesses");
+
+export const fetchMe = () => request<{ user: User | null }>("/api/auth/me");
+
+export const logIn = (username: string, password: string) =>
+  request<{ user: User }>("/api/auth/login", postJson({ username, password }));
+
+export const signUp = (username: string, password: string) =>
+  request<{ user: User }>("/api/auth/register", postJson({ username, password }));
+
+export const logOut = () => request<void>("/api/auth/logout", { method: "POST" });
