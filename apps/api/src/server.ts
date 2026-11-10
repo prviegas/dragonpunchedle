@@ -8,7 +8,12 @@ const port = Number(process.env.PORT ?? 3000);
 const host = process.env.HOST ?? "0.0.0.0";
 
 const pool = createPool();
-const app = buildApp({ logger: true, pool });
+const app = buildApp({
+  logger: true,
+  pool,
+  // Production is served over HTTPS; local development is plain http://localhost.
+  secureCookies: process.env.NODE_ENV === "production",
+});
 
 // Close the database pool when the server shuts down.
 app.addHook("onClose", () => pool.end());

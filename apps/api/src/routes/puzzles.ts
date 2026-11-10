@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import type pg from "pg";
 import { findCharacter } from "../db/characters.js";
+import { hasSolved, listGuessIds, saveGuess } from "../db/guesses.js";
 import { CLUES } from "../game/clues.js";
 import { compareGuess } from "../game/compare.js";
 import { ensurePuzzle, puzzleDateFor } from "../game/puzzles.js";
@@ -38,6 +39,24 @@ export const puzzleRoutes: FastifyPluginAsync<PuzzleRouteOptions> = async (app, 
     };
   });
 
+  // A logged-in player's guesses for today, newest first, scored again from
+  // the stored character ids. Lets the board follow them to another device.
+  app.get("/api/puzzles/today/guesses", async (request, reply) => {
+    if (!request.user) {
+      return reply.code(401).send({ error: "Log in to see your saved guesses." });
+    }
+    const date = puzzleDateFor(now());
+    const answer = await findCharacter(pool, await ensurePuzzle(pool, date));
+    if (!answer) throw new Error(`Puzzle ${date} points at a missing character`);
+
+    const results = [];
+    for (const id of await listGuessIds(pool, request.user.id, date)) {
+      const guess = await findCharacter(pool, id);
+      if (guess) results.push({ guess, ...compareGuess(guess, answer) });
+    }
+    return results.reverse();
+  });
+
   app.post<{ Params: { date: string }; Body: { characterId: string } }>(
     "/api/puzzles/:date/guesses",
     { schema: guessSchema },
@@ -58,6 +77,16 @@ export const puzzleRoutes: FastifyPluginAsync<PuzzleRouteOptions> = async (app, 
       const answer = await findCharacter(pool, await ensurePuzzle(pool, date));
       if (!answer) {
         throw new Error(`Puzzle ${date} points at a missing character`);
+      }
+
+      // Logged-in guesses are saved. Guests are checked and forgotten.
+      if (request.user) {
+        if (await hasSolved(pool, request.user.id, date)) {
+          return reply.code(409).send({ error: "You've already solved today's puzzle." });
+        }
+        if (!(await saveGuess(pool, request.user.id, date, guess.id))) {
+          return reply.code(409).send({ error: "You already guessed that character." });
+        }
       }
 
       // The guess's own values are safe to send back: the player chose it.
