@@ -5,6 +5,7 @@ import { findSessionUser, SESSION_COOKIE, type User } from "./auth/sessions.js";
 import { authRoutes } from "./routes/auth.js";
 import { characterRoutes } from "./routes/characters.js";
 import { puzzleRoutes } from "./routes/puzzles.js";
+import { statsRoutes } from "./routes/stats.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -55,6 +56,7 @@ export function buildApp({
     app.register(authRoutes, { pool, secureCookies, rateLimitPerMinute: authRateLimitPerMinute });
     app.register(characterRoutes, { pool });
     app.register(puzzleRoutes, { pool, now });
+    app.register(statsRoutes, { pool, now });
   }
 
   return app;
