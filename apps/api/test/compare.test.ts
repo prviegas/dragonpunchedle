@@ -94,6 +94,19 @@ describe("compareGuess", () => {
     expect(compareGuess(lookalike, answer).solved).toBe(false);
   });
 
+  it("marks every clue correct for the answer itself, even ones with no data", () => {
+    const answer = character({ id: "a", homeCountry: null });
+    const result = compareGuess(answer, answer);
+
+    expect(result.clues.every((clue) => clue.status === "correct")).toBe(true);
+  });
+
+  it("still says unknown when a different character also has no data", () => {
+    const result = compareGuess(character({ id: "b", homeCountry: null }), character({ id: "a", homeCountry: null }));
+
+    expect(result.clues.find((clue) => clue.key === "homeCountry")?.status).toBe("unknown");
+  });
+
   it("returns one result per clue, in the order the clues are listed", () => {
     const result = compareGuess(character({ id: "a" }), character({ id: "b", debutYear: 2010 }));
 

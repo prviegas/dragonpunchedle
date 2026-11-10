@@ -76,9 +76,14 @@ export function compareGuess(
   answer: Character,
   clues: readonly ClueDefinition[] = CLUES,
 ): GuessResult {
+  // Solved is decided by identity, not by clues: two characters can share every clue.
+  const solved = guess.id === answer.id;
   return {
-    // Solved is decided by identity, not by clues: two characters can share every clue.
-    solved: guess.id === answer.id,
-    clues: clues.map((clue) => compareClue(clue, guess[clue.key], answer[clue.key])),
+    solved,
+    // The right character is right on every clue, including ones with no data,
+    // which would otherwise show as "unknown".
+    clues: clues.map((clue) =>
+      solved ? { key: clue.key, status: "correct" } : compareClue(clue, guess[clue.key], answer[clue.key]),
+    ),
   };
 }
