@@ -142,6 +142,10 @@ render.yaml        production setup (Render Blueprint)
 
 [`render.yaml`](render.yaml) describes production: a free Docker web service on Render that deploys only after CI passes, plus a free PostgreSQL database on Neon. Use Neon's *direct* connection string. The pooled one hands out connections per transaction, which breaks the session-level lock that guards migrations.
 
+## Credits
+
+Built with [Claude Code](https://claude.com/claude-code) as a pair programmer.
+
 ## Disclaimer
 
 A fan project, not affiliated with or endorsed by any game publisher. Character and franchise names belong to their respective owners. The game uses names and facts only, with no official art.
