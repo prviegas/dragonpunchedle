@@ -108,7 +108,7 @@ async function fetchSources() {
   for (const [id, source] of Object.entries(sources)) {
     if (existing.has(id)) continue; // already downloaded; delete the file to fetch again
     try {
-      const response = await fetch(source, { headers: { "user-agent": "dragonpunchedle-portraits/1.0" } });
+      const response = await fetch(source, { headers: { "user-agent": "dragonpunchedle-portraits/1.0 (fan game; https://github.com/prviegas/dragonpunchedle)" } });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const type = response.headers.get("content-type") ?? "";
       const extension = type.includes("png") ? ".png" : type.includes("webp") ? ".webp" : type.includes("avif") ? ".avif" : ".jpg";
