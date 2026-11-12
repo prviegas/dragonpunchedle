@@ -86,8 +86,10 @@
 
       <h2>Playing as a guest</h2>
       <p>
-        Nothing is stored about you on our server. Your guesses for today are saved in your own browser (local
-        storage) so a refresh doesn't lose them.
+        Your first guess gives your browser an anonymous id: a random code in a cookie, with no name, email or
+        anything else about you. Your guesses are stored with that id, so a refresh keeps your board, the
+        10-guess limit works, and your round counts in the day's results chart. Guest guesses are deleted after
+        30 days. If you make an account or log in, that day's guesses move into your account.
       </p>
 
       <h2>If you make an account</h2>
@@ -113,11 +115,15 @@
       <ul>
         <li><strong>dp_session</strong> keeps you logged in for up to 30 days. Logging out deletes it.</li>
         <li>
+          <strong>dp_guest</strong> is the anonymous guest id described above. It lasts a year, or until you
+          clear your cookies.
+        </li>
+        <li>
           <strong>dp_oauth</strong> exists only while you sign in with Google, for up to 10 minutes,
           to protect that sign-in from forgery.
         </li>
       </ul>
-      <p>Both are strictly necessary for logging in. There are no advertising or analytics cookies.</p>
+      <p>All three are needed for the game to work. There are no advertising or analytics cookies.</p>
 
       <h2>Server logs</h2>
       <p>

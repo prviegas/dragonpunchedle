@@ -56,6 +56,8 @@ describe.skipIf(!process.env.DATABASE_URL)("accounts", () => {
   async function cleanUp() {
     // Users first: deleting them also deletes their sessions and guesses.
     await pool.query("DELETE FROM users WHERE username LIKE $1", [`${PREFIX}%`]);
+    // Guests' guesses have no user to cascade from: remove this test day's directly.
+    await pool.query("DELETE FROM guesses WHERE guest_id IS NOT NULL AND puzzle_date = $1", [TODAY]);
     await pool.query("DELETE FROM daily_puzzles WHERE puzzle_date = $1", [TODAY]);
   }
 
@@ -258,22 +260,99 @@ describe.skipIf(!process.env.DATABASE_URL)("accounts", () => {
       expect([...numbers].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     });
 
-    it("counts a guest's guesses from what the page says, and reveals the answer on the 10th", async () => {
-      const [id] = await wrongIds(1);
-      const ninth = (await post(`/api/puzzles/${TODAY}/guesses`, { characterId: id!, previousGuesses: 8 })).json();
-      const tenth = (await post(`/api/puzzles/${TODAY}/guesses`, { characterId: id!, previousGuesses: 9 })).json();
-      const eleventh = await post(`/api/puzzles/${TODAY}/guesses`, { characterId: id!, previousGuesses: 10 });
+    it("holds guests to the same limit, counted on the server, whatever the page claims", async () => {
+      const wrong = await wrongIds(11);
+      const first = await post(`/api/puzzles/${TODAY}/guesses`, { characterId: wrong[0]! });
+      const guest = guestCookie(first);
+      const rest = [];
+      for (const id of wrong.slice(1, 10)) {
+        // An old page sends previousGuesses; it's ignored now.
+        rest.push((await post(`/api/puzzles/${TODAY}/guesses`, { characterId: id, previousGuesses: 0 }, guest)).json());
+      }
+      const eleventh = await post(`/api/puzzles/${TODAY}/guesses`, { characterId: wrong[10]! }, guest);
 
-      expect(ninth).toMatchObject({ guessNumber: 9 });
-      expect(ninth.answer).toBeUndefined();
-      expect(tenth.answer.id).toBe(answerId);
+      expect(first.json().guessNumber).toBe(1);
+      expect(rest.map((r) => r.guessNumber)).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      expect(rest[8].answer.id).toBe(answerId);
       expect(eleventh.statusCode).toBe(409);
     });
   });
 
-  it("asks guests to log in for saved guesses", async () => {
-    const response = await app.inject({ method: "GET", url: "/api/puzzles/today/guesses" });
-    expect(response.statusCode).toBe(401);
+  /** The anonymous guest cookie a response set, ready to send back. */
+  function guestCookie(response: { cookies: { name: string; value: string }[] }) {
+    const cookie = response.cookies.find((c) => c.name === "dp_guest");
+    expect(cookie?.value).toMatch(/^[A-Za-z0-9_-]{32}$/);
+    return `dp_guest=${cookie!.value}`;
+  }
+
+  describe("guests", () => {
+    it("get an empty board before their first guess", async () => {
+      const response = await app.inject({ method: "GET", url: "/api/puzzles/today/guesses" });
+      expect(response.json()).toEqual({ guesses: [] });
+    });
+
+    it("keep their board on the server, tied to an anonymous cookie", async () => {
+      const guest = guestCookie(await post(`/api/puzzles/${TODAY}/guesses`, { characterId: otherId }));
+      const board = await app.inject({ method: "GET", url: "/api/puzzles/today/guesses", headers: { cookie: guest } });
+
+      expect(board.json().guesses.map((g: { guess: { id: string } }) => g.guess.id)).toEqual([otherId]);
+      // Someone else's browser sees nothing of it.
+      expect((await app.inject({ method: "GET", url: "/api/puzzles/today/guesses" })).json().guesses).toEqual([]);
+    });
+
+    it("are counted in today's results, and see their own result marked", async () => {
+      const before = (await app.inject({ method: "GET", url: "/api/puzzles/today/results" })).json();
+      const guest = guestCookie(await post(`/api/puzzles/${TODAY}/guesses`, { characterId: answerId }));
+      const after = (await app.inject({ method: "GET", url: "/api/puzzles/today/results", headers: { cookie: guest } })).json();
+
+      expect(after.players).toBe(before.players + 1);
+      expect(after.solvedIn[0]).toBe(before.solvedIn[0] + 1);
+      expect(after.you).toBe(1);
+    });
+
+    it("bring today's guesses into the account when they sign up, counted once", async () => {
+      const guest = guestCookie(await post(`/api/puzzles/${TODAY}/guesses`, { characterId: otherId }));
+      const playersBefore = (await app.inject({ method: "GET", url: "/api/puzzles/today/results" })).json().players;
+
+      const signup = await app.inject({
+        method: "POST",
+        url: "/api/auth/register",
+        payload: { username: `${PREFIX}vega`, password: "violet-kettle-999" },
+        headers: { cookie: guest },
+      });
+      const session = signup.cookies.find((c) => c.name === SESSION_COOKIE)!;
+      const cookie = `${SESSION_COOKIE}=${session.value}`;
+      const board = (await app.inject({ method: "GET", url: "/api/puzzles/today/guesses", headers: { cookie } })).json();
+
+      expect(board.guesses.map((g: { guess: { id: string } }) => g.guess.id)).toEqual([otherId]);
+      // Still one round in progress, not two (and not a finished one, so not counted yet).
+      expect((await app.inject({ method: "GET", url: "/api/puzzles/today/results" })).json().players).toBe(playersBefore);
+      const { rows } = await pool.query("SELECT count(*)::int AS n FROM guesses WHERE guest_id = $1", [
+        guest.split("=")[1],
+      ]);
+      expect(rows[0].n).toBe(0);
+    });
+
+    it("lose their guest round on login if the account already played today", async () => {
+      const account = await signUp("rose");
+      await post(`/api/puzzles/${TODAY}/guesses`, { characterId: otherId }, account);
+      const [another] = (await pool.query<{ id: string }>(
+        "SELECT id FROM characters WHERE id NOT IN ($1, $2) LIMIT 1",
+        [answerId, otherId],
+      )).rows;
+      const guest = guestCookie(await post(`/api/puzzles/${TODAY}/guesses`, { characterId: another!.id }));
+
+      const login = await app.inject({
+        method: "POST",
+        url: "/api/auth/login",
+        payload: { username: `${PREFIX}rose`, password: "a-long-password" },
+        headers: { cookie: guest },
+      });
+      const cookie = `${SESSION_COOKIE}=${login.cookies.find((c) => c.name === SESSION_COOKIE)!.value}`;
+      const board = (await app.inject({ method: "GET", url: "/api/puzzles/today/guesses", headers: { cookie } })).json();
+
+      expect(board.guesses.map((g: { guess: { id: string } }) => g.guess.id)).toEqual([otherId]);
+    });
   });
 
   it("slows down repeated login attempts", async () => {

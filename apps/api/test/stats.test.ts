@@ -130,7 +130,7 @@ describe.skipIf(!process.env.DATABASE_URL)("stats and leaderboards", () => {
   });
 
   it("counts today's finished rounds by number of guesses, and marks the viewer's", async () => {
-    const results = await scoreDistribution(pool, TODAY, ids.drew!, 10);
+    const results = await scoreDistribution(pool, TODAY, { userId: ids.drew! }, 10);
 
     expect(results).toEqual({
       players: 3,
@@ -143,8 +143,8 @@ describe.skipIf(!process.env.DATABASE_URL)("stats and leaderboards", () => {
   it("counts a round as lost only once the guesses run out", async () => {
     // Day 4: alex made 2 wrong guesses. With a 10-guess limit that round is
     // still open, so it isn't counted; with a 2-guess limit it's a loss.
-    expect(await scoreDistribution(pool, day(4), ids.alex!, 10)).toMatchObject({ players: 0, lost: 0, you: null });
-    expect(await scoreDistribution(pool, day(4), ids.alex!, 2)).toMatchObject({ players: 1, lost: 1, you: "lost" });
+    expect(await scoreDistribution(pool, day(4), { userId: ids.alex! }, 10)).toMatchObject({ players: 0, lost: 0, you: null });
+    expect(await scoreDistribution(pool, day(4), { userId: ids.alex! }, 2)).toMatchObject({ players: 1, lost: 1, you: "lost" });
   });
 
   it("serves today's results to everyone, with no names", async () => {

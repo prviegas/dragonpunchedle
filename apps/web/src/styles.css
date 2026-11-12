@@ -224,20 +224,24 @@ body {
   gap: 3px;
 }
 
+/* Straight-edged segments, coloured by how many guesses are left. */
 .health-cell {
   flex: 1;
   height: 12px;
   background: var(--panel-raised);
-  border-radius: 2px;
   transition: background 0.35s;
 }
 
-.health-cell.is-full {
-  background: var(--accent);
+.hud.is-high .health-cell.is-full {
+  background: #1fa65a;
 }
 
-.hud.is-danger .health-cell.is-full {
-  background: var(--you);
+.hud.is-mid .health-cell.is-full {
+  background: #e3b11c;
+}
+
+.hud.is-low .health-cell.is-full {
+  background: #e5484d;
 }
 
 .hud-count {
@@ -867,11 +871,32 @@ body {
   color: var(--muted);
 }
 
+/* ---- Modal window ---- */
+
+.modal {
+  width: min(400px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  padding: 0;
+  overflow: auto;
+  color: var(--text);
+  background: transparent;
+  border: none;
+}
+
+.modal::backdrop {
+  background: rgb(5 7 12 / 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.modal[open] {
+  animation: fade-up 0.2s ease-out both;
+}
+
 /* ---- Log in / sign up ---- */
 
 .auth-panel {
   max-width: 400px;
-  margin: 0 auto 26px;
+  margin: 0 auto;
   padding: 22px 24px;
   background: var(--panel);
   clip-path: var(--cut);

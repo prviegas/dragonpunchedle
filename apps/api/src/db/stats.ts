@@ -1,4 +1,5 @@
 import type pg from "pg";
+import type { Player } from "./guesses.js";
 
 // Streaks are worked out from the guesses table on demand rather than kept in
 // a counter column. A counter has to be updated correctly on every write
@@ -71,13 +72,13 @@ export async function playerStats(pool: pg.Pool, userId: number, today: string):
 }
 
 export interface ScoreDistribution {
-  /** Players who finished the day's round: solved it, or ran out of guesses. */
+  /** Players who finished the day's round, accounts and guests: solved it, or ran out of guesses. */
   players: number;
   /** solvedIn[0] players solved it in 1 guess, solvedIn[1] in 2, and so on up to the limit. */
   solvedIn: number[];
   /** Players who ran out of guesses. */
   lost: number;
-  /** The viewer's own finished result: guesses taken, "lost", or null (not finished, or a guest). */
+  /** The viewer's own finished result: guesses taken, "lost", or null (not finished). */
   you: number | "lost" | null;
 }
 
@@ -88,14 +89,16 @@ export interface ScoreDistribution {
 export async function scoreDistribution(
   pool: pg.Pool,
   date: string,
-  viewerId: number | null,
+  viewer: Player | null,
   maxGuesses: number,
 ): Promise<ScoreDistribution> {
-  const { rows } = await pool.query<{ user_id: string; guesses: number; solved: boolean }>(
-    `SELECT g.user_id, count(*)::int AS guesses, bool_or(g.character_id = p.character_id) AS solved
+  // One row per player: an account ("u" + id) or a guest ("g" + cookie id).
+  const { rows } = await pool.query<{ player: string; guesses: number; solved: boolean }>(
+    `SELECT coalesce('u' || g.user_id::text, 'g' || g.guest_id) AS player,
+            count(*)::int AS guesses, bool_or(g.character_id = p.character_id) AS solved
      FROM guesses g JOIN daily_puzzles p USING (puzzle_date)
      WHERE g.puzzle_date = $1
-     GROUP BY g.user_id
+     GROUP BY 1
      HAVING bool_or(g.character_id = p.character_id) OR count(*) >= $2`,
     [date, maxGuesses],
   );
@@ -103,11 +106,12 @@ export async function scoreDistribution(
   const solvedIn = Array.from({ length: maxGuesses }, () => 0);
   let lost = 0;
   let you: ScoreDistribution["you"] = null;
+  const viewerKey = viewer && ("userId" in viewer ? `u${viewer.userId}` : `g${viewer.guestId}`);
   for (const row of rows) {
     const result = row.solved ? Math.min(row.guesses, maxGuesses) : "lost";
     if (result === "lost") lost++;
     else solvedIn[result - 1]!++;
-    if (viewerId !== null && Number(row.user_id) === viewerId) you = result;
+    if (row.player === viewerKey) you = result;
   }
   return { players: rows.length, solvedIn, lost, you };
 }
@@ -134,7 +138,7 @@ export async function todayLeaderboard(
               count(*)::int AS guesses,
               max(g.created_at) FILTER (WHERE g.character_id = p.character_id) AS solved_at
        FROM guesses g JOIN daily_puzzles p USING (puzzle_date)
-       WHERE g.puzzle_date = $1
+       WHERE g.puzzle_date = $1 AND g.user_id IS NOT NULL -- accounts only: guests have no name to show
        GROUP BY g.user_id
      )
      SELECT rank() OVER (ORDER BY d.guesses, d.solved_at)::int AS rank,
@@ -174,7 +178,7 @@ export async function streakLeaderboard(
        SELECT g.user_id, g.puzzle_date
        FROM guesses g
        JOIN daily_puzzles p ON p.puzzle_date = g.puzzle_date AND p.character_id = g.character_id
-       WHERE g.puzzle_date <= $1
+       WHERE g.puzzle_date <= $1 AND g.user_id IS NOT NULL
      ),
      runs AS (
        SELECT user_id, puzzle_date,

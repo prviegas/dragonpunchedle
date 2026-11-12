@@ -23,6 +23,7 @@ export interface AppOptions extends FastifyServerOptions {
   now?: () => Date;
   secureCookies?: boolean;
   authRateLimitPerMinute?: number;
+  guessRateLimitPerMinute?: number;
   /** Sign in with Discord / Google. Left out, only passwords are offered. */
   oauth?: OAuthOptions;
   /** Absolute path to the built web app. When set, the API also serves the
@@ -40,6 +41,7 @@ export function buildApp({
   now = () => new Date(),
   secureCookies = false,
   authRateLimitPerMinute = 10,
+  guessRateLimitPerMinute = 120,
   oauth,
   staticDir,
   ...fastifyOptions
@@ -99,9 +101,9 @@ export function buildApp({
       request.user = (token && (await findSessionUser(pool, token))) || null;
     });
 
-    app.register(authRoutes, { pool, secureCookies, rateLimitPerMinute: authRateLimitPerMinute, oauth });
+    app.register(authRoutes, { pool, secureCookies, rateLimitPerMinute: authRateLimitPerMinute, oauth, now });
     app.register(characterRoutes, { pool });
-    app.register(puzzleRoutes, { pool, now });
+    app.register(puzzleRoutes, { pool, now, secureCookies, guessRateLimitPerMinute });
     app.register(statsRoutes, { pool, now });
   }
 

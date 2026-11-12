@@ -4,26 +4,9 @@ import type { TodayResults } from "./api";
 export type RoundResult = number | "lost";
 
 /**
- * Today's results with the viewer in them. The server counts logged-in
- * players only, so a guest's own round is added here, for display: their bar
- * then shows them like everyone else's does.
- */
-export function withViewer(results: TodayResults, mine: RoundResult, counted: boolean): TodayResults {
-  if (counted) return results;
-  const solvedIn = [...results.solvedIn];
-  if (mine !== "lost") solvedIn[mine - 1] = (solvedIn[mine - 1] ?? 0) + 1;
-  return {
-    players: results.players + 1,
-    solvedIn,
-    lost: results.lost + (mine === "lost" ? 1 : 0),
-    you: mine,
-  };
-}
-
-/**
  * The share of the other players the viewer did better than: everyone who
  * needed more guesses or ran out. Ties don't count as beaten. `results` must
- * already include the viewer (see withViewer). null when nobody else finished.
+ * include the viewer, as the server's counts do. null when nobody else finished.
  */
 export function percentBeaten(results: TodayResults, mine: RoundResult): number | null {
   const others = results.players - 1;

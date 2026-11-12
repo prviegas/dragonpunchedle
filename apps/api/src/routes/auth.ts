@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import rateLimit from "@fastify/rate-limit";
-import type { FastifyPluginAsync, FastifyReply } from "fastify";
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 import type pg from "pg";
 import {
   beginSignIn,
@@ -12,7 +12,10 @@ import {
 } from "../auth/oauth.js";
 import { checkPasswordStrength } from "../auth/password-strength.js";
 import { hashForUnknownUser, hashPassword, verifyPassword } from "../auth/passwords.js";
+import { readGuestId } from "../auth/guests.js";
 import { deleteSession, SESSION_COOKIE, startSession } from "../auth/sessions.js";
+import { claimGuestGuesses } from "../db/guesses.js";
+import { puzzleDateFor } from "../game/puzzles.js";
 import {
   createUser,
   createUserWithExternalLogin,
@@ -38,6 +41,7 @@ interface AuthRouteOptions {
   /** Login and sign-up attempts allowed per IP address per minute. */
   rateLimitPerMinute: number;
   oauth?: OAuthOptions;
+  now: () => Date;
 }
 
 const credentialsSchema = {
@@ -74,11 +78,18 @@ function sameSecret(a: string, b: string) {
 
 export const authRoutes: FastifyPluginAsync<AuthRouteOptions> = async (
   app,
-  { pool, secureCookies, rateLimitPerMinute, oauth },
+  { pool, secureCookies, rateLimitPerMinute, oauth, now },
 ) => {
   // Limits only the routes below that opt in, so the game itself is unaffected.
   await app.register(rateLimit, { global: false });
   const limited = { rateLimit: { max: rateLimitPerMinute, timeWindow: "1 minute" } };
+
+  /** Logs the user in. Guesses this browser made today as a guest move into the account. */
+  async function logIn(request: FastifyRequest, reply: FastifyReply, userId: number) {
+    await startSession(pool, reply, userId, secureCookies);
+    const guestId = readGuestId(request);
+    if (guestId) await claimGuestGuesses(pool, guestId, userId, puzzleDateFor(now()));
+  }
 
   app.post<Credentials>("/api/auth/register", { schema: credentialsSchema, config: limited }, async (request, reply) => {
     const { username, password } = request.body;
@@ -92,7 +103,7 @@ export const authRoutes: FastifyPluginAsync<AuthRouteOptions> = async (
     if (user === "taken") {
       return reply.code(409).send({ error: "That username is taken." });
     }
-    await startSession(pool, reply, user.id, secureCookies);
+    await logIn(request, reply, user.id);
     return reply.code(201).send({ user });
   });
 
@@ -107,7 +118,7 @@ export const authRoutes: FastifyPluginAsync<AuthRouteOptions> = async (
       return reply.code(401).send({ error: "Wrong username or password." });
     }
     const user = { id: found.id, username: found.username };
-    await startSession(pool, reply, user.id, secureCookies);
+    await logIn(request, reply, user.id);
     return { user };
   });
 
@@ -186,7 +197,7 @@ export const authRoutes: FastifyPluginAsync<AuthRouteOptions> = async (
         (await createUserWithExternalLogin(pool, found.provider, profile.id, usernameCandidates(profile.name)));
       if (user === "no-free-name") return backToGame(reply, "failed");
 
-      await startSession(pool, reply, user.id, secureCookies);
+      await logIn(request, reply, user.id);
       return backToGame(reply);
     } catch (caught) {
       request.log.warn({ err: caught, provider: found.provider }, "external sign-in failed");

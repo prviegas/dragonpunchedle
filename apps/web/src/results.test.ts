@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TodayResults } from "./api";
-import { percentBeaten, percentSolved, withViewer } from "./results";
+import { percentBeaten, percentSolved } from "./results";
 
 // Ten players: 1 solved in 1, 2 in 2, 3 in 3, 2 in 5, and 2 ran out.
 const day: TodayResults = {
@@ -9,22 +9,6 @@ const day: TodayResults = {
   lost: 2,
   you: null,
 };
-
-describe("withViewer", () => {
-  it("leaves a logged-in player's results alone: the server already counted them", () => {
-    expect(withViewer(day, 3, true)).toBe(day);
-  });
-
-  it("adds a guest's solve to their bar", () => {
-    const shown = withViewer(day, 4, false);
-    expect(shown).toMatchObject({ players: 11, lost: 2, you: 4 });
-    expect(shown.solvedIn[3]).toBe(1);
-  });
-
-  it("adds a guest's loss to the K.O. bar", () => {
-    expect(withViewer(day, "lost", false)).toMatchObject({ players: 11, lost: 3, you: "lost" });
-  });
-});
 
 describe("percentBeaten", () => {
   it("counts players who needed more guesses or ran out, out of everyone else", () => {

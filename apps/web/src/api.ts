@@ -95,12 +95,12 @@ export const fetchPuzzle = () => request<Puzzle>("/api/puzzles/today");
 
 export const fetchCharacters = () => request<CharacterSummary[]>("/api/characters");
 
-/** previousGuesses matters only for guests: the server counts a logged-in
- *  player's guesses itself, but keeps nothing about guests. */
-export const submitGuess = (date: string, characterId: string, previousGuesses: number) =>
-  request<GuessResponse>(`/api/puzzles/${date}/guesses`, postJson({ characterId, previousGuesses }));
+/** Saves and scores a guess, for an account or a guest (the server tells them
+ *  apart by cookie, and counts each one's guesses itself). */
+export const submitGuess = (date: string, characterId: string) =>
+  request<GuessResponse>(`/api/puzzles/${date}/guesses`, postJson({ characterId }));
 
-/** A logged-in player's guesses for today, newest first, plus the answer if they ran out. */
+/** This player's guesses for today, account or guest, newest first, plus the answer if they ran out. */
 export const fetchMyGuesses = () =>
   request<{ guesses: GuessResult[]; answer?: Character }>("/api/puzzles/today/guesses");
 
@@ -157,12 +157,12 @@ export const fetchLoginProviders = () => request<{ providers: LoginProvider[] }>
 export const providerStartUrl = (id: LoginProvider["id"]) => `/api/auth/${id}/start`;
 
 export interface TodayResults {
-  /** Players who finished today's round (solved, or out of guesses). Guests aren't counted. */
+  /** Players who finished today's round (solved, or out of guesses), accounts and guests. */
   players: number;
   /** solvedIn[0]: players who solved it in 1 guess; solvedIn[1]: in 2; and so on. */
   solvedIn: number[];
   lost: number;
-  /** The viewer's own finished result, when logged in. */
+  /** The viewer's own finished result. */
   you: number | "lost" | null;
 }
 

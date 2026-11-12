@@ -8,6 +8,7 @@ export interface DailyJobResult {
   /** Dates that didn't have an answer yet and got one on this run. */
   puzzlesCreated: string[];
   expiredSessionsRemoved: number;
+  oldGuestGuessesRemoved: number;
 }
 
 export function addDays(date: string, days: number): string {
@@ -47,5 +48,15 @@ export async function runDailyJob(pool: pg.Pool, now = new Date(), daysAhead = D
   //    every real session in the database.
   const removed = await pool.query("DELETE FROM sessions WHERE expires_at < now()");
 
-  return { puzzlesCreated, expiredSessionsRemoved: removed.rowCount ?? 0 };
+  // 3. Guests' guesses are kept 30 days, for the results chart, then deleted.
+  //    Database clock again, for the same reason.
+  const guests = await pool.query(
+    "DELETE FROM guesses WHERE guest_id IS NOT NULL AND puzzle_date < current_date - 30",
+  );
+
+  return {
+    puzzlesCreated,
+    expiredSessionsRemoved: removed.rowCount ?? 0,
+    oldGuestGuessesRemoved: guests.rowCount ?? 0,
+  };
 }

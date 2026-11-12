@@ -23,11 +23,15 @@ describe.skipIf(!process.env.DATABASE_URL)("puzzle API", () => {
     const characters = (await loadRoster()).map(toCharacter);
     rosterSize = characters.length;
     await seedCharacters(pool, characters);
+    // Guest guesses made by these tests are stored too; they go before their days do.
+    await pool.query("DELETE FROM guesses WHERE guest_id IS NOT NULL AND puzzle_date = ANY($1)", [TEST_DATES]);
     await pool.query("DELETE FROM daily_puzzles WHERE puzzle_date = ANY($1)", [TEST_DATES]);
     answerId = await ensurePuzzle(pool, TODAY);
   });
 
   afterAll(async () => {
+    // Guest guesses made by these tests are stored too; they go before their days do.
+    await pool.query("DELETE FROM guesses WHERE guest_id IS NOT NULL AND puzzle_date = ANY($1)", [TEST_DATES]);
     await pool.query("DELETE FROM daily_puzzles WHERE puzzle_date = ANY($1)", [TEST_DATES]);
     await app.close();
     await pool.end();

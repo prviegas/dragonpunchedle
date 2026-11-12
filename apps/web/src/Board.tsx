@@ -31,8 +31,14 @@ function Tile({ clue, result, character, delay }: { clue: ClueInfo; result: Clue
       // Tiles of a new guess flip over one after another, left to right.
       style={delay === undefined ? undefined : { animationDelay: `${delay}ms` }}
     >
+      {/* The arrow points the way to the answer: above the value for higher, below for lower. */}
+      {result.direction === "higher" && (
+        <span className="tile-arrow" aria-hidden="true">
+          {arrow}
+        </span>
+      )}
       <span className="tile-value">{text}</span>
-      {arrow && (
+      {result.direction === "lower" && (
         <span className="tile-arrow" aria-hidden="true">
           {arrow}
         </span>

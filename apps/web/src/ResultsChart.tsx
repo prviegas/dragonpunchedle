@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { fetchTodayResults, type TodayResults } from "./api";
-import { percentBeaten, percentSolved, withViewer, type RoundResult } from "./results";
+import { percentBeaten, percentSolved, type RoundResult } from "./results";
 
 interface ResultsChartProps {
   maxGuesses: number;
   /** The viewer's finished round. */
   mine: RoundResult;
-  /** Logged in, so the server already counts this round. */
-  counted: boolean;
 }
 
 const HEIGHT = 190;
@@ -30,7 +28,7 @@ function curvePoints(counts: number[], steps = 120): number[] {
   return peak > 0 ? values.map((v) => v / peak) : values;
 }
 
-export function ResultsChart({ maxGuesses, mine, counted }: ResultsChartProps) {
+export function ResultsChart({ maxGuesses, mine }: ResultsChartProps) {
   const [fetched, setFetched] = useState<TodayResults>();
   const [failed, setFailed] = useState(false);
   const [hover, setHover] = useState<number>();
@@ -60,7 +58,8 @@ export function ResultsChart({ maxGuesses, mine, counted }: ResultsChartProps) {
   if (failed) return null; // the chart is a bonus; the round is still over and shareable
   if (!fetched) return <p className="status chart-loading">Loading today's results…</p>;
 
-  const results = withViewer(fetched, mine, counted);
+  // The server counts every finished round, the viewer's included.
+  const results = fetched;
   // One position per outcome: 1..maxGuesses solved, then K.O.
   const counts = [...results.solvedIn.slice(0, maxGuesses), results.lost];
   const labels = [...counts.slice(0, -1).map((_, i) => String(i + 1)), "K.O."];
@@ -154,7 +153,6 @@ export function ResultsChart({ maxGuesses, mine, counted }: ResultsChartProps) {
       </div>
 
       <p className="chart-caption">{caption}</p>
-      {!counted && <p className="chart-note">Guests are shown here but not counted. Log in to count.</p>}
 
       {/* The same numbers as a table, for screen readers. */}
       <table className="visually-hidden">

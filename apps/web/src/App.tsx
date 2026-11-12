@@ -20,6 +20,7 @@ import { Board } from "./Board";
 import { GuessInput } from "./GuessInput";
 import { HealthBar } from "./HealthBar";
 import { Leaderboard } from "./Leaderboard";
+import { Modal } from "./Modal";
 import { ResultCard } from "./ResultCard";
 import { puzzleNumber } from "./share";
 
@@ -28,67 +29,28 @@ type Load =
   | { state: "error"; message: string }
   | { state: "ready"; puzzle: Puzzle; characters: CharacterSummary[] };
 
-// A guest's guesses for today are kept in this browser so a refresh doesn't
-// lose them. Logged-in players' guesses live on the server instead. Storage can
-// be unavailable (private windows, blocked site data), so every access is
-// wrapped and the game still works without it.
-const storageKey = (date: string) => `dragonpunchedle:guesses:${date}`;
+// Before guests were saved on the server, a guest's guesses for the day were
+// kept in this browser. Anything still stored there is handed to the server
+// once, oldest first, so nobody loses a round across the update; the server
+// re-checks each guess and refuses repeats. Storage can be unavailable
+// (private windows, blocked site data), so every access is wrapped.
+const legacyKeys = (date: string) => [`dragonpunchedle:guesses:${date}`, `dragonpunchedle:answer:${date}`];
 
-function loadLocalGuesses(date: string): GuessResult[] {
+async function moveLegacyGuessesToServer(date: string) {
+  let saved: GuessResult[] = [];
   try {
-    const saved = localStorage.getItem(storageKey(date));
-    return saved ? (JSON.parse(saved) as GuessResult[]) : [];
+    saved = JSON.parse(localStorage.getItem(legacyKeys(date)[0]!) ?? "[]") as GuessResult[];
   } catch {
-    return [];
+    return;
   }
-}
-
-function saveLocalGuesses(date: string, guesses: GuessResult[]) {
-  try {
-    localStorage.setItem(storageKey(date), JSON.stringify(guesses));
-  } catch {
-    // Not saved; the game carries on.
+  for (const local of [...saved].reverse()) {
+    await submitGuess(date, local.guess.id).catch(() => undefined);
   }
-}
-
-// The answer a guest saw when they ran out of guesses, so a reload still shows it.
-const answerKey = (date: string) => `dragonpunchedle:answer:${date}`;
-
-function loadLocalAnswer(date: string): Character | undefined {
   try {
-    const saved = localStorage.getItem(answerKey(date));
-    return saved ? (JSON.parse(saved) as Character) : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function saveLocalAnswer(date: string, answer: Character) {
-  try {
-    localStorage.setItem(answerKey(date), JSON.stringify(answer));
-  } catch {
-    // Not saved; the game carries on.
-  }
-}
-
-function clearLocalGuesses(date: string) {
-  try {
-    localStorage.removeItem(storageKey(date));
-    localStorage.removeItem(answerKey(date));
+    for (const key of legacyKeys(date)) localStorage.removeItem(key);
   } catch {
     // Nothing to clear.
   }
-}
-
-/** Moves today's guest guesses into the account, oldest first, so signing in
- *  halfway through a puzzle doesn't lose progress. The server scores each one
- *  again; ones it refuses (already guessed, already solved) are skipped. */
-async function importGuestGuesses(date: string) {
-  // Signed in now, so the server counts from its own records; the 0 is ignored.
-  for (const local of [...loadLocalGuesses(date)].reverse()) {
-    await submitGuess(date, local.guess.id, 0).catch(() => undefined);
-  }
-  clearLocalGuesses(date);
 }
 
 // After a Discord or Google sign-in the server sends the player back to the
@@ -148,17 +110,12 @@ export function App() {
     Promise.all([fetchPuzzle(), fetchCharacters(), fetchMe()])
       .then(async ([puzzle, characters, { user: me }]) => {
         setUser(me);
-        if (me) {
-          // Just back from Discord or Google with guesses made as a guest.
-          await importGuestGuesses(puzzle.date);
-          const [mine, myStats] = await Promise.all([fetchMyGuesses(), fetchMyStats()]);
-          showGuesses(mine.guesses);
-          revealAnswer(mine.answer);
-          setStats(myStats);
-        } else {
-          showGuesses(loadLocalGuesses(puzzle.date));
-          revealAnswer(loadLocalAnswer(puzzle.date));
-        }
+        await moveLegacyGuessesToServer(puzzle.date);
+        // Guests and accounts alike: the server keeps the board.
+        const [mine, myStats] = await Promise.all([fetchMyGuesses(), me ? fetchMyStats() : undefined]);
+        showGuesses(mine.guesses);
+        revealAnswer(mine.answer);
+        setStats(myStats);
         setLoad({ state: "ready", puzzle, characters });
       })
       .catch((error: unknown) =>
@@ -207,11 +164,7 @@ export function App() {
     const done = guessesRef.current.some((g) => g.solved) || answerRef.current !== undefined;
     if (done || guessesRef.current.length >= puzzle.maxGuesses) return;
     try {
-      const { answer: revealed, guessNumber: _number, ...result } = await submitGuess(
-        puzzle.date,
-        characterId,
-        guessesRef.current.length,
-      );
+      const { answer: revealed, guessNumber: _number, ...result } = await submitGuess(puzzle.date, characterId);
       const next = [result, ...guessesRef.current]; // newest guess on top
       setFreshId(result.guess.id);
       showGuesses(next);
@@ -219,9 +172,6 @@ export function App() {
       if (user) {
         // Not awaited: the next queued guess shouldn't wait for the stats.
         fetchMyStats().then(setStats, () => undefined);
-      } else {
-        saveLocalGuesses(puzzle.date, next);
-        if (revealed) saveLocalAnswer(puzzle.date, revealed);
       }
       if (result.solved) refreshStandings();
     } catch (error) {
@@ -232,7 +182,7 @@ export function App() {
   async function signedIn(me: User) {
     setUser(me);
     setShowAuth(false);
-    await importGuestGuesses(puzzle.date);
+    // Logging in moved this browser's guest guesses for today into the account.
     const [mine, myStats] = await Promise.all([fetchMyGuesses(), fetchMyStats()]);
     showGuesses(mine.guesses);
     revealAnswer(mine.answer);
@@ -264,11 +214,9 @@ export function App() {
     </div>
   ) : (
     <div className="account">
-      {!showAuth && (
-        <button type="button" className="button button--small" onClick={() => setShowAuth(true)}>
-          Log in
-        </button>
-      )}
+      <button type="button" className="button button--small" onClick={() => setShowAuth(true)}>
+        Log in
+      </button>
     </div>
   );
 
@@ -276,9 +224,9 @@ export function App() {
 
   return (
     <Shell date={puzzle.date} account={account}>
-      {showAuth && !user && (
+      <Modal open={showAuth && !user} onClose={() => setShowAuth(false)} label="Log in or sign up">
         <AuthPanel initialError={initialLoginError} onSignedIn={signedIn} onClose={() => setShowAuth(false)} />
-      )}
+      </Modal>
 
       {roundOver ? (
         <ResultCard
@@ -315,7 +263,7 @@ function Shell({ date, account, children }: { date?: string; account?: ReactNode
     <div className="page">
       <header className="topbar">
         <h1 className="logo">
-          Dragon<span className="logo-punch">punch</span>edle
+          Dragon<span className="logo-punch">punched</span>le
         </h1>
         {account}
       </header>

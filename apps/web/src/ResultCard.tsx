@@ -41,7 +41,7 @@ export function ResultCard({ outcome, character, date, guesses, maxGuesses, logg
         </div>
       </div>
 
-      <ResultsChart maxGuesses={maxGuesses} mine={won ? guesses.length : "lost"} counted={loggedIn} />
+      <ResultsChart maxGuesses={maxGuesses} mine={won ? guesses.length : "lost"} />
 
       {loggedIn && stats ? (
         <StatsPanel stats={stats} />
