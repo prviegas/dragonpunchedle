@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy · Dragonpunchedle</title>
+    <meta name="description" content="What Dragonpunchedle stores about players, and why." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      /* A static page, so it carries its own small copy of the game's colours. */
+      :root {
+        --bg: #f6f3ee;
+        --text: #1c1a17;
+        --muted: #6b655c;
+        --border: #ddd6cb;
+        --accent: #c8321e;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #141311;
+          --text: #f1ece4;
+          --muted: #a39b8f;
+          --border: #3a3631;
+          --accent: #f0583f;
+          color-scheme: dark;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.6;
+      }
+      main {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 32px 16px 64px;
+      }
+      .logo {
+        font-weight: 900;
+        font-style: italic;
+        text-transform: uppercase;
+        letter-spacing: -0.02em;
+        color: var(--accent);
+        text-decoration: none;
+      }
+      h1 {
+        margin: 24px 0 4px;
+        font-size: 1.75rem;
+      }
+      h2 {
+        margin: 32px 0 8px;
+        font-size: 1.15rem;
+      }
+      .updated {
+        margin: 0;
+        color: var(--muted);
+      }
+      a {
+        color: var(--accent);
+      }
+      ul {
+        padding-left: 20px;
+      }
+      li {
+        margin: 6px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="logo" href="/">Dragonpunchedle</a>
+
+      <h1>Privacy</h1>
+      <p class="updated">Last updated November 12, 2026</p>
+
+      <p>
+        Dragonpunchedle is a free fan game. It stores as little as it can: enough to keep your board, your
+        streak and your place on the leaderboards. There are no ads, no analytics and no tracking.
+      </p>
+
+      <h2>Playing as a guest</h2>
+      <p>
+        Nothing is stored about you on our server. Your guesses for today are saved in your own browser (local
+        storage) so a refresh doesn't lose them.
+      </p>
+
+      <h2>If you make an account</h2>
+      <ul>
+        <li>
+          <strong>Your username.</strong> It appears publicly on the leaderboards.
+        </li>
+        <li>
+          <strong>Your password</strong>, if you sign up with one, stored only as a salted scrypt hash. Nobody,
+          including us, can read it back.
+        </li>
+        <li>
+          <strong>Sign in with Discord or Google:</strong> we receive your account id there and your display
+          name, which suggests your username. We never ask for your email address, and we don't keep the access
+          that Discord or Google grants: it's used once to learn who you are, then thrown away.
+        </li>
+        <li>
+          <strong>Your guesses and when you made them</strong>, for your board, streaks and leaderboards.
+        </li>
+      </ul>
+
+      <h2>Cookies</h2>
+      <ul>
+        <li><strong>dp_session</strong> keeps you logged in for up to 30 days. Logging out deletes it.</li>
+        <li>
+          <strong>dp_oauth</strong> exists only while you sign in with Discord or Google, for up to 10 minutes,
+          to protect that sign-in from forgery.
+        </li>
+      </ul>
+      <p>Both are strictly necessary for logging in. There are no advertising or analytics cookies.</p>
+
+      <h2>Server logs</h2>
+      <p>
+        Like any website, the server records each request (address, time, IP address) in its logs, which are used
+        to fix problems and to limit repeated login attempts. They are not used to identify or profile players.
+      </p>
+
+      <h2>Where it's kept</h2>
+      <p>
+        The game runs on <a href="https://render.com/privacy">Render</a> and its database on
+        <a href="https://neon.com/privacy-policy">Neon</a>, both in the United States. Nothing is sold or shared
+        with anyone else.
+      </p>
+
+      <h2>Deleting your account</h2>
+      <p>
+        Email <a href="mailto:pedromakesstuff0@gmail.com">pedromakesstuff0@gmail.com</a> with your username.
+        Once we've confirmed the account is yours, your account, guesses and sessions are deleted for good.
+      </p>
+
+      <p><a href="/">Back to the game</a></p>
+    </main>
+  </body>
+</html>

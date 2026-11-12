@@ -92,6 +92,16 @@ body {
   color: var(--accent);
 }
 
+.footer {
+  margin-top: 48px;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.footer a {
+  color: var(--muted);
+}
+
 /* Account */
 
 .account {

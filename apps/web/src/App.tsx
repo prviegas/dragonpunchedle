@@ -278,6 +278,9 @@ function Shell({ date, account, children }: { date?: string; account?: ReactNode
         {account}
       </header>
       {children}
+      <footer className="footer">
+        <a href="/privacy.html">Privacy</a>
+      </footer>
     </main>
   );
 }
