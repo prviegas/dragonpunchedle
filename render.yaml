@@ -25,3 +25,16 @@ services:
       # address, which the login rate limit needs.
       - key: TRUST_PROXY
         value: "true"
+      # Sign in with Discord / Google: secrets from each provider's developer
+      # console, typed into Render's dashboard. A provider with no keys is
+      # simply not offered. The callback address the providers must allow is
+      # {site}/api/auth/discord/callback and {site}/api/auth/google/callback;
+      # the site address comes from RENDER_EXTERNAL_URL, which Render sets.
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false

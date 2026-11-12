@@ -11,7 +11,7 @@ A daily guessing game for fighting game characters. Every day there's one myster
 - ⬛ **Grey:** not it.
 - **Arrows:** whether the answer's year or game count is higher or lower.
 
-Play as a guest, or make an account to keep your board on every device, build a streak and appear on the leaderboards. When you win, share a spoiler-free grid of squares.
+Play as a guest, or sign in (with Discord, Google, or a username) to keep your board on every device, build a streak and appear on the leaderboards. When you win, share a spoiler-free grid of squares.
 
 The guess box suggests names as you type. It ignores capitals, accents and punctuation, and works from the keyboard or a screen reader.
 
@@ -69,6 +69,8 @@ The comparison logic is written once per kind. Adding a clue is one line in [`cl
 **The daily job is idempotent and runs hourly.** It doesn't try to fire at exactly midnight. Every step gives the same result whether it runs once, twice, or on two servers at the same moment, so a restart or a missed run can't leave a day without a puzzle. Answers are picked a week ahead. If two requests race to pick the same day, the database's unique key decides, and both get the same answer ([`jobs/daily.ts`](apps/api/src/jobs/daily.ts), [`game/puzzles.ts`](apps/api/src/game/puzzles.ts)).
 
 **Accounts** ([`auth/`](apps/api/src/auth)):
+- **Sign in with Discord or Google** uses OAuth 2.0's authorization code flow, with a single-use `state` cookie against forged callbacks and PKCE where the provider supports it ([`auth/oauth.ts`](apps/api/src/auth/oauth.ts)). It asks only for an id and a name, never an email. The token is used once to read the profile, then dropped.
+- **Weak passwords are refused** at sign-up. [zxcvbn](https://github.com/zxcvbn-ts/zxcvbn) estimates how guessable a password is (common passwords, keyboard patterns, l33t speak, the username), as current NIST guidance suggests, instead of "one capital, one symbol" rules. The sign-up form imports the same file for its strength meter, so the page and the server never disagree.
 - **Passwords** are hashed with scrypt, with a random salt each, and compared in constant time.
 - **No username probing:** a login for an unknown user takes as long as one with a wrong password, and gets the same message.
 - **Session tokens** are random. Only a SHA-256 of each is stored, so a leaked database can't be used to log in.
@@ -124,7 +126,7 @@ apps/
   api/
     src/
       game/        clue definitions, comparison, daily answers, roster validation
-      auth/        password hashing, sessions
+      auth/        passwords, sessions, Discord/Google sign-in
       db/          queries, migration runner, seeding
       routes/      HTTP endpoints
       jobs/        daily job and scheduler

@@ -1,23 +1,31 @@
 import { useEffect, useId, useMemo, useState, type FormEvent } from "react";
-import { ApiError, logIn, signUp, type User } from "./api";
+import { ApiError, fetchLoginProviders, logIn, providerStartUrl, signUp, type LoginProvider, type User } from "./api";
 import { loadStrengthChecker, STRENGTH_LABELS } from "./passwordStrength";
 
 interface AuthPanelProps {
+  /** Why the last Discord/Google sign-in didn't work, if it didn't. */
+  initialError?: string;
   onSignedIn: (user: User) => void;
   onClose: () => void;
 }
 
 type StrengthModule = Awaited<ReturnType<typeof loadStrengthChecker>>;
 
-export function AuthPanel({ onSignedIn, onClose }: AuthPanelProps) {
+export function AuthPanel({ initialError, onSignedIn, onClose }: AuthPanelProps) {
   const id = useId();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string>();
+  const [error, setError] = useState(initialError);
+  const [providers, setProviders] = useState<LoginProvider[]>([]);
   const [busy, setBusy] = useState(false);
   const [strengthModule, setStrengthModule] = useState<StrengthModule>();
   const registering = mode === "register";
+
+  // Only the providers the server has keys for get a button.
+  useEffect(() => {
+    fetchLoginProviders().then(({ providers }) => setProviders(providers), () => undefined);
+  }, []);
 
   // Fetch the strength checker the first time the sign-up form opens. If it
   // fails to download, the form still works: the server checks anyway.
@@ -60,6 +68,26 @@ export function AuthPanel({ onSignedIn, onClose }: AuthPanelProps) {
     <section className="auth-panel" aria-labelledby={`${id}-title`}>
       <h2 id={`${id}-title`}>{registering ? "Create an account" : "Log in"}</h2>
       <p className="auth-why">Keep your guesses on every device and build a streak.</p>
+
+      {providers.length > 0 && (
+        <>
+          <div className="auth-providers">
+            {providers.map((provider) => (
+              // A plain link: the browser leaves for Discord or Google and comes back signed in.
+              <a
+                key={provider.id}
+                className={`button button--provider button--${provider.id}`}
+                href={providerStartUrl(provider.id)}
+              >
+                Continue with {provider.label}
+              </a>
+            ))}
+          </div>
+          <p className="auth-divider">
+            <span>or with a username</span>
+          </p>
+        </>
+      )}
 
       <form onSubmit={submit}>
         <label htmlFor={`${id}-username`}>Username</label>

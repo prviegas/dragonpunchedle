@@ -128,3 +128,15 @@ export const signUp = (username: string, password: string) =>
   request<{ user: User }>("/api/auth/register", postJson({ username, password }));
 
 export const logOut = () => request<void>("/api/auth/logout", { method: "POST" });
+
+export interface LoginProvider {
+  id: "discord" | "google";
+  label: string;
+}
+
+/** Discord / Google, if the server has keys for them. */
+export const fetchLoginProviders = () => request<{ providers: LoginProvider[] }>("/api/auth/providers");
+
+/** Where "Continue with …" sends the browser. It's a whole-page visit, not a
+ *  fetch: the player has to see the provider's own sign-in page. */
+export const providerStartUrl = (id: LoginProvider["id"]) => `/api/auth/${id}/start`;

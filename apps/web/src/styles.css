@@ -127,6 +127,46 @@ body {
   cursor: progress;
 }
 
+/* "Continue with Discord / Google": full width, in each brand's own colours. */
+.auth-providers {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.button--provider {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}
+
+.button--discord {
+  background: #5865f2; /* Discord's "Blurple" */
+}
+
+.button--google {
+  color: #1f1f1f;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px #747775; /* Google's sign-in button outline */
+}
+
+/* A line with words in the middle: ——— or with a username ——— */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 4px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--border);
+}
+
 .link:focus-visible,
 .button:focus-visible {
   outline: 2px solid var(--focus);

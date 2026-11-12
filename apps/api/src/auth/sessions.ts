@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
+import type { FastifyReply } from "fastify";
 import type pg from "pg";
 
 export const SESSION_COOKIE = "dp_session";
@@ -22,6 +23,19 @@ export async function createSession(pool: pg.Pool, userId: number): Promise<{ to
     [hashToken(token), userId, SESSION_DAYS],
   );
   return { token, expiresAt: rows[0]!.expires_at };
+}
+
+/** Logs the user in: a new session row, and its token in the session cookie.
+ *  Shared by password login, sign-up, and Discord/Google sign-in. */
+export async function startSession(pool: pg.Pool, reply: FastifyReply, userId: number, secureCookies: boolean) {
+  const { token, expiresAt } = await createSession(pool, userId);
+  reply.setCookie(SESSION_COOKIE, token, {
+    httpOnly: true, // page scripts can't read it, so an injected script can't steal it
+    sameSite: "lax", // not sent on cross-site POSTs, which blocks forged requests from other sites
+    secure: secureCookies,
+    path: "/",
+    expires: expiresAt,
+  });
 }
 
 /** The logged-in user for a session token, or undefined if it's unknown or expired. */

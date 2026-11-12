@@ -57,10 +57,43 @@ function clearLocalGuesses(date: string) {
   }
 }
 
+/** Moves today's guest guesses into the account, oldest first, so signing in
+ *  halfway through a puzzle doesn't lose progress. The server scores each one
+ *  again; ones it refuses (already guessed, already solved) are skipped. */
+async function importGuestGuesses(date: string) {
+  for (const local of [...loadLocalGuesses(date)].reverse()) {
+    await submitGuess(date, local.guess.id).catch(() => undefined);
+  }
+  clearLocalGuesses(date);
+}
+
+// After a Discord or Google sign-in the server sends the player back to the
+// game, adding ?login_error=… if it didn't work out.
+const LOGIN_ERRORS: Record<string, string> = {
+  cancelled: "Sign-in was cancelled.",
+  expired: "That sign-in took too long or was started in another tab. Please try again.",
+  failed: "Couldn't sign you in. Please try again.",
+};
+
+/** Reads the error once and removes it from the address, so a refresh or a
+ *  shared link doesn't show it again. */
+function takeLoginError(): string | undefined {
+  const url = new URL(window.location.href);
+  const code = url.searchParams.get("login_error");
+  if (code === null) return undefined;
+  url.searchParams.delete("login_error");
+  window.history.replaceState(null, "", url);
+  return LOGIN_ERRORS[code] ?? LOGIN_ERRORS.failed;
+}
+
+// Read once when the page loads, not on every render.
+const initialLoginError = takeLoginError();
+
 export function App() {
   const [load, setLoad] = useState<Load>({ state: "loading" });
   const [user, setUser] = useState<User | null>(null);
-  const [showAuth, setShowAuth] = useState(false);
+  // A failed Discord/Google sign-in reopens the login panel with the reason.
+  const [showAuth, setShowAuth] = useState(initialLoginError !== undefined);
   const [guesses, setGuesses] = useState<GuessResult[]>([]);
   // Guesses picked but not yet answered by the server, in the order picked.
   const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(new Set());
@@ -83,6 +116,8 @@ export function App() {
       .then(async ([puzzle, characters, { user: me }]) => {
         setUser(me);
         if (me) {
+          // Just back from Discord or Google with guesses made as a guest.
+          await importGuestGuesses(puzzle.date);
           const [mine, myStats] = await Promise.all([fetchMyGuesses(), fetchMyStats()]);
           showGuesses(mine);
           setStats(myStats);
@@ -154,13 +189,7 @@ export function App() {
   async function signedIn(me: User) {
     setUser(me);
     setShowAuth(false);
-    // Move today's guest guesses into the account, oldest first, so signing up
-    // halfway through a puzzle doesn't lose progress. The server scores each
-    // one again; ones it refuses (already guessed, already solved) are skipped.
-    for (const local of [...loadLocalGuesses(puzzle.date)].reverse()) {
-      await submitGuess(puzzle.date, local.guess.id).catch(() => undefined);
-    }
-    clearLocalGuesses(puzzle.date);
+    await importGuestGuesses(puzzle.date);
     const [mine, myStats] = await Promise.all([fetchMyGuesses(), fetchMyStats()]);
     showGuesses(mine);
     setStats(myStats);
@@ -201,7 +230,7 @@ export function App() {
 
   return (
     <Shell date={puzzle.date} account={account}>
-      {showAuth && !user && <AuthPanel onSignedIn={signedIn} onClose={() => setShowAuth(false)} />}
+      {showAuth && !user && <AuthPanel initialError={initialLoginError} onSignedIn={signedIn} onClose={() => setShowAuth(false)} />}
       {winner ? (
         <section className="win" aria-live="polite">
           <p className="win-title">Hard read!</p>

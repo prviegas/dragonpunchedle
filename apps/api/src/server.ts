@@ -13,6 +13,20 @@ const host = process.env.HOST ?? "0.0.0.0";
 const JOB_INTERVAL_MS = 60 * 60 * 1000; // hourly
 
 const pool = createPool();
+
+// Sign in with Discord / Google: each provider is offered only when both of
+// its keys are set. Render sets RENDER_EXTERNAL_URL to the site's address on
+// its own; PUBLIC_URL overrides it (locally: http://localhost:5180).
+function credentials(prefix: "DISCORD" | "GOOGLE") {
+  const clientId = process.env[`${prefix}_CLIENT_ID`];
+  const clientSecret = process.env[`${prefix}_CLIENT_SECRET`];
+  return clientId && clientSecret ? { clientId, clientSecret } : undefined;
+}
+const publicUrl = process.env.PUBLIC_URL ?? process.env.RENDER_EXTERNAL_URL;
+const oauth = publicUrl
+  ? { publicUrl, providers: { discord: credentials("DISCORD"), google: credentials("GOOGLE") } }
+  : undefined;
+
 const app = buildApp({
   logger: true,
   pool,
@@ -28,6 +42,7 @@ const app = buildApp({
   trustProxy: process.env.TRUST_PROXY === "true",
   // Set in the Docker image, where the API also serves the built page.
   staticDir: process.env.STATIC_DIR,
+  oauth,
 });
 
 let stopScheduler = () => {};
