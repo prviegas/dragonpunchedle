@@ -975,9 +975,15 @@ body {
 }
 
 .button--provider {
-  display: block;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   text-decoration: none;
+}
+
+.provider-icon {
+  flex: none;
 }
 
 .button--discord {

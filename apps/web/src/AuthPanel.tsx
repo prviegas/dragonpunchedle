@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useState, type FormEvent } from "react";
 import { ApiError, fetchLoginProviders, logIn, providerStartUrl, signUp, type LoginProvider, type User } from "./api";
 import { loadStrengthChecker, STRENGTH_LABELS } from "./passwordStrength";
+import { ProviderIcon } from "./ProviderIcon";
 
 interface AuthPanelProps {
   /** Why the last Discord/Google sign-in didn't work, if it didn't. */
@@ -79,6 +80,7 @@ export function AuthPanel({ initialError, onSignedIn, onClose }: AuthPanelProps)
                 className={`button button--provider button--${provider.id}`}
                 href={providerStartUrl(provider.id)}
               >
+                <ProviderIcon id={provider.id} />
                 Continue with {provider.label}
               </a>
             ))}
