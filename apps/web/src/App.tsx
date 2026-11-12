@@ -18,10 +18,10 @@ import {
 import { AuthPanel } from "./AuthPanel";
 import { Board } from "./Board";
 import { GuessInput } from "./GuessInput";
+import { HealthBar } from "./HealthBar";
 import { Leaderboard } from "./Leaderboard";
-import { Portrait } from "./Portrait";
-import { ShareButton } from "./ShareButton";
-import { StatsPanel } from "./StatsPanel";
+import { ResultCard } from "./ResultCard";
+import { puzzleNumber } from "./share";
 
 type Load =
   | { state: "loading" }
@@ -137,6 +137,8 @@ export function App() {
     setAnswer(revealed);
   };
   const [guessError, setGuessError] = useState<string>();
+  // The guess just made, whose tiles flip in on the board.
+  const [freshId, setFreshId] = useState<string>();
   const [stats, setStats] = useState<PlayerStats>();
   // Bumped whenever the leaderboard may have changed, so it fetches again.
   const [standingsVersion, setStandingsVersion] = useState(0);
@@ -211,6 +213,7 @@ export function App() {
         guessesRef.current.length,
       );
       const next = [result, ...guessesRef.current]; // newest guess on top
+      setFreshId(result.guess.id);
       showGuesses(next);
       if (revealed) revealAnswer(revealed);
       if (user) {
@@ -247,77 +250,61 @@ export function App() {
   }
 
   const account = user ? (
-    <p className="account">
-      Signed in as <strong>{user.username}</strong>
+    <div className="account">
+      <span className="account-name">{user.username}</span>
       {stats && stats.currentStreak > 0 && (
-        <>
-          {" · "}
-          <span className="streak">{stats.currentStreak}-day streak</span>
-        </>
-      )}{" "}
+        <span className="streak" title={`${stats.currentStreak}-day streak`}>
+          {stats.currentStreak}
+          <span className="visually-hidden">-day streak</span>
+        </span>
+      )}
       <button type="button" className="link" onClick={signOut}>
         Log out
       </button>
-    </p>
+    </div>
   ) : (
-    !showAuth && (
-      <p className="account">
-        <button type="button" className="link" onClick={() => setShowAuth(true)}>
-          Log in or sign up
-        </button>{" "}
-        to save your progress
-      </p>
-    )
+    <div className="account">
+      {!showAuth && (
+        <button type="button" className="button button--small" onClick={() => setShowAuth(true)}>
+          Log in
+        </button>
+      )}
+    </div>
   );
+
+  const roundOver = winner ?? answer;
 
   return (
     <Shell date={puzzle.date} account={account}>
-      {showAuth && !user && <AuthPanel initialError={initialLoginError} onSignedIn={signedIn} onClose={() => setShowAuth(false)} />}
-      {winner ? (
-        <section className="win" aria-live="polite">
-          <Portrait character={winner.guess} />
-          <p className="win-title">Hard read!</p>
-          <p>
-            It was <strong>{winner.guess.name}</strong> ({winner.guess.franchise}), in {guesses.length}{" "}
-            {guesses.length === 1 ? "guess" : "guesses"}. A new character arrives tomorrow.
-          </p>
-          <ShareButton date={puzzle.date} guesses={guesses} maxGuesses={puzzle.maxGuesses} />
-          {user && stats ? (
-            <StatsPanel stats={stats} />
-          ) : (
-            !user &&
-            !showAuth && (
-              <p className="win-cta">
-                <button type="button" className="link" onClick={() => setShowAuth(true)}>
-                  Log in or sign up
-                </button>{" "}
-                to count today's solve toward a streak.
-              </p>
-            )
-          )}
-        </section>
-      ) : answer ? (
-        <section className="win win--lost" aria-live="polite">
-          <Portrait character={answer} />
-          <p className="win-title">K.O.</p>
-          <p>
-            Out of guesses. It was <strong>{answer.name}</strong> ({answer.franchise}). A new character arrives
-            tomorrow.
-          </p>
-          <ShareButton date={puzzle.date} guesses={guesses} maxGuesses={puzzle.maxGuesses} />
-          {user && stats && <StatsPanel stats={stats} />}
-        </section>
-      ) : (
-        <>
-          <p className="guesses-left">
-            {puzzle.maxGuesses - guesses.length} of {puzzle.maxGuesses} guesses left
-          </p>
-          <GuessInput characters={characters} excludedIds={guessedIds} busy={pendingIds.size > 0} onGuess={guess} />
-          {guessError && <p className="status status--error" role="alert">{guessError}</p>}
-          {guesses.length === 0 && <Legend />}
-        </>
+      {showAuth && !user && (
+        <AuthPanel initialError={initialLoginError} onSignedIn={signedIn} onClose={() => setShowAuth(false)} />
       )}
-      <Board clues={puzzle.clues} guesses={guesses} />
+
+      {roundOver ? (
+        <ResultCard
+          outcome={winner ? "win" : "lost"}
+          character={winner ? winner.guess : answer!}
+          date={puzzle.date}
+          guesses={guesses}
+          maxGuesses={puzzle.maxGuesses}
+          loggedIn={user !== null}
+          stats={stats}
+          onLogIn={() => setShowAuth(true)}
+        />
+      ) : (
+        <section className="arena" aria-label="Make a guess">
+          <HealthBar player={user ? user.username : "Guest"} used={guesses.length} max={puzzle.maxGuesses} />
+          <GuessInput characters={characters} excludedIds={guessedIds} busy={pendingIds.size > 0} onGuess={guess} />
+          {guessError && (
+            <p className="status status--error" role="alert">
+              {guessError}
+            </p>
+          )}
+          {guesses.length === 0 && <Legend />}
+        </section>
+      )}
+
+      <Board clues={puzzle.clues} guesses={guesses} freshId={freshId} />
       <Leaderboard version={standingsVersion} />
     </Shell>
   );
@@ -325,33 +312,49 @@ export function App() {
 
 function Shell({ date, account, children }: { date?: string; account?: ReactNode; children: ReactNode }) {
   return (
-    <main className="page">
-      <header className="masthead">
-        <h1 className="logo">Dragonpunchedle</h1>
-        <p className="tagline">
-          Guess today's fighting game character.
-          {date && <span className="date"> {formatDate(date)}</span>}
-        </p>
+    <div className="page">
+      <header className="topbar">
+        <h1 className="logo">
+          Dragon<span className="logo-punch">punch</span>edle
+        </h1>
         {account}
       </header>
-      {children}
+      {date && (
+        <p className="round">
+          <span className="round-number">Round {puzzleNumber(date)}</span>
+          <span className="round-date">{formatDate(date)}</span>
+          <span className="round-tagline">Guess today's fighting game character</span>
+        </p>
+      )}
+      <main>{children}</main>
       <footer className="footer">
         <p>Unofficial fan game. Characters and art belong to their owners.</p>
         <p>
           <a href="/privacy.html">Privacy</a> · <a href="/privacy.html#credits">Credits</a>
         </p>
       </footer>
-    </main>
+    </div>
   );
 }
 
 function Legend() {
   return (
     <ul className="legend" aria-label="How to read the tiles">
-      <li><span className="swatch tile--correct" /> Correct</li>
-      <li><span className="swatch tile--partial" /> Close: shared archetype, same continent, or a near number</li>
-      <li><span className="swatch tile--wrong" /> Not it</li>
-      <li><span className="swatch-arrow" aria-hidden="true">↑↓</span> The answer is higher or lower</li>
+      <li>
+        <span className="swatch tile--correct" /> Correct
+      </li>
+      <li>
+        <span className="swatch tile--partial" /> Close: shared archetype, same continent, or a near number
+      </li>
+      <li>
+        <span className="swatch tile--wrong" /> Not it
+      </li>
+      <li>
+        <span className="swatch-arrow" aria-hidden="true">
+          ▲▼
+        </span>{" "}
+        The answer is higher or lower
+      </li>
     </ul>
   );
 }

@@ -17,15 +17,27 @@ export function Portrait({ character }: { character: Character }) {
       .map((word) => word[0])
       .join("");
     return (
-      <div className="portrait portrait--empty" aria-hidden="true">
-        {initials}
+      <div className="portrait" aria-hidden="true">
+        <div className="portrait-frame">
+          <div className="portrait-art portrait--empty">{initials}</div>
+        </div>
       </div>
     );
   }
 
   return (
     <figure className="portrait">
-      <img src={portrait.url} alt={character.name} width={256} height={256} onError={() => setFailed(true)} />
+      {/* The frame is a separate layer: the card's angled cut would otherwise clip its own border. */}
+      <div className="portrait-frame">
+        <img
+          className="portrait-art"
+          src={portrait.url}
+          alt={character.name}
+          width={240}
+          height={320}
+          onError={() => setFailed(true)}
+        />
+      </div>
       <figcaption>{portrait.credit}</figcaption>
     </figure>
   );

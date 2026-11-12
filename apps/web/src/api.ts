@@ -155,3 +155,15 @@ export const fetchLoginProviders = () => request<{ providers: LoginProvider[] }>
 /** Where "Continue with …" sends the browser. It's a whole-page visit, not a
  *  fetch: the player has to see the provider's own sign-in page. */
 export const providerStartUrl = (id: LoginProvider["id"]) => `/api/auth/${id}/start`;
+
+export interface TodayResults {
+  /** Players who finished today's round (solved, or out of guesses). Guests aren't counted. */
+  players: number;
+  /** solvedIn[0]: players who solved it in 1 guess; solvedIn[1]: in 2; and so on. */
+  solvedIn: number[];
+  lost: number;
+  /** The viewer's own finished result, when logged in. */
+  you: number | "lost" | null;
+}
+
+export const fetchTodayResults = () => request<TodayResults>("/api/puzzles/today/results");

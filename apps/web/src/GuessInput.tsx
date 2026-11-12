@@ -64,7 +64,7 @@ export function GuessInput({ characters, excludedIds, busy, onGuess }: GuessInpu
         aria-expanded={showList}
         aria-controls={listId}
         aria-activedescendant={showList ? `${listId}-${active}` : undefined}
-        placeholder="Type a character's name"
+        placeholder="Choose your fighter…"
         aria-busy={busy}
         autoComplete="off"
         spellCheck={false}
