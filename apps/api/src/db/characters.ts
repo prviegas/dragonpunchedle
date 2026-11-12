@@ -13,6 +13,7 @@ interface CharacterRow {
   species: string;
   home_country: string | null;
   games_appeared_in: number;
+  gender: string | null;
 }
 
 function toCharacter(row: CharacterRow): Character {
@@ -26,6 +27,7 @@ function toCharacter(row: CharacterRow): Character {
     species: row.species,
     homeCountry: row.home_country,
     gamesAppearedIn: row.games_appeared_in,
+    gender: row.gender,
   };
 }
 

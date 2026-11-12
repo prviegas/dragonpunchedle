@@ -51,6 +51,8 @@ export const SPECIES = [
   "Yordle",
 ] as const;
 
+export const GENDERS = ["Male", "Female", "Other"] as const;
+
 const rosterEntrySchema = z.strictObject({
   id: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "use lowercase-words-with-dashes"),
   name: z.string().min(1),
@@ -59,6 +61,7 @@ const rosterEntrySchema = z.strictObject({
   debutYear: z.number().int().min(1980).max(2100),
   archetypes: z.array(z.enum(ARCHETYPES)).min(1),
   species: z.enum(SPECIES),
+  gender: z.enum(GENDERS),
   homeCountry: z
     .string()
     .nullable()

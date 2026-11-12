@@ -1,5 +1,6 @@
 import "../src/env.js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { CLUES } from "../src/game/clues.js";
 import { buildApp } from "../src/app.js";
 import { migrate } from "../src/db/migrate.js";
 import { createPool } from "../src/db/pool.js";
@@ -46,7 +47,7 @@ describe.skipIf(!process.env.DATABASE_URL)("puzzle API", () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.json()).toMatchObject({ date: TODAY });
-    expect(response.json().clues).toHaveLength(7);
+    expect(response.json().clues).toHaveLength(CLUES.length);
     expect(response.body).not.toContain(answerId);
   });
 
@@ -65,7 +66,7 @@ describe.skipIf(!process.env.DATABASE_URL)("puzzle API", () => {
     expect(response.statusCode).toBe(200);
     expect(response.json().solved).toBe(false);
     expect(response.json().guess.id).toBe(rows[0]!.id);
-    expect(response.json().clues).toHaveLength(7);
+    expect(response.json().clues).toHaveLength(CLUES.length);
   });
 
   it("rejects an unknown character", async () => {

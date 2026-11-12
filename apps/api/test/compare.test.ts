@@ -12,6 +12,7 @@ function character(overrides: Partial<Character>): Character {
     debutYear: 2000,
     archetypes: ["rushdown"],
     species: "Human",
+    gender: "Male",
     homeCountry: "Japan",
     gamesAppearedIn: 5,
     ...overrides,
@@ -107,6 +108,15 @@ describe("compareGuess", () => {
     expect(result.clues.find((clue) => clue.key === "homeCountry")?.status).toBe("unknown");
   });
 
+  it("compares gender exactly, and shows no hint when it isn't known", () => {
+    const answer = character({ id: "a", gender: "Female" });
+    const genderOf = (guess: Character) => compareGuess(guess, answer).clues.find((c) => c.key === "gender")?.status;
+
+    expect(genderOf(character({ id: "b", gender: "Female" }))).toBe("correct");
+    expect(genderOf(character({ id: "c", gender: "Male" }))).toBe("wrong");
+    expect(genderOf(character({ id: "d", gender: null }))).toBe("unknown");
+  });
+
   it("returns one result per clue, in the order the clues are listed", () => {
     const result = compareGuess(character({ id: "a" }), character({ id: "b", debutYear: 2010 }));
 
@@ -116,6 +126,7 @@ describe("compareGuess", () => {
       "debutYear",
       "archetypes",
       "species",
+      "gender",
       "homeCountry",
       "gamesAppearedIn",
     ]);

@@ -24,6 +24,10 @@ export interface CharacterClues {
   archetypes: readonly string[];
   /** e.g. "Human", "Robot", "Demon". */
   species: string;
+  /** "Male", "Female", or "Other" for the few the games describe as neither
+   *  (e.g. Testament, non-binary in Guilty Gear Strive). The roster requires
+   *  one for every character; null only for a row the sync hasn't reached yet. */
+  gender: string | null;
   /** Can be a fictional place (e.g. "Outworld"); null when the games never say. */
   homeCountry: string | null;
   /** Fighting games in their own franchise where they're playable.
@@ -57,6 +61,7 @@ export const CLUES: readonly ClueDefinition[] = [
   { key: "debutYear", label: "Debut year", kind: "number", closeWithin: 3 },
   { key: "archetypes", label: "Archetypes", kind: "set" },
   { key: "species", label: "Species", kind: "exact" },
+  { key: "gender", label: "Gender", kind: "exact" },
   { key: "homeCountry", label: "Home country", kind: "exact", groupOf: continentOf },
   { key: "gamesAppearedIn", label: "Games appeared in", kind: "number", closeWithin: 2 },
 ];

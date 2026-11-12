@@ -6,8 +6,8 @@ import type { Character } from "../game/clues.js";
 // It never deletes, because past daily puzzles may still point at a character.
 const UPSERT_CHARACTER = `
   INSERT INTO characters
-    (id, name, franchise, developer, debut_year, archetypes, species, home_country, games_appeared_in)
-  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    (id, name, franchise, developer, debut_year, archetypes, species, home_country, games_appeared_in, gender)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
   ON CONFLICT (id) DO UPDATE SET
     name = EXCLUDED.name,
     franchise = EXCLUDED.franchise,
@@ -16,7 +16,8 @@ const UPSERT_CHARACTER = `
     archetypes = EXCLUDED.archetypes,
     species = EXCLUDED.species,
     home_country = EXCLUDED.home_country,
-    games_appeared_in = EXCLUDED.games_appeared_in
+    games_appeared_in = EXCLUDED.games_appeared_in,
+    gender = EXCLUDED.gender
 `;
 
 export async function seedCharacters(pool: pg.Pool, characters: readonly Character[]): Promise<void> {
@@ -37,6 +38,7 @@ export async function seedCharacters(pool: pg.Pool, characters: readonly Charact
         c.species,
         c.homeCountry,
         c.gamesAppearedIn,
+        c.gender,
       ]);
     }
     await client.query("COMMIT");
