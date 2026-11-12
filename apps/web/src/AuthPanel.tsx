@@ -1,10 +1,13 @@
-import { useId, useState, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useState, type FormEvent } from "react";
 import { ApiError, logIn, signUp, type User } from "./api";
+import { loadStrengthChecker, STRENGTH_LABELS } from "./passwordStrength";
 
 interface AuthPanelProps {
   onSignedIn: (user: User) => void;
   onClose: () => void;
 }
+
+type StrengthModule = Awaited<ReturnType<typeof loadStrengthChecker>>;
 
 export function AuthPanel({ onSignedIn, onClose }: AuthPanelProps) {
   const id = useId();
@@ -13,7 +16,29 @@ export function AuthPanel({ onSignedIn, onClose }: AuthPanelProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const [strengthModule, setStrengthModule] = useState<StrengthModule>();
   const registering = mode === "register";
+
+  // Fetch the strength checker the first time the sign-up form opens. If it
+  // fails to download, the form still works: the server checks anyway.
+  useEffect(() => {
+    if (!registering || strengthModule) return;
+    let cancelled = false;
+    loadStrengthChecker()
+      .then((module) => !cancelled && setStrengthModule(module))
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [registering, strengthModule]);
+
+  const strength = useMemo(
+    () =>
+      registering && strengthModule && password
+        ? strengthModule.checkPasswordStrength(password, username.trim())
+        : undefined,
+    [registering, strengthModule, password, username],
+  );
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -28,6 +53,8 @@ export function AuthPanel({ onSignedIn, onClose }: AuthPanelProps) {
       setBusy(false);
     }
   }
+
+  const passwordHintId = `${id}-password-hint`;
 
   return (
     <section className="auth-panel" aria-labelledby={`${id}-title`}>
@@ -57,10 +84,29 @@ export function AuthPanel({ onSignedIn, onClose }: AuthPanelProps) {
           required
           minLength={registering ? 8 : undefined}
           maxLength={200}
+          aria-describedby={registering ? passwordHintId : undefined}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
-        {registering && <p className="hint">At least 8 characters.</p>}
+        {registering && (
+          <>
+            {strength && (
+              // Decorative: the words below say the same thing for screen readers.
+              <div className={`strength-meter ${strength.ok ? "is-ok" : "is-weak"}`} aria-hidden="true">
+                {[1, 2, 3, 4].map((step) => (
+                  <span key={step} className={step <= Math.max(strength.score, 1) ? "filled" : ""} />
+                ))}
+              </div>
+            )}
+            <p id={passwordHintId} className="hint" aria-live="polite">
+              {!strength
+                ? "At least 8 characters, hard to guess. A few unrelated words work well."
+                : strength.ok
+                  ? `${STRENGTH_LABELS[strength.score]}. Good to go.`
+                  : `${STRENGTH_LABELS[strength.score]}. ${strength.advice}`}
+            </p>
+          </>
+        )}
 
         {error && (
           <p className="status status--error" role="alert">
@@ -69,7 +115,8 @@ export function AuthPanel({ onSignedIn, onClose }: AuthPanelProps) {
         )}
 
         <div className="auth-actions">
-          <button type="submit" className="button" disabled={busy}>
+          {/* Blocked only when the meter has actually judged the password weak. */}
+          <button type="submit" className="button" disabled={busy || strength?.ok === false}>
             {busy ? "One moment…" : registering ? "Create account" : "Log in"}
           </button>
           <button type="button" className="link" onClick={onClose}>

@@ -182,6 +182,29 @@ body {
   color: var(--muted);
 }
 
+/* Four bars under the password while signing up. */
+.strength-meter {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.strength-meter span {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--border);
+  transition: background-color 0.15s;
+}
+
+.strength-meter.is-weak .filled {
+  background: var(--accent);
+}
+
+.strength-meter.is-ok .filled {
+  background: var(--correct);
+}
+
 .auth-actions {
   display: flex;
   align-items: center;

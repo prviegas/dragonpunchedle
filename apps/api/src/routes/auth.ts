@@ -1,6 +1,7 @@
 import rateLimit from "@fastify/rate-limit";
 import type { FastifyPluginAsync, FastifyReply } from "fastify";
 import type pg from "pg";
+import { checkPasswordStrength } from "../auth/password-strength.js";
 import { hashForUnknownUser, hashPassword, verifyPassword } from "../auth/passwords.js";
 import { createSession, deleteSession, SESSION_COOKIE, type User } from "../auth/sessions.js";
 import { createUser, findUserForLogin } from "../db/users.js";
@@ -49,6 +50,12 @@ export const authRoutes: FastifyPluginAsync<AuthRouteOptions> = async (
 
   app.post<Credentials>("/api/auth/register", { schema: credentialsSchema, config: limited }, async (request, reply) => {
     const { username, password } = request.body;
+    // Only new passwords are judged. Logging in still accepts any password an
+    // account already has, so tightening this rule never locks anyone out.
+    const strength = checkPasswordStrength(password, username);
+    if (!strength.ok) {
+      return reply.code(400).send({ error: `That password is too easy to guess. ${strength.advice}` });
+    }
     const user = await createUser(pool, username, await hashPassword(password));
     if (user === "taken") {
       return reply.code(409).send({ error: "That username is taken." });

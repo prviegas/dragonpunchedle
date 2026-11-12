@@ -86,7 +86,7 @@ describe.skipIf(!process.env.DATABASE_URL)("accounts", () => {
   });
 
   it("stores neither the password nor the session token in plain text", async () => {
-    const cookie = await signUp("ken", "shoryuken-999");
+    const cookie = await signUp("ken", "violet-kettle-999");
     const token = cookie.split("=")[1]!;
     const { rows } = await pool.query<{ password_hash: string; token_hash: string }>(
       `SELECT u.password_hash, s.token_hash FROM users u JOIN sessions s ON s.user_id = u.id
@@ -94,7 +94,7 @@ describe.skipIf(!process.env.DATABASE_URL)("accounts", () => {
       [`${PREFIX}ken`],
     );
 
-    expect(rows[0]!.password_hash).not.toContain("shoryuken-999");
+    expect(rows[0]!.password_hash).not.toContain("violet-kettle-999");
     expect(rows[0]!.token_hash).not.toBe(token);
   });
 
@@ -125,6 +125,30 @@ describe.skipIf(!process.env.DATABASE_URL)("accounts", () => {
     expect((await post("/api/auth/register", { username: "ab", password: "a-long-password" })).statusCode).toBe(400);
     expect((await post("/api/auth/register", { username: "has space", password: "a-long-password" })).statusCode).toBe(400);
     expect((await post("/api/auth/register", { username: `${PREFIX}short`, password: "short" })).statusCode).toBe(400);
+  });
+
+  it("refuses easy-to-guess passwords at sign-up and says why", async () => {
+    for (const password of ["password123", "Password1!", "qwertyuiop", "dragonpunchedle1"]) {
+      const response = await post("/api/auth/register", { username: `${PREFIX}weak`, password });
+      expect(response.statusCode, password).toBe(400);
+      expect(response.json().error).toMatch(/too easy to guess/);
+    }
+  });
+
+  it("refuses a password built from the username", async () => {
+    const response = await post("/api/auth/register", { username: `${PREFIX}bison`, password: `${PREFIX}bison2024` });
+    expect(response.statusCode).toBe(400);
+    expect(response.json().error).toMatch(/username/);
+  });
+
+  it("still lets older accounts log in with a password that's weak by today's rule", async () => {
+    // Made before the strength rule existed, so straight into the table.
+    await pool.query("INSERT INTO users (username, password_hash) VALUES ($1, $2)", [
+      `${PREFIX}oldtimer`,
+      await hashPassword("password123"),
+    ]);
+    const response = await post("/api/auth/login", { username: `${PREFIX}oldtimer`, password: "password123" });
+    expect(response.statusCode).toBe(200);
   });
 
   it("ends the session on logout, even if the old cookie is replayed", async () => {

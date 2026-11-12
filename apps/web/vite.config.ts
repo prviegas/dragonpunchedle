@@ -15,6 +15,12 @@ function siteUrlPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [react(), siteUrlPlugin()],
+  build: {
+    // The password-strength checker's word lists make one large file on
+    // purpose. It loads only when someone opens the sign-up form, so the
+    // game itself stays small. The limit sits just above it to catch real growth.
+    chunkSizeWarningLimit: 1800,
+  },
   server: {
     // Its own port: browsers keep service workers per address, and other
     // projects on the default 5173 can leave one behind that hijacks this page.
