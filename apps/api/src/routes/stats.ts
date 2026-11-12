@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import type pg from "pg";
-import { playerStats, streakLeaderboard, todayLeaderboard } from "../db/stats.js";
-import { puzzleDateFor } from "../game/puzzles.js";
+import { playerStats, scoreDistribution, streakLeaderboard, todayLeaderboard } from "../db/stats.js";
+import { MAX_GUESSES, puzzleDateFor } from "../game/puzzles.js";
 
 interface StatsRouteOptions {
   pool: pg.Pool;
@@ -19,6 +19,11 @@ export const statsRoutes: FastifyPluginAsync<StatsRouteOptions> = async (app, { 
   // Leaderboards are public; the viewer's id only marks their own row.
   app.get("/api/leaderboards/today", async (request) =>
     todayLeaderboard(pool, puzzleDateFor(now()), request.user?.id ?? null),
+  );
+
+  // How everyone did today, for the results chart. Counts only, no names.
+  app.get("/api/puzzles/today/results", async (request) =>
+    scoreDistribution(pool, puzzleDateFor(now()), request.user?.id ?? null, MAX_GUESSES),
   );
 
   app.get("/api/leaderboards/streaks", async (request) =>

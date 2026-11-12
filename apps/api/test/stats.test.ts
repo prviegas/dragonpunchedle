@@ -6,7 +6,7 @@ import { SESSION_COOKIE, createSession } from "../src/auth/sessions.js";
 import { migrate } from "../src/db/migrate.js";
 import { createPool } from "../src/db/pool.js";
 import { seedCharacters } from "../src/db/seed.js";
-import { playerStats, streakLeaderboard, todayLeaderboard } from "../src/db/stats.js";
+import { playerStats, scoreDistribution, streakLeaderboard, todayLeaderboard } from "../src/db/stats.js";
 import { loadRoster, toCharacter } from "../src/game/roster.js";
 
 // A made-up ten days in 2098 with known answers, written straight into the
@@ -127,6 +127,30 @@ describe.skipIf(!process.env.DATABASE_URL)("stats and leaderboards", () => {
 
     expect(mine.json()).toMatchObject({ currentStreak: 4 });
     expect(guest.statusCode).toBe(401);
+  });
+
+  it("counts today's finished rounds by number of guesses, and marks the viewer's", async () => {
+    const results = await scoreDistribution(pool, TODAY, ids.drew!, 10);
+
+    expect(results).toEqual({
+      players: 3,
+      solvedIn: [2, 0, 1, 0, 0, 0, 0, 0, 0, 0], // blair and emery in 1, drew in 3
+      lost: 0,
+      you: 3,
+    });
+  });
+
+  it("counts a round as lost only once the guesses run out", async () => {
+    // Day 4: alex made 2 wrong guesses. With a 10-guess limit that round is
+    // still open, so it isn't counted; with a 2-guess limit it's a loss.
+    expect(await scoreDistribution(pool, day(4), ids.alex!, 10)).toMatchObject({ players: 0, lost: 0, you: null });
+    expect(await scoreDistribution(pool, day(4), ids.alex!, 2)).toMatchObject({ players: 1, lost: 1, you: "lost" });
+  });
+
+  it("serves today's results to everyone, with no names", async () => {
+    const guest = (await app.inject({ method: "GET", url: "/api/puzzles/today/results" })).json();
+    expect(guest).toMatchObject({ players: 3, lost: 0, you: null });
+    expect(JSON.stringify(guest)).not.toContain(PREFIX);
   });
 
   it("serves both leaderboards to everyone", async () => {

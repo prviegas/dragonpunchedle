@@ -70,6 +70,48 @@ export async function playerStats(pool: pg.Pool, userId: number, today: string):
   };
 }
 
+export interface ScoreDistribution {
+  /** Players who finished the day's round: solved it, or ran out of guesses. */
+  players: number;
+  /** solvedIn[0] players solved it in 1 guess, solvedIn[1] in 2, and so on up to the limit. */
+  solvedIn: number[];
+  /** Players who ran out of guesses. */
+  lost: number;
+  /** The viewer's own finished result: guesses taken, "lost", or null (not finished, or a guest). */
+  you: number | "lost" | null;
+}
+
+/**
+ * How everyone did on one day, for the results chart. Only finished rounds
+ * count: someone halfway through isn't a loss yet. Counts only, no names.
+ */
+export async function scoreDistribution(
+  pool: pg.Pool,
+  date: string,
+  viewerId: number | null,
+  maxGuesses: number,
+): Promise<ScoreDistribution> {
+  const { rows } = await pool.query<{ user_id: string; guesses: number; solved: boolean }>(
+    `SELECT g.user_id, count(*)::int AS guesses, bool_or(g.character_id = p.character_id) AS solved
+     FROM guesses g JOIN daily_puzzles p USING (puzzle_date)
+     WHERE g.puzzle_date = $1
+     GROUP BY g.user_id
+     HAVING bool_or(g.character_id = p.character_id) OR count(*) >= $2`,
+    [date, maxGuesses],
+  );
+
+  const solvedIn = Array.from({ length: maxGuesses }, () => 0);
+  let lost = 0;
+  let you: ScoreDistribution["you"] = null;
+  for (const row of rows) {
+    const result = row.solved ? Math.min(row.guesses, maxGuesses) : "lost";
+    if (result === "lost") lost++;
+    else solvedIn[result - 1]!++;
+    if (viewerId !== null && Number(row.user_id) === viewerId) you = result;
+  }
+  return { players: rows.length, solvedIn, lost, you };
+}
+
 export interface TodayEntry {
   rank: number;
   username: string;
