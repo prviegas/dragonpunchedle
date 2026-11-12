@@ -20,6 +20,7 @@
     "db:seed": "npm run db:seed -w apps/api",
     "job:daily": "npm run job:daily -w apps/api",
     "app:up": "docker compose --profile app up -d --build --wait",
-    "app:down": "docker compose --profile app down"
+    "app:down": "docker compose --profile app down",
+    "portraits": "npm run portraits -w apps/api --"
   }
 }

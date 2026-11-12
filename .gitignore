@@ -4,3 +4,8 @@ dist/
 .env.local
 *.log
 coverage/
+
+# Character portraits are publishers' art: they live in the database, never in
+# this public repo. This folder is the local workspace for the portraits tool.
+apps/api/portraits/
+.env.production

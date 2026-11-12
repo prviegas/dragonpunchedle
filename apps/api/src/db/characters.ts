@@ -43,7 +43,43 @@ export async function listCharacterSummaries(pool: pg.Pool): Promise<CharacterSu
   return rows;
 }
 
-export async function findCharacter(pool: pg.Pool, id: string): Promise<Character | undefined> {
-  const { rows } = await pool.query<CharacterRow>("SELECT * FROM characters WHERE id = $1", [id]);
-  return rows[0] ? toCharacter(rows[0]) : undefined;
+export interface Portrait {
+  /** Where the page loads it from. The hash in it changes when the image does. */
+  url: string;
+  /** Who owns the art, e.g. "© Capcom". */
+  credit: string;
+}
+
+/** A character, plus its portrait when one has been loaded. */
+export type CharacterWithPortrait = Character & { portrait?: Portrait };
+
+export async function findCharacter(pool: pg.Pool, id: string): Promise<CharacterWithPortrait | undefined> {
+  const { rows } = await pool.query<CharacterRow & { portrait_hash: string | null; portrait_credit: string | null }>(
+    `SELECT c.*, p.hash AS portrait_hash, p.credit AS portrait_credit
+     FROM characters c LEFT JOIN character_portraits p ON p.character_id = c.id
+     WHERE c.id = $1`,
+    [id],
+  );
+  const row = rows[0];
+  if (!row) return undefined;
+  const character: CharacterWithPortrait = toCharacter(row);
+  if (row.portrait_hash && row.portrait_credit) {
+    character.portrait = {
+      url: `/api/portraits/${encodeURIComponent(row.id)}?v=${row.portrait_hash.slice(0, 12)}`,
+      credit: row.portrait_credit,
+    };
+  }
+  return character;
+}
+
+/** The image itself, for the portrait route. */
+export async function findPortraitImage(
+  pool: pg.Pool,
+  characterId: string,
+): Promise<{ image: Buffer; contentType: string; hash: string } | undefined> {
+  const { rows } = await pool.query<{ image: Buffer; content_type: string; hash: string }>(
+    "SELECT image, content_type, hash FROM character_portraits WHERE character_id = $1",
+    [characterId],
+  );
+  return rows[0] && { image: rows[0].image, contentType: rows[0].content_type, hash: rows[0].hash };
 }

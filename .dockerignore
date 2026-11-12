@@ -11,3 +11,4 @@
 coverage
 Dockerfile
 .dockerignore
+apps/api/portraits

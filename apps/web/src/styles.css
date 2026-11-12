@@ -96,6 +96,11 @@ body {
   margin-top: 48px;
   text-align: center;
   font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.footer p {
+  margin: 2px 0;
 }
 
 .footer a {
@@ -459,6 +464,37 @@ body {
   font-style: italic;
   text-transform: uppercase;
   color: var(--correct);
+}
+
+/* The character's art on the win and K.O. screens, or their initials. */
+.portrait {
+  width: 160px;
+  margin: 0 auto 10px;
+}
+
+.portrait img {
+  display: block;
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+}
+
+.portrait figcaption {
+  margin-top: 2px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.portrait--empty {
+  display: grid;
+  place-items: center;
+  height: 160px;
+  font-size: 3.5rem;
+  font-weight: 900;
+  font-style: italic;
+  color: var(--muted);
+  border: 2px dashed var(--border);
+  border-radius: 12px;
 }
 
 /* Out of guesses: the same box, in the "K.O." colour. */

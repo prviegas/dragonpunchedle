@@ -29,6 +29,8 @@ export interface Character extends CharacterSummary {
   species: string;
   homeCountry: string | null;
   gamesAppearedIn: number;
+  /** Official art, when one has been loaded for this character. */
+  portrait?: { url: string; credit: string };
 }
 
 export interface ClueResult {

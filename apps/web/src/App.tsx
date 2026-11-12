@@ -19,6 +19,7 @@ import { AuthPanel } from "./AuthPanel";
 import { Board } from "./Board";
 import { GuessInput } from "./GuessInput";
 import { Leaderboard } from "./Leaderboard";
+import { Portrait } from "./Portrait";
 import { ShareButton } from "./ShareButton";
 import { StatsPanel } from "./StatsPanel";
 
@@ -274,6 +275,7 @@ export function App() {
       {showAuth && !user && <AuthPanel initialError={initialLoginError} onSignedIn={signedIn} onClose={() => setShowAuth(false)} />}
       {winner ? (
         <section className="win" aria-live="polite">
+          <Portrait character={winner.guess} />
           <p className="win-title">Hard read!</p>
           <p>
             It was <strong>{winner.guess.name}</strong> ({winner.guess.franchise}), in {guesses.length}{" "}
@@ -296,6 +298,7 @@ export function App() {
         </section>
       ) : answer ? (
         <section className="win win--lost" aria-live="polite">
+          <Portrait character={answer} />
           <p className="win-title">K.O.</p>
           <p>
             Out of guesses. It was <strong>{answer.name}</strong> ({answer.franchise}). A new character arrives
@@ -333,7 +336,10 @@ function Shell({ date, account, children }: { date?: string; account?: ReactNode
       </header>
       {children}
       <footer className="footer">
-        <a href="/privacy.html">Privacy</a>
+        <p>Unofficial fan game. Characters and art belong to their owners.</p>
+        <p>
+          <a href="/privacy.html">Privacy</a> · <a href="/privacy.html#credits">Credits</a>
+        </p>
       </footer>
     </main>
   );

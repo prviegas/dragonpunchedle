@@ -83,6 +83,18 @@ The comparison logic is written once per kind. Adding a clue is one line in [`cl
 - applied files are recorded, so running again only applies new ones;
 - a Postgres advisory lock stops two server instances from migrating at once.
 
+**Ten guesses a day, enforced by the database.** For logged-in players, the checks (already solved? already guessed? out of guesses?) and the insert run in one transaction that first locks the player's row, so two guesses sent at the same moment can't both become the 10th. A test fires 15 at once and gets exactly 10 ([`db/guesses.ts`](apps/api/src/db/guesses.ts)). The answer is sent only with a missed 10th guess.
+
+**Character portraits live in the database, not in this repository.** The art belongs to each game's publisher. Keeping it out of the public repo means a takedown request can never put the code at risk, and removing a franchise is one command with no redeploy. A small CLI ([`portraits/cli.ts`](apps/api/src/portraits/cli.ts)) downloads source images into a git-ignored folder, crops them to 240×320 WebP cards with sharp, and stores them with an ownership credit. Images are served with a one-day cache and a hash in the address, so a replaced image shows up at once and a removed one disappears within a day:
+
+```bash
+npm run portraits -- status                          # which characters still need one
+npm run portraits -- fetch                           # download apps/api/portraits/sources.json
+npm run portraits -- import                          # crop, convert and store
+npm run portraits -- remove --franchise "Tekken"     # takedown
+# add --prod to target the live database (address read from apps/api/.env.production)
+```
+
 **Typed-ahead guesses are queued.** A guess picked while the previous one is still being checked waits its turn, instead of being dropped. Enter matches against what's actually in the box at that moment, so a paste followed by Enter works too ([`App.tsx`](apps/web/src/App.tsx), [`GuessInput.tsx`](apps/web/src/GuessInput.tsx)).
 
 **The roster is validated before it reaches the database.** 274 characters live in JSON files under [`apps/api/data/roster`](apps/api/data/roster), and they're checked with zod on every load:
@@ -151,4 +163,6 @@ Built with [Claude Code](https://claude.com/claude-code) as a pair programmer.
 
 ## Disclaimer
 
-A fan project, not affiliated with or endorsed by any game publisher. Character and franchise names belong to their respective owners. The game uses names and facts only, with no official art.
+An unofficial, non-commercial fan project, not affiliated with or endorsed by any game publisher. Character names, artwork and franchises belong to their respective owners, credited under each portrait in the game. No artwork is stored in this repository. To have something removed, email pedromakesstuff0@gmail.com.
+
+Dragonpunchedle isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.
