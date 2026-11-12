@@ -2,6 +2,8 @@
 
 A daily guessing game for fighting game characters. Every day there's one mystery fighter, picked from 274 characters across 17 franchises. Each guess shows how close you are, clue by clue: franchise, developer, debut year, archetypes, species, home country and number of games.
 
+**Play it at [dragonpunchedle.onrender.com](https://dragonpunchedle.onrender.com).** It runs on a free server that sleeps when nobody is playing, so the first visit after a quiet spell can take about a minute to load.
+
 ![A game in progress: three guesses with green, yellow and grey clue tiles and higher or lower arrows](docs/screenshot-board.png)
 
 - 🟩 **Green:** an exact match.
