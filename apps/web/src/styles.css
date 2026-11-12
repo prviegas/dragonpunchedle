@@ -1,39 +1,34 @@
-/* Dragonpunchedle: an arcade, fighting-game look. Dark arena, heavy italic
-   condensed type for headings (like a game's HUD), angled shapes, and a gold
-   health bar for the guesses left. */
+/* Dragonpunchedle. A dark arena with angled, cut-corner panels, one calm
+   accent (cyan), and condensed type for headings. The tile colours (green,
+   amber, grey) are the game's own language and stay as they are. */
 
 :root {
   --bg: #0a0c14;
   --panel: #141927;
   --panel-raised: #1b2133;
   --line: #2b3350;
-  --text: #f3efe6;
+  --text: #eef0f6;
   --muted: #a3a9c2;
   --dim: #6c7392;
 
-  --p1: #ff3b30; /* player-one red: the main accent */
-  --p1-dark: #a5160f;
-  --gold: #ffc229; /* energy-meter gold: highlights */
-  --gold-dark: #b37a00;
-  --focus: #5fb3ff;
+  --accent: #24a0b0; /* cyan: buttons, the health bar, the chart's curve */
+  --accent-text: #6fd3df; /* the same hue, light enough to read as text on dark */
+  --accent-ink: #04161a; /* dark text on accent fills */
+  --you: #e04a78; /* pink: "you" on the chart, and a health bar running low */
+  --focus: #6fd3df;
 
   /* Tile colours. Every tile also says its status in words (see Board.tsx). */
   --correct: #178a49;
-  --partial: #e3a008;
-  --partial-ink: #231800;
+  --partial: #d9a014;
+  --partial-ink: #221800;
   --wrong: #343b55;
-
-  /* Results chart: everyone else, and you. Checked for colour-blind separation
-     and 3:1 contrast against --panel. */
-  --chart-others: #6f7aa8;
-  --chart-you: #f0ad00;
 
   --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
   --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* Shapes used everywhere: a parallelogram and a panel with two cut corners. */
-  --slant: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
-  --cut: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+  /* Panels keep the angled look: two cut corners. */
+  --cut: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  --radius: 6px;
 
   color-scheme: dark;
 }
@@ -87,17 +82,15 @@ body {
 .logo {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.7rem, 6vw, 2.6rem);
-  font-weight: 900;
-  font-style: italic;
+  font-size: clamp(1.6rem, 5vw, 2.3rem);
+  font-weight: 800;
   line-height: 1;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  text-shadow: 3px 3px 0 var(--p1-dark);
 }
 
 .logo-punch {
-  color: var(--gold);
+  color: var(--accent-text);
 }
 
 .account {
@@ -109,84 +102,66 @@ body {
 }
 
 .account-name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.05rem;
+  font-weight: 600;
   color: var(--text);
 }
 
-/* The streak count, shown as a small flame chip. */
 .streak {
-  padding: 1px 10px 1px 8px;
-  font-family: var(--font-display);
-  font-weight: 800;
-  color: var(--partial-ink);
-  background: var(--gold);
-  clip-path: var(--slant);
+  padding: 0 8px;
+  font-weight: 600;
+  color: var(--accent-text);
+  border: 1px solid var(--line);
+  border-radius: 999px;
 }
 
 .streak::before {
   content: "🔥 ";
 }
 
-/* ---- Round strip ---- */
+/* ---- Round line ---- */
 
 .round {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: baseline;
   justify-content: center;
-  gap: 6px 14px;
-  margin: 22px 0 18px;
-  font-family: var(--font-display);
-  text-transform: uppercase;
-}
-
-.round-number {
-  padding: 2px 18px;
-  font-size: 1.15rem;
-  font-weight: 900;
-  font-style: italic;
-  letter-spacing: 0.04em;
-  background: var(--p1);
-  clip-path: var(--slant);
-}
-
-.round-date {
-  font-weight: 700;
-  color: var(--gold);
-}
-
-.round-tagline {
-  font-weight: 600;
+  gap: 4px 12px;
+  margin: 20px 0 18px;
   color: var(--muted);
 }
 
-/* ---- Buttons and links ---- */
+.round-number {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.round-date::before,
+.round-tagline::before {
+  content: "· ";
+  color: var(--dim);
+}
+
+/* ---- Buttons and links: plain, rounded ---- */
 
 .button {
   display: inline-block;
-  padding: 10px 26px;
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 800;
-  font-style: italic;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #fff;
-  background: var(--p1);
+  padding: 9px 20px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--accent-ink);
+  background: var(--accent);
   border: none;
-  clip-path: var(--slant);
+  border-radius: var(--radius);
   cursor: pointer;
-  transition: background-color 0.15s, transform 0.1s;
+  transition: background-color 0.15s;
 }
 
 .button:hover {
-  background: #ff5a4f;
-}
-
-.button:active {
-  transform: translateY(1px);
+  background: #2cb4c5;
 }
 
 .button:disabled {
@@ -195,20 +170,14 @@ body {
 }
 
 .button--small {
-  padding: 6px 18px;
-  font-size: 0.95rem;
-}
-
-/* A clip-path also clips the focus outline, so buttons show focus with a glow instead. */
-.button:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 3px var(--focus);
+  padding: 5px 14px;
+  font-size: 0.9rem;
 }
 
 .link {
   padding: 0;
   font: inherit;
-  color: var(--gold);
+  color: var(--accent-text);
   background: none;
   border: none;
   text-decoration: underline;
@@ -223,7 +192,7 @@ body {
 }
 
 .status--error {
-  color: #ff8a80;
+  color: #ff9db8;
 }
 
 /* ---- The arena: health bar and guess box ---- */
@@ -244,57 +213,43 @@ body {
 .hud-player {
   max-width: 9rem;
   overflow: hidden;
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 800;
-  font-style: italic;
+  font-weight: 600;
   text-overflow: ellipsis;
-  text-transform: uppercase;
   white-space: nowrap;
+  color: var(--muted);
 }
 
 .health {
   display: flex;
   gap: 3px;
-  padding: 4px 8px;
-  background: #0d1020;
-  border-top: 2px solid #3a4262;
-  border-bottom: 2px solid #3a4262;
-  clip-path: var(--slant);
 }
 
 .health-cell {
   flex: 1;
-  height: 16px;
-  background: #262b40;
-  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+  height: 12px;
+  background: var(--panel-raised);
+  border-radius: 2px;
   transition: background 0.35s;
 }
 
 .health-cell.is-full {
-  background: linear-gradient(#ffe07a, var(--gold) 55%, #e09a00);
+  background: var(--accent);
 }
 
 .hud.is-danger .health-cell.is-full {
-  background: linear-gradient(#ff8a7a, var(--p1) 55%, #c4170d);
+  background: var(--you);
 }
 
 .hud-count {
   min-width: 3ch;
   font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 900;
-  font-style: italic;
+  font-size: 1.3rem;
+  font-weight: 700;
   line-height: 1;
-  color: var(--gold);
-}
-
-.hud.is-danger .hud-count {
-  color: var(--p1);
 }
 
 .hud-count small {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--dim);
 }
 
@@ -304,27 +259,23 @@ body {
 
 .guess-input input {
   width: 100%;
-  padding: 16px 22px;
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  padding: 14px 18px;
+  font-family: var(--font-body);
+  font-size: 1.15rem;
+  font-weight: 500;
   color: var(--text);
   background: var(--panel-raised);
-  border: none;
-  box-shadow: inset 0 0 0 2px var(--line);
-  clip-path: var(--slant);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
 }
 
 .guess-input input::placeholder {
-  font-style: italic;
-  text-transform: uppercase;
   color: var(--dim);
 }
 
 .guess-input input:focus {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--gold), inset 0 0 22px rgb(255 194 41 / 0.15);
+  border-color: var(--accent);
 }
 
 .guess-options {
@@ -340,6 +291,7 @@ body {
   list-style: none;
   background: var(--panel-raised);
   border: 1px solid var(--line);
+  border-radius: var(--radius);
   box-shadow: 0 16px 40px rgb(0 0 0 / 0.55);
 }
 
@@ -347,19 +299,17 @@ body {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 9px 12px;
+  padding: 8px 12px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
 .guess-options li.is-active {
-  background: rgb(255 194 41 / 0.14);
-  box-shadow: inset 3px 0 0 var(--gold);
+  background: rgb(36 160 176 / 0.18);
 }
 
 .option-name {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .option-franchise {
@@ -390,7 +340,7 @@ body {
   display: inline-block;
   width: 14px;
   height: 14px;
-  clip-path: polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%);
+  border-radius: 3px;
 }
 
 .swatch-arrow {
@@ -413,21 +363,13 @@ body {
 }
 
 .board thead th {
-  padding: 0 0 4px;
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  padding: 0 4px 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--muted);
   vertical-align: bottom;
-}
-
-.board thead th span {
-  display: block;
-  padding: 3px 10px;
-  background: var(--panel);
-  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
 }
 
 .guess-name {
@@ -435,11 +377,11 @@ body {
   padding: 6px 10px 6px 6px;
   text-align: left;
   background: var(--panel);
-  box-shadow: inset 3px 0 0 var(--line);
+  border-radius: 4px;
 }
 
 .guess-name.is-solved {
-  box-shadow: inset 3px 0 0 var(--gold);
+  box-shadow: inset 3px 0 0 var(--correct);
 }
 
 .guess-cell {
@@ -454,15 +396,13 @@ body {
   height: 48px;
   object-fit: cover;
   background: var(--panel-raised);
-  border: 1px solid var(--line);
+  border-radius: 3px;
 }
 
 .thumb--empty {
   display: grid;
   place-items: center;
-  font-family: var(--font-display);
-  font-weight: 900;
-  font-style: italic;
+  font-weight: 700;
   color: var(--dim);
 }
 
@@ -472,14 +412,11 @@ body {
 }
 
 .guess-title {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .guess-franchise {
   font-size: 0.75rem;
-  font-weight: 500;
   color: var(--muted);
 }
 
@@ -493,16 +430,16 @@ body {
   line-height: 1.2;
   text-align: center;
   color: #fff;
-  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  border-radius: 4px;
 }
 
 .tile--correct {
-  background: linear-gradient(160deg, #1fa65a, var(--correct));
+  background: var(--correct);
 }
 
 .tile--partial {
   color: var(--partial-ink);
-  background: linear-gradient(160deg, #f5b52a, var(--partial));
+  background: var(--partial);
 }
 
 .tile--wrong {
@@ -520,8 +457,8 @@ body {
 
 .tile-arrow {
   display: block;
-  font-size: 0.8rem;
-  opacity: 0.9;
+  font-size: 0.75rem;
+  opacity: 0.85;
 }
 
 /* A new guess's tiles flip over one after another. */
@@ -546,49 +483,41 @@ body {
   max-width: 760px;
   margin: 0 auto 28px;
   padding: 22px 24px 26px;
-  background: linear-gradient(180deg, #1c2236, var(--panel) 40%);
-  border-top: 4px solid var(--gold);
+  background: var(--panel);
   clip-path: var(--cut);
 }
 
-.result.is-lost {
-  border-top-color: var(--p1);
-}
-
 .result-banner {
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   text-align: center;
   font-family: var(--font-display);
-  font-size: clamp(3rem, 12vw, 5.5rem);
-  font-weight: 900;
-  font-style: italic;
-  line-height: 0.95;
-  letter-spacing: 0.02em;
+  font-size: clamp(2.2rem, 8vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--gold);
-  text-shadow: 4px 4px 0 var(--p1-dark);
-  animation: slam 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  color: var(--accent-text);
+  animation: fade-up 0.4s ease-out both;
 }
 
 .result.is-lost .result-banner {
-  color: var(--p1);
-  text-shadow: 4px 4px 0 #3a0603;
+  color: var(--muted);
 }
 
-@keyframes slam {
+@keyframes fade-up {
   from {
-    transform: scale(1.8);
+    transform: translateY(8px);
     opacity: 0;
   }
   to {
-    transform: scale(1);
+    transform: none;
     opacity: 1;
   }
 }
 
 .result-body {
   display: grid;
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 180px 1fr;
   gap: 24px;
   align-items: center;
 }
@@ -598,8 +527,8 @@ body {
 }
 
 .result-kicker {
-  font-family: var(--font-display);
-  font-weight: 700;
+  font-size: 0.85rem;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted);
@@ -607,28 +536,18 @@ body {
 
 .result-name {
   font-family: var(--font-display);
-  font-size: clamp(2rem, 7vw, 2.8rem);
-  font-weight: 900;
-  font-style: italic;
-  line-height: 1;
-  text-transform: uppercase;
+  font-size: clamp(1.9rem, 6vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.05;
 }
 
 .result-meta {
-  margin-top: 4px !important;
+  margin-top: 2px !important;
   color: var(--muted);
 }
 
 .result-score {
-  margin: 14px 0 4px !important;
-  font-size: 1.05rem;
-}
-
-.result-score strong {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: var(--gold);
+  margin-top: 12px !important;
 }
 
 .share {
@@ -636,7 +555,7 @@ body {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 14px;
-  margin-top: 10px;
+  margin-top: 14px;
 }
 
 .share-feedback {
@@ -655,51 +574,40 @@ body {
   margin: 0;
 }
 
-/* Three layers: the figure casts the offset shadow, the frame is the gold
-   border, and the art sits inside. Each has the same angled corner. */
-.portrait {
-  filter: drop-shadow(8px 8px 0 var(--p1-dark));
+.portrait-frame {
+  padding: 2px;
+  background: var(--line);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
 }
 
-.portrait-frame {
-  padding: 3px;
-  background: var(--gold);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
+.result:not(.is-lost) .portrait-frame {
+  background: var(--accent);
 }
 
 .portrait-art {
   display: block;
-  width: 200px;
-  height: 267px;
+  width: 180px;
+  height: 240px;
   object-fit: cover;
   background: var(--panel-raised);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
-}
-
-.result.is-lost .portrait {
-  filter: drop-shadow(8px 8px 0 #3a0603);
-}
-
-.result.is-lost .portrait-frame {
-  background: var(--p1);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 17px), calc(100% - 17px) 100%, 0 100%);
 }
 
 .result.is-lost img.portrait-art {
-  filter: saturate(0.7);
+  filter: saturate(0.6);
 }
 
 .portrait--empty {
   display: grid;
   place-items: center;
   font-family: var(--font-display);
-  font-size: 4.5rem;
-  font-weight: 900;
-  font-style: italic;
+  font-size: 4rem;
+  font-weight: 700;
   color: var(--dim);
 }
 
 .portrait figcaption {
-  margin-top: 8px;
+  margin-top: 6px;
   font-size: 0.7rem;
   color: var(--dim);
 }
@@ -712,122 +620,116 @@ body {
   border-top: 1px solid var(--line);
 }
 
-.chart-title {
+.chart-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: 12px;
+}
+
+.chart-score {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.3rem;
-  font-weight: 800;
-  font-style: italic;
-  text-transform: uppercase;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.chart-score small {
+  font-size: 1.2rem;
+  color: var(--dim);
 }
 
 .chart-players {
-  font-family: var(--font-body);
+  margin: 0;
   font-size: 0.85rem;
-  font-weight: 500;
-  font-style: normal;
-  text-transform: none;
   color: var(--muted);
 }
 
-.chart-headline {
-  margin: 2px 0 12px;
-  font-weight: 600;
-  color: var(--gold);
-}
-
-.chart-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 4px;
-}
-
-.chart-row {
-  cursor: default;
-}
-
-.chart-row:focus-visible {
-  outline: 2px solid var(--focus);
-}
-
-.chart-label {
-  width: 3.2rem;
-  padding-right: 10px;
-  font-family: var(--font-display);
-  font-weight: 700;
-  text-align: right;
-  color: var(--muted);
-}
-
-.chart-row.is-you .chart-label {
-  color: var(--text);
-}
-
-.chart-cell {
+.chart-plot {
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 22px;
+  margin-top: 6px;
 }
 
-/* Bars: 20px thick, square at the baseline, a 4px round end. */
-.chart-bar {
-  height: 20px;
-  background: var(--chart-others);
-  border-radius: 0 4px 4px 0;
-  transition: width 0.6s ease-out;
+.chart-plot svg {
+  display: block;
+  overflow: visible;
 }
 
-.chart-row.is-you .chart-bar {
-  background: var(--chart-you);
+/* The curve: a 2px line over a faint wash of the same hue. */
+.chart-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
-.chart-value {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--muted);
+.chart-area {
+  fill: var(--accent);
+  fill-opacity: 0.14;
 }
 
-.chart-row.is-you .chart-value {
-  color: var(--text);
+.chart-axis {
+  stroke: var(--line);
+  stroke-width: 1px;
 }
 
-.chart-you {
-  padding: 0 8px;
-  font-family: var(--font-display);
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--partial-ink);
-  background: var(--chart-you);
-  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+.chart-guide {
+  stroke: var(--dim);
+  stroke-width: 1px;
+  stroke-dasharray: 3 3;
+}
+
+.chart-tick {
+  font-family: var(--font-body);
+  font-size: 12px;
+  fill: var(--dim);
+}
+
+.chart-tick.is-you {
+  font-weight: 700;
+  fill: var(--text);
+}
+
+.chart-you-line {
+  stroke: var(--you);
+  stroke-width: 2px;
+}
+
+/* A dot with a ring in the panel colour, so it stands off the line. */
+.chart-you-dot {
+  fill: var(--you);
+  stroke: var(--panel);
+  stroke-width: 2px;
 }
 
 .chart-tooltip {
   position: absolute;
-  z-index: 5;
-  bottom: calc(100% + 6px);
-  left: 0;
-  padding: 6px 10px;
+  top: -6px;
+  margin: 0;
+  padding: 5px 10px;
   font-size: 0.8rem;
   white-space: nowrap;
   color: var(--text);
   background: #0d1020;
   border: 1px solid var(--line);
-  box-shadow: 0 8px 20px rgb(0 0 0 / 0.5);
+  border-radius: 4px;
+  transform: translateX(-50%);
   pointer-events: none;
 }
 
+.chart-caption {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
 .chart-note {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   font-size: 0.8rem;
   color: var(--dim);
 }
@@ -847,6 +749,7 @@ body {
   align-items: center;
   padding: 8px 4px;
   background: var(--panel-raised);
+  border-radius: 4px;
 }
 
 .stats dt {
@@ -858,9 +761,8 @@ body {
 .stats dd {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.8rem;
-  font-weight: 900;
-  font-style: italic;
+  font-size: 1.6rem;
+  font-weight: 700;
   line-height: 1.1;
 }
 
@@ -885,33 +787,35 @@ body {
 .leaderboard h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-weight: 900;
-  font-style: italic;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
+/* Two-option switch: plain, rounded. */
 .tabs {
   display: flex;
-  gap: 4px;
+  padding: 3px;
+  background: var(--panel-raised);
+  border-radius: var(--radius);
 }
 
 .tab {
-  padding: 4px 16px;
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 700;
-  text-transform: uppercase;
+  padding: 4px 14px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
   color: var(--muted);
-  background: var(--panel-raised);
+  background: none;
   border: none;
-  clip-path: var(--slant);
+  border-radius: 4px;
   cursor: pointer;
 }
 
 .tab.is-active {
-  color: #fff;
-  background: var(--p1);
+  color: var(--text);
+  background: var(--line);
 }
 
 .ranking {
@@ -922,7 +826,7 @@ body {
 
 .ranking li {
   display: grid;
-  grid-template-columns: 2.4rem 1fr auto;
+  grid-template-columns: 2.2rem 1fr auto;
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
@@ -934,20 +838,19 @@ body {
 }
 
 .ranking li.is-you {
-  background: rgb(255 194 41 / 0.1);
-  box-shadow: inset 3px 0 0 var(--gold);
+  background: rgb(36 160 176 / 0.12);
+  border-radius: 4px;
 }
 
 .rank {
   font-family: var(--font-display);
-  font-size: 1.3rem;
-  font-weight: 900;
-  font-style: italic;
+  font-size: 1.2rem;
+  font-weight: 700;
   color: var(--dim);
 }
 
 .ranking li:nth-child(-n + 3) .rank {
-  color: var(--gold);
+  color: var(--accent-text);
 }
 
 .player {
@@ -971,16 +874,15 @@ body {
   margin: 0 auto 26px;
   padding: 22px 24px;
   background: var(--panel);
-  border-top: 4px solid var(--p1);
   clip-path: var(--cut);
 }
 
 .auth-panel h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.6rem;
-  font-weight: 900;
-  font-style: italic;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
@@ -993,11 +895,8 @@ body {
 .auth-panel label {
   display: block;
   margin-top: 12px;
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .auth-panel input {
@@ -1008,11 +907,12 @@ body {
   color: var(--text);
   background: var(--panel-raised);
   border: 2px solid var(--line);
+  border-radius: var(--radius);
 }
 
 .auth-panel input:focus {
   outline: none;
-  border-color: var(--gold);
+  border-color: var(--accent);
 }
 
 .hint {
@@ -1029,14 +929,14 @@ body {
 }
 
 .strength-meter span {
-  height: 6px;
+  height: 5px;
   background: var(--line);
-  clip-path: polygon(3px 0, 100% 0, calc(100% - 3px) 100%, 0 100%);
+  border-radius: 3px;
   transition: background-color 0.15s;
 }
 
 .strength-meter.is-weak .filled {
-  background: var(--p1);
+  background: var(--you);
 }
 
 .strength-meter.is-ok .filled {
@@ -1053,13 +953,10 @@ body {
   display: block;
   text-align: center;
   text-decoration: none;
-  font-style: normal;
-  text-transform: none;
-  letter-spacing: 0;
-  clip-path: none;
 }
 
 .button--discord {
+  color: #fff;
   background: #5865f2; /* Discord's "Blurple" */
 }
 
@@ -1126,6 +1023,10 @@ body {
   .round-tagline {
     flex-basis: 100%;
     text-align: center;
+  }
+
+  .round-tagline::before {
+    content: none;
   }
 
   .result {

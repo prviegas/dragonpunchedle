@@ -36,15 +36,7 @@ export function ResultCard({ outcome, character, date, guesses, maxGuesses, logg
           <p className="result-meta">
             {character.franchise} · since {character.debutYear}
           </p>
-          <p className="result-score">
-            {won ? (
-              <>
-                Solved in <strong>{guesses.length}</strong>/{maxGuesses}
-              </>
-            ) : (
-              <>Out of guesses. New fighter tomorrow.</>
-            )}
-          </p>
+          {!won && <p className="result-score">Out of guesses. A new fighter arrives tomorrow.</p>}
           <ShareButton date={date} guesses={guesses} maxGuesses={maxGuesses} />
         </div>
       </div>

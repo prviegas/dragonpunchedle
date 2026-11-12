@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { fetchTodayResults, type TodayResults } from "./api";
 import { percentBeaten, percentSolved, withViewer, type RoundResult } from "./results";
 
@@ -10,15 +10,32 @@ interface ResultsChartProps {
   counted: boolean;
 }
 
+const HEIGHT = 190;
+const PAD = { top: 18, right: 14, bottom: 30, left: 14 };
+
 /**
- * How everyone did today: one bar per number of guesses, plus K.O. for
- * running out, with the viewer's bar picked out. It's a real table, so
- * screen readers get the numbers as a table; the bars are drawn on top.
+ * A smoothed curve of how everyone did today, from 1 guess to K.O., with a
+ * marker where the viewer landed. Each finished round adds a small bump
+ * (a Gaussian kernel) at its number of guesses; summed, they make the curve.
+ * Exact counts are one hover away, and in a table for screen readers.
  */
+function curvePoints(counts: number[], steps = 120): number[] {
+  const bandwidth = 0.75;
+  const xs = counts.length;
+  const values = Array.from({ length: steps + 1 }, (_, i) => {
+    const x = 1 + (i / steps) * (xs - 1);
+    return counts.reduce((sum, count, k) => sum + count * Math.exp(-0.5 * ((x - (k + 1)) / bandwidth) ** 2), 0);
+  });
+  const peak = Math.max(...values);
+  return peak > 0 ? values.map((v) => v / peak) : values;
+}
+
 export function ResultsChart({ maxGuesses, mine, counted }: ResultsChartProps) {
   const [fetched, setFetched] = useState<TodayResults>();
   const [failed, setFailed] = useState(false);
-  const [hovered, setHovered] = useState<number>();
+  const [hover, setHover] = useState<number>();
+  const [width, setWidth] = useState(600);
+  const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let current = true;
@@ -31,89 +48,135 @@ export function ResultsChart({ maxGuesses, mine, counted }: ResultsChartProps) {
     };
   }, [mine]);
 
+  // Draw in real pixels rather than stretching a fixed drawing, so labels stay
+  // readable on a phone.
+  useEffect(() => {
+    if (!box.current) return;
+    const observer = new ResizeObserver(([entry]) => entry && setWidth(entry.contentRect.width));
+    observer.observe(box.current);
+    return () => observer.disconnect();
+  }, [fetched]);
+
   if (failed) return null; // the chart is a bonus; the round is still over and shareable
   if (!fetched) return <p className="status chart-loading">Loading today's results…</p>;
 
   const results = withViewer(fetched, mine, counted);
-  const rows = [
-    ...results.solvedIn.slice(0, maxGuesses).map((count, i) => ({ key: String(i + 1), label: String(i + 1), count })),
-    { key: "lost", label: "K.O.", count: results.lost },
-  ];
-  const yours = mine === "lost" ? "lost" : String(mine);
-  const biggest = Math.max(...rows.map((row) => row.count), 1);
-  const beaten = percentBeaten(results, mine);
+  // One position per outcome: 1..maxGuesses solved, then K.O.
+  const counts = [...results.solvedIn.slice(0, maxGuesses), results.lost];
+  const labels = [...counts.slice(0, -1).map((_, i) => String(i + 1)), "K.O."];
+  const youIndex = mine === "lost" ? counts.length - 1 : mine - 1;
 
-  const headline =
+  const plotWidth = Math.max(width - PAD.left - PAD.right, 100);
+  const plotHeight = HEIGHT - PAD.top - PAD.bottom;
+  const xAt = (index: number) => PAD.left + (index / (counts.length - 1)) * plotWidth;
+  const yAt = (value: number) => PAD.top + (1 - value) * plotHeight;
+
+  const curve = curvePoints(counts);
+  const steps = curve.length - 1;
+  const line = curve.map((v, i) => `${i === 0 ? "M" : "L"}${xAt((i / steps) * (counts.length - 1)).toFixed(1)},${yAt(v).toFixed(1)}`).join(" ");
+  const area = `${line} L${xAt(counts.length - 1)},${yAt(0)} L${xAt(0)},${yAt(0)} Z`;
+  const youY = yAt(curve[Math.round((youIndex / (counts.length - 1)) * steps)] ?? 0);
+
+  const beaten = percentBeaten(results, mine);
+  const caption =
     mine === "lost"
       ? results.players > 1
-        ? `${percentSolved(results)}% of players solved it.`
-        : "Nobody else has finished yet."
+        ? `${percentSolved(results)}% of today's players solved it`
+        : "Nobody else has finished yet"
       : beaten === null
-        ? "You're the first to finish today!"
-        : beaten === 100
-          ? "You beat everyone today!"
-          : `You beat ${beaten}% of players today.`;
+        ? "First to finish today"
+        : `Better than ${beaten}% of today's players`;
+
+  function onPointerMove(event: PointerEvent<SVGSVGElement>) {
+    const x = event.clientX - event.currentTarget.getBoundingClientRect().left;
+    const index = Math.round(((x - PAD.left) / plotWidth) * (counts.length - 1));
+    setHover(Math.min(Math.max(index, 0), counts.length - 1));
+  }
+
+  const describe = (index: number) => {
+    const count = counts[index] ?? 0;
+    const share = results.players > 0 ? Math.round((count / results.players) * 100) : 0;
+    const what = index === counts.length - 1 ? "Ran out of guesses" : `Solved in ${labels[index]}`;
+    return `${what}: ${count} ${count === 1 ? "player" : "players"} (${share}%)`;
+  };
 
   return (
     <section className="chart" aria-labelledby="chart-title">
-      <h3 id="chart-title" className="chart-title">
-        Today's results
-        <span className="chart-players">
-          {results.players} {results.players === 1 ? "player" : "players"}
-        </span>
-      </h3>
-      <p className="chart-headline">{headline}</p>
+      <div className="chart-head">
+        <p className="chart-score" id="chart-title">
+          {mine === "lost" ? "K.O." : mine}
+          {mine !== "lost" && <small>/{maxGuesses}</small>}
+        </p>
+        <p className="chart-players">
+          {results.players} {results.players === 1 ? "player" : "players"} today
+        </p>
+      </div>
 
-      <table className="chart-table">
-        <caption className="visually-hidden">Players by number of guesses today</caption>
-        <thead className="visually-hidden">
+      <div className="chart-plot" ref={box}>
+        <svg
+          width={width}
+          height={HEIGHT}
+          aria-hidden="true"
+          onPointerMove={onPointerMove}
+          onPointerLeave={() => setHover(undefined)}
+        >
+          <path className="chart-area" d={area} />
+          <path className="chart-line" d={line} />
+          <line className="chart-axis" x1={PAD.left} x2={PAD.left + plotWidth} y1={yAt(0)} y2={yAt(0)} />
+
+          {labels.map((label, i) => (
+            <text
+              key={label}
+              className={i === youIndex ? "chart-tick is-you" : "chart-tick"}
+              x={xAt(i)}
+              y={HEIGHT - 8}
+              textAnchor="middle"
+            >
+              {i === youIndex ? "YOU" : label}
+            </text>
+          ))}
+
+          {hover !== undefined && hover !== youIndex && (
+            <line className="chart-guide" x1={xAt(hover)} x2={xAt(hover)} y1={PAD.top} y2={yAt(0)} />
+          )}
+          <line className="chart-you-line" x1={xAt(youIndex)} x2={xAt(youIndex)} y1={youY} y2={yAt(0)} />
+          <circle className="chart-you-dot" cx={xAt(youIndex)} cy={youY} r={5} />
+        </svg>
+
+        {hover !== undefined && (
+          <p
+            className="chart-tooltip"
+            style={{ left: Math.min(Math.max(xAt(hover), 90), width - 90) }}
+          >
+            {describe(hover)}
+          </p>
+        )}
+      </div>
+
+      <p className="chart-caption">{caption}</p>
+      {!counted && <p className="chart-note">Guests are shown here but not counted. Log in to count.</p>}
+
+      {/* The same numbers as a table, for screen readers. */}
+      <table className="visually-hidden">
+        <caption>Today's players by number of guesses</caption>
+        <thead>
           <tr>
-            <th scope="col">Guesses</th>
+            <th scope="col">Result</th>
             <th scope="col">Players</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => {
-            const isYou = row.key === yours;
-            const share = results.players > 0 ? Math.round((row.count / results.players) * 100) : 0;
-            const description = `${row.key === "lost" ? "Ran out of guesses" : `Solved in ${row.label}`}: ${row.count} ${
-              row.count === 1 ? "player" : "players"
-            } (${share}%)${isYou ? ", including you" : ""}`;
-            return (
-              <tr
-                key={row.key}
-                className={isYou ? "chart-row is-you" : "chart-row"}
-                // The whole row is the hover target, much bigger than a thin bar.
-                onMouseEnter={() => setHovered(index)}
-                onMouseLeave={() => setHovered(undefined)}
-                onFocus={() => setHovered(index)}
-                onBlur={() => setHovered(undefined)}
-                tabIndex={0}
-                aria-label={description}
-              >
-                <th scope="row" className="chart-label">
-                  {row.label}
-                </th>
-                <td>
-                  <div className="chart-cell">
-                  <span className="chart-bar" style={{ width: `${(row.count / biggest) * 100}%` }} />
-                  <span className="chart-value">
-                    {row.count}
-                    {isYou && <span className="chart-you">You</span>}
-                  </span>
-                  {hovered === index && (
-                    <span className="chart-tooltip" role="presentation">
-                      {description}
-                    </span>
-                  )}
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
+          {labels.map((label, i) => (
+            <tr key={label}>
+              <th scope="row">
+                {i === counts.length - 1 ? "Ran out of guesses" : `${label} ${label === "1" ? "guess" : "guesses"}`}
+                {i === youIndex ? " (you)" : ""}
+              </th>
+              <td>{counts[i]}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
-      {!counted && <p className="chart-note">Guests are shown here but not counted. Log in to count.</p>}
     </section>
   );
 }
