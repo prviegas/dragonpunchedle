@@ -461,6 +461,22 @@ body {
   color: var(--correct);
 }
 
+/* Out of guesses: the same box, in the "K.O." colour. */
+.win--lost {
+  border-color: var(--accent);
+}
+
+.win--lost .win-title {
+  color: var(--accent);
+}
+
+.guesses-left {
+  margin: 0 0 8px;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
 .share {
   display: flex;
   flex-wrap: wrap;

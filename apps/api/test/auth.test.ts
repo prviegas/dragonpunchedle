@@ -169,7 +169,7 @@ describe.skipIf(!process.env.DATABASE_URL)("accounts", () => {
     await post(`/api/puzzles/${TODAY}/guesses`, { characterId: answerId }, cookie);
 
     const response = await app.inject({ method: "GET", url: "/api/puzzles/today/guesses", headers: { cookie } });
-    const saved = response.json<{ guess: { id: string }; solved: boolean }[]>();
+    const saved = response.json<{ guesses: { guess: { id: string }; solved: boolean }[] }>().guesses;
 
     expect(saved.map((g) => g.guess.id)).toEqual([answerId, otherId]);
     expect(saved[0]!.solved).toBe(true);
@@ -182,6 +182,93 @@ describe.skipIf(!process.env.DATABASE_URL)("accounts", () => {
     expect((await post(`/api/puzzles/${TODAY}/guesses`, { characterId: otherId }, cookie)).statusCode).toBe(409);
     await post(`/api/puzzles/${TODAY}/guesses`, { characterId: answerId }, cookie);
     expect((await post(`/api/puzzles/${TODAY}/guesses`, { characterId: answerId }, cookie)).statusCode).toBe(409);
+  });
+
+  describe("the 10-guess limit", () => {
+    /** Ten-plus characters that aren't today's answer. */
+    async function wrongIds(count: number) {
+      const { rows } = await pool.query<{ id: string }>("SELECT id FROM characters WHERE id <> $1 ORDER BY id LIMIT $2", [
+        answerId,
+        count,
+      ]);
+      return rows.map((row) => row.id);
+    }
+
+    it("tells the page how many guesses a day allows", async () => {
+      const response = await app.inject({ method: "GET", url: "/api/puzzles/today" });
+      expect(response.json().maxGuesses).toBe(10);
+    });
+
+    it("numbers each guess, reveals the answer on a missed 10th, and refuses an 11th", async () => {
+      const cookie = await signUp("cammy");
+      const wrong = await wrongIds(11);
+      const responses = [];
+      for (const id of wrong.slice(0, 10)) {
+        responses.push((await post(`/api/puzzles/${TODAY}/guesses`, { characterId: id }, cookie)).json());
+      }
+
+      expect(responses.map((r) => r.guessNumber)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+      expect(responses.slice(0, 9).every((r) => r.answer === undefined)).toBe(true);
+      expect(responses[9].answer.id).toBe(answerId);
+
+      const eleventh = await post(`/api/puzzles/${TODAY}/guesses`, { characterId: wrong[10]! }, cookie);
+      expect(eleventh.statusCode).toBe(409);
+      expect(eleventh.json().error).toMatch(/out of guesses/);
+      // Not even the right answer counts once the round is over.
+      expect((await post(`/api/puzzles/${TODAY}/guesses`, { characterId: answerId }, cookie)).statusCode).toBe(409);
+    });
+
+    it("includes the answer with the saved board after a loss, so a reload still shows it", async () => {
+      const cookie = await signUp("fei_long");
+      for (const id of await wrongIds(10)) await post(`/api/puzzles/${TODAY}/guesses`, { characterId: id }, cookie);
+
+      const board = (await app.inject({ method: "GET", url: "/api/puzzles/today/guesses", headers: { cookie } })).json();
+      expect(board.guesses).toHaveLength(10);
+      expect(board.answer.id).toBe(answerId);
+    });
+
+    it("keeps the answer hidden while guesses remain, and after a win", async () => {
+      const cookie = await signUp("t_hawk");
+      const [first] = await wrongIds(1);
+      await post(`/api/puzzles/${TODAY}/guesses`, { characterId: first! }, cookie);
+      const midGame = (await app.inject({ method: "GET", url: "/api/puzzles/today/guesses", headers: { cookie } })).json();
+      expect(midGame.answer).toBeUndefined();
+
+      const win = (await post(`/api/puzzles/${TODAY}/guesses`, { characterId: answerId }, cookie)).json();
+      expect(win).toMatchObject({ solved: true, guessNumber: 2 });
+      expect(win.answer).toBeUndefined(); // the guess already is the answer
+    });
+
+    it("never saves more than 10, even when 15 guesses arrive at once", async () => {
+      const cookie = await signUp("dee_jay");
+      const wrong = await wrongIds(15);
+      const responses = await Promise.all(
+        wrong.map((id) => post(`/api/puzzles/${TODAY}/guesses`, { characterId: id }, cookie)),
+      );
+
+      expect(responses.filter((r) => r.statusCode === 200)).toHaveLength(10);
+      expect(responses.filter((r) => r.statusCode === 409)).toHaveLength(5);
+      const { rows } = await pool.query(
+        "SELECT count(*)::int AS n FROM guesses g JOIN users u ON u.id = g.user_id WHERE u.username = $1",
+        [`${PREFIX}dee_jay`],
+      );
+      expect(rows[0].n).toBe(10);
+      // Each accepted guess got its own number, 1 to 10.
+      const numbers = responses.filter((r) => r.statusCode === 200).map((r) => r.json().guessNumber);
+      expect([...numbers].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    });
+
+    it("counts a guest's guesses from what the page says, and reveals the answer on the 10th", async () => {
+      const [id] = await wrongIds(1);
+      const ninth = (await post(`/api/puzzles/${TODAY}/guesses`, { characterId: id!, previousGuesses: 8 })).json();
+      const tenth = (await post(`/api/puzzles/${TODAY}/guesses`, { characterId: id!, previousGuesses: 9 })).json();
+      const eleventh = await post(`/api/puzzles/${TODAY}/guesses`, { characterId: id!, previousGuesses: 10 });
+
+      expect(ninth).toMatchObject({ guessNumber: 9 });
+      expect(ninth.answer).toBeUndefined();
+      expect(tenth.answer.id).toBe(answerId);
+      expect(eleventh.statusCode).toBe(409);
+    });
   });
 
   it("asks guests to log in for saved guesses", async () => {

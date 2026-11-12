@@ -4,7 +4,13 @@ import { buildShareText } from "./share";
 
 type Feedback = "idle" | "copied" | "failed";
 
-export function ShareButton({ date, guesses }: { date: string; guesses: readonly GuessResult[] }) {
+interface ShareButtonProps {
+  date: string;
+  guesses: readonly GuessResult[];
+  maxGuesses: number;
+}
+
+export function ShareButton({ date, guesses, maxGuesses }: ShareButtonProps) {
   const [feedback, setFeedback] = useState<Feedback>("idle");
 
   useEffect(() => {
@@ -14,7 +20,7 @@ export function ShareButton({ date, guesses }: { date: string; guesses: readonly
   }, [feedback]);
 
   async function share() {
-    const text = buildShareText(date, guesses, window.location.origin);
+    const text = buildShareText(date, guesses, maxGuesses, window.location.origin);
 
     // On phones, open the system share sheet (WhatsApp, Discord, ...).
     // On computers, copying is what people expect.

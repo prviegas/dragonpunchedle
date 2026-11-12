@@ -36,18 +36,24 @@ describe("buildShareText", () => {
       guess("First", ["wrong", "partial", "wrong"]),
     ];
 
-    expect(buildShareText("2026-11-12", newestFirst, "https://example.com")).toBe(
-      ["Dragonpunchedle #3: 3 guesses", "⬛🟨⬛", "🟩🟨⬜", "🟩🟩🟩", "https://example.com"].join("\n"),
+    expect(buildShareText("2026-11-12", newestFirst, 10, "https://example.com")).toBe(
+      ["Dragonpunchedle #3 3/10", "⬛🟨⬛", "🟩🟨⬜", "🟩🟩🟩", "https://example.com"].join("\n"),
     );
   });
 
-  it("says guess, not guesses, for a first-try solve", () => {
-    const text = buildShareText("2026-11-10", [guess("Answer", ["correct"], true)], "https://example.com");
-    expect(text.split("\n")[0]).toBe("Dragonpunchedle #1: 1 guess");
+  it("scores a first-try solve as 1/10", () => {
+    const text = buildShareText("2026-11-10", [guess("Answer", ["correct"], true)], 10, "https://example.com");
+    expect(text.split("\n")[0]).toBe("Dragonpunchedle #1 1/10");
+  });
+
+  it("scores running out of guesses as X/10", () => {
+    const missed = Array.from({ length: 10 }, (_, i) => guess(`Miss ${i}`, ["wrong"]));
+    const text = buildShareText("2026-11-10", missed, 10, "https://example.com");
+    expect(text.split("\n")[0]).toBe("Dragonpunchedle #1 X/10");
   });
 
   it("never includes character names", () => {
-    const text = buildShareText("2026-11-10", [guess("Ryu", ["correct"], true)], "https://example.com");
+    const text = buildShareText("2026-11-10", [guess("Ryu", ["correct"], true)], 10, "https://example.com");
     expect(text).not.toContain("Ryu");
   });
 });

@@ -11,6 +11,8 @@ export interface ClueInfo {
 
 export interface Puzzle {
   date: string;
+  /** Guesses per day. Running out ends the round and reveals the answer. */
+  maxGuesses: number;
   clues: ClueInfo[];
 }
 
@@ -39,6 +41,14 @@ export interface GuessResult {
   guess: Character;
   solved: boolean;
   clues: ClueResult[];
+}
+
+/** What the server sends back for a new guess. */
+export interface GuessResponse extends GuessResult {
+  /** 1 for the first guess of the day, up to maxGuesses. */
+  guessNumber: number;
+  /** Present only when this was the last guess and it missed. */
+  answer?: Character;
 }
 
 /** An error the API explained, with a message that's fine to show the player. */
@@ -83,11 +93,14 @@ export const fetchPuzzle = () => request<Puzzle>("/api/puzzles/today");
 
 export const fetchCharacters = () => request<CharacterSummary[]>("/api/characters");
 
-export const submitGuess = (date: string, characterId: string) =>
-  request<GuessResult>(`/api/puzzles/${date}/guesses`, postJson({ characterId }));
+/** previousGuesses matters only for guests: the server counts a logged-in
+ *  player's guesses itself, but keeps nothing about guests. */
+export const submitGuess = (date: string, characterId: string, previousGuesses: number) =>
+  request<GuessResponse>(`/api/puzzles/${date}/guesses`, postJson({ characterId, previousGuesses }));
 
-/** A logged-in player's guesses for today, newest first. */
-export const fetchMyGuesses = () => request<GuessResult[]>("/api/puzzles/today/guesses");
+/** A logged-in player's guesses for today, newest first, plus the answer if they ran out. */
+export const fetchMyGuesses = () =>
+  request<{ guesses: GuessResult[]; answer?: Character }>("/api/puzzles/today/guesses");
 
 export interface PlayerStats {
   played: number;

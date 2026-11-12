@@ -8,6 +8,7 @@ import {
   fetchPuzzle,
   logOut,
   submitGuess,
+  type Character,
   type CharacterSummary,
   type GuessResult,
   type PlayerStats,
@@ -49,9 +50,30 @@ function saveLocalGuesses(date: string, guesses: GuessResult[]) {
   }
 }
 
+// The answer a guest saw when they ran out of guesses, so a reload still shows it.
+const answerKey = (date: string) => `dragonpunchedle:answer:${date}`;
+
+function loadLocalAnswer(date: string): Character | undefined {
+  try {
+    const saved = localStorage.getItem(answerKey(date));
+    return saved ? (JSON.parse(saved) as Character) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function saveLocalAnswer(date: string, answer: Character) {
+  try {
+    localStorage.setItem(answerKey(date), JSON.stringify(answer));
+  } catch {
+    // Not saved; the game carries on.
+  }
+}
+
 function clearLocalGuesses(date: string) {
   try {
     localStorage.removeItem(storageKey(date));
+    localStorage.removeItem(answerKey(date));
   } catch {
     // Nothing to clear.
   }
@@ -61,8 +83,9 @@ function clearLocalGuesses(date: string) {
  *  halfway through a puzzle doesn't lose progress. The server scores each one
  *  again; ones it refuses (already guessed, already solved) are skipped. */
 async function importGuestGuesses(date: string) {
+  // Signed in now, so the server counts from its own records; the 0 is ignored.
   for (const local of [...loadLocalGuesses(date)].reverse()) {
-    await submitGuess(date, local.guess.id).catch(() => undefined);
+    await submitGuess(date, local.guess.id, 0).catch(() => undefined);
   }
   clearLocalGuesses(date);
 }
@@ -105,6 +128,13 @@ export function App() {
     guessesRef.current = next;
     setGuesses(next);
   };
+  // Set when the player runs out of guesses: the character they were after.
+  const [answer, setAnswer] = useState<Character>();
+  const answerRef = useRef<Character>(undefined);
+  const revealAnswer = (revealed: Character | undefined) => {
+    answerRef.current = revealed;
+    setAnswer(revealed);
+  };
   const [guessError, setGuessError] = useState<string>();
   const [stats, setStats] = useState<PlayerStats>();
   // Bumped whenever the leaderboard may have changed, so it fetches again.
@@ -119,10 +149,12 @@ export function App() {
           // Just back from Discord or Google with guesses made as a guest.
           await importGuestGuesses(puzzle.date);
           const [mine, myStats] = await Promise.all([fetchMyGuesses(), fetchMyStats()]);
-          showGuesses(mine);
+          showGuesses(mine.guesses);
+          revealAnswer(mine.answer);
           setStats(myStats);
         } else {
           showGuesses(loadLocalGuesses(puzzle.date));
+          revealAnswer(loadLocalAnswer(puzzle.date));
         }
         setLoad({ state: "ready", puzzle, characters });
       })
@@ -168,17 +200,24 @@ export function App() {
   }
 
   async function sendGuess(characterId: string) {
-    // A queued guess behind the winning one has nothing left to do.
-    if (guessesRef.current.some((g) => g.solved)) return;
+    // A queued guess behind the last one (a win, or the final miss) has nothing left to do.
+    const done = guessesRef.current.some((g) => g.solved) || answerRef.current !== undefined;
+    if (done || guessesRef.current.length >= puzzle.maxGuesses) return;
     try {
-      const result = await submitGuess(puzzle.date, characterId);
+      const { answer: revealed, guessNumber: _number, ...result } = await submitGuess(
+        puzzle.date,
+        characterId,
+        guessesRef.current.length,
+      );
       const next = [result, ...guessesRef.current]; // newest guess on top
       showGuesses(next);
+      if (revealed) revealAnswer(revealed);
       if (user) {
         // Not awaited: the next queued guess shouldn't wait for the stats.
         fetchMyStats().then(setStats, () => undefined);
       } else {
         saveLocalGuesses(puzzle.date, next);
+        if (revealed) saveLocalAnswer(puzzle.date, revealed);
       }
       if (result.solved) refreshStandings();
     } catch (error) {
@@ -191,7 +230,8 @@ export function App() {
     setShowAuth(false);
     await importGuestGuesses(puzzle.date);
     const [mine, myStats] = await Promise.all([fetchMyGuesses(), fetchMyStats()]);
-    showGuesses(mine);
+    showGuesses(mine.guesses);
+    revealAnswer(mine.answer);
     setStats(myStats);
     refreshStandings();
   }
@@ -201,6 +241,7 @@ export function App() {
     setUser(null);
     setStats(undefined);
     showGuesses([]);
+    revealAnswer(undefined);
     refreshStandings();
   }
 
@@ -238,7 +279,7 @@ export function App() {
             It was <strong>{winner.guess.name}</strong> ({winner.guess.franchise}), in {guesses.length}{" "}
             {guesses.length === 1 ? "guess" : "guesses"}. A new character arrives tomorrow.
           </p>
-          <ShareButton date={puzzle.date} guesses={guesses} />
+          <ShareButton date={puzzle.date} guesses={guesses} maxGuesses={puzzle.maxGuesses} />
           {user && stats ? (
             <StatsPanel stats={stats} />
           ) : (
@@ -253,8 +294,21 @@ export function App() {
             )
           )}
         </section>
+      ) : answer ? (
+        <section className="win win--lost" aria-live="polite">
+          <p className="win-title">K.O.</p>
+          <p>
+            Out of guesses. It was <strong>{answer.name}</strong> ({answer.franchise}). A new character arrives
+            tomorrow.
+          </p>
+          <ShareButton date={puzzle.date} guesses={guesses} maxGuesses={puzzle.maxGuesses} />
+          {user && stats && <StatsPanel stats={stats} />}
+        </section>
       ) : (
         <>
+          <p className="guesses-left">
+            {puzzle.maxGuesses - guesses.length} of {puzzle.maxGuesses} guesses left
+          </p>
           <GuessInput characters={characters} excludedIds={guessedIds} busy={pendingIds.size > 0} onGuess={guess} />
           {guessError && <p className="status status--error" role="alert">{guessError}</p>}
           {guesses.length === 0 && <Legend />}

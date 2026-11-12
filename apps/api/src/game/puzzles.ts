@@ -3,6 +3,9 @@ import type pg from "pg";
 /** A character can't be the answer again until this many days have passed. */
 export const REPEAT_COOLDOWN_DAYS = 60;
 
+/** Guesses per player per day. Running out ends the round and reveals the answer. */
+export const MAX_GUESSES = 10;
+
 /** The puzzle date for a moment in time. Every player shares one day, in UTC. */
 export function puzzleDateFor(moment: Date): string {
   return moment.toISOString().slice(0, 10);
