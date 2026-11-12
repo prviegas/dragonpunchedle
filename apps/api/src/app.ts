@@ -1,5 +1,6 @@
 import { sep } from "node:path";
 import cookie from "@fastify/cookie";
+import helmet from "@fastify/helmet";
 import fastifyStatic from "@fastify/static";
 import Fastify, { type FastifyServerOptions } from "fastify";
 import type pg from "pg";
@@ -48,6 +49,40 @@ export function buildApp({
     // Rejecting them instead makes a client bug show up as a clear 400.
     ajv: { customOptions: { removeAdditional: false } },
     ...fastifyOptions,
+  });
+
+  // Security headers on every response. Mostly they tell the browser to refuse
+  // things this site never does, so if an attacker ever slips something in,
+  // the browser blocks it instead of running it.
+  app.register(helmet, {
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        // Content Security Policy: everything comes from this site, nothing else.
+        defaultSrc: ["'self'"],
+        // Only our own script files. No inline <script> and no onclick="...":
+        // the usual way an injected script runs is exactly what this blocks.
+        scriptSrc: ["'self'"],
+        scriptSrcAttr: ["'none'"],
+        // Inline styles are allowed: the static privacy page carries its own
+        // <style> block, and styles can't run code.
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:"],
+        fontSrc: ["'self'"],
+        connectSrc: ["'self'"], // fetch() only to our own API
+        objectSrc: ["'none'"], // no plugins
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'none'"], // no other site can show the game in a frame (clickjacking)
+        // On HTTPS, any stray http:// link on the page is fetched over https://.
+        // Left out for plain-http local runs, where it would break every asset.
+        ...(secureCookies && { upgradeInsecureRequests: [] }),
+      },
+    },
+    // HTTPS only from now on, for a year. Browsers ignore it over plain http.
+    strictTransportSecurity: { maxAge: 365 * 24 * 60 * 60, includeSubDomains: false },
+    // Don't tell other sites which page a player came from.
+    referrerPolicy: { policy: "no-referrer" },
   });
 
   app.get("/api/health", async () => ({ status: "ok" }));

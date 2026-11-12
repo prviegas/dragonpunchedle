@@ -75,6 +75,7 @@ The comparison logic is written once per kind. Adding a clue is one line in [`cl
 - **No username probing:** a login for an unknown user takes as long as one with a wrong password, and gets the same message.
 - **Session tokens** are random. Only a SHA-256 of each is stored, so a leaked database can't be used to log in.
 - **The cookie** is `HttpOnly`, `SameSite=Lax`, and `Secure` in production.
+- **Security headers** ([@fastify/helmet](https://github.com/fastify/fastify-helmet)): a Content-Security-Policy that only runs the site's own scripts, no framing by other sites, HSTS, `nosniff` and `no-referrer`.
 - **Rate limiting:** login and sign-up are limited per IP. Behind a proxy, that only works if the proxy is trusted for the real client address (`TRUST_PROXY`), otherwise every player shares one limit.
 
 **Migrations are plain SQL**, run by a small runner ([`db/migrate.ts`](apps/api/src/db/migrate.ts)):
