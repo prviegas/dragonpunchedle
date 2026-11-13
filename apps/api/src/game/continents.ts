@@ -83,6 +83,10 @@ export const FICTIONAL_PLACES: ReadonlySet<string> = new Set([
   // Guilty Gear
   "Illyria",
   "Zepp",
+  // Marvel
+  "Asgard",
+  "Latveria",
+  "Wakanda",
   // League of Legends (2XKO)
   "Bandle City",
   "Bilgewater",

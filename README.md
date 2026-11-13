@@ -1,6 +1,6 @@
 # Dragonpunchedle
 
-A daily guessing game for fighting game characters. Every day there's one mystery fighter, picked from 274 characters across 17 franchises. Each guess shows how close you are, clue by clue: franchise, developer, debut year, archetypes, species, gender, home country and number of games.
+A daily guessing game for fighting game characters. Every day there's one mystery fighter, picked from 295 characters across 18 franchises. Each guess shows how close you are, clue by clue: franchise, developer, debut year, archetypes, species, gender, home country and number of games.
 
 **Play it at [dragonpunchedle.onrender.com](https://dragonpunchedle.onrender.com).** It runs on a free server that sleeps when nobody is playing, so the first visit after a quiet spell can take about a minute to load.
 
@@ -97,7 +97,7 @@ npm run portraits -- remove --franchise "Tekken"     # takedown
 
 **Typed-ahead guesses are queued.** A guess picked while the previous one is still being checked waits its turn, instead of being dropped. Enter matches against what's actually in the box at that moment, so a paste followed by Enter works too ([`App.tsx`](apps/web/src/App.tsx), [`GuessInput.tsx`](apps/web/src/GuessInput.tsx)).
 
-**The roster is validated before it reaches the database.** 274 characters live in JSON files under [`apps/api/data/roster`](apps/api/data/roster), and they're checked with zod on every load:
+**The roster is validated before it reaches the database.** 295 characters live in JSON files under [`apps/api/data/roster`](apps/api/data/roster), and they're checked with zod on every load:
 - archetypes and species must come from fixed lists;
 - a misspelled country fails;
 - duplicate characters fail.
@@ -119,7 +119,7 @@ npm install
 cp apps/api/.env.example apps/api/.env
 npm run db:up        # PostgreSQL in Docker
 npm run db:migrate
-npm run db:seed      # load the 274 characters
+npm run db:seed      # load the 295 characters
 npm run dev:api      # API on http://localhost:3000
 npm run dev:web      # game on http://localhost:5180
 ```

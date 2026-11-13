@@ -49,6 +49,9 @@ export const SPECIES = [
   // League of Legends peoples
   "Vastaya",
   "Yordle",
+  // Marvel
+  "Mutant",
+  "Symbiote",
 ] as const;
 
 export const GENDERS = ["Male", "Female", "Other"] as const;
