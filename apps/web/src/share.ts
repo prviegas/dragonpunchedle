@@ -1,7 +1,7 @@
 import type { ClueStatus, GuessResult } from "./api";
 
-/** Puzzle #1 is the first day the game was live. */
-export const LAUNCH_DATE = "2026-11-10";
+/** Puzzle #1 is launch day: the first day after the pre-release reset. */
+export const LAUNCH_DATE = "2026-11-13";
 
 // One square per clue tile. No names or values, so sharing never spoils the answer.
 const SQUARES: Record<ClueStatus, string> = {

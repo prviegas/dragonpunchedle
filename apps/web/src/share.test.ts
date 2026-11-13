@@ -22,9 +22,9 @@ function guess(name: string, statuses: ClueStatus[], solved = false): GuessResul
 
 describe("puzzleNumber", () => {
   it("counts days from launch, starting at 1", () => {
-    expect(puzzleNumber("2026-11-10")).toBe(1);
-    expect(puzzleNumber("2026-11-11")).toBe(2);
-    expect(puzzleNumber("2027-11-10")).toBe(366);
+    expect(puzzleNumber("2026-11-13")).toBe(1);
+    expect(puzzleNumber("2026-11-14")).toBe(2);
+    expect(puzzleNumber("2027-11-13")).toBe(366);
   });
 });
 
@@ -36,24 +36,24 @@ describe("buildShareText", () => {
       guess("First", ["wrong", "partial", "wrong"]),
     ];
 
-    expect(buildShareText("2026-11-12", newestFirst, 10, "https://example.com")).toBe(
+    expect(buildShareText("2026-11-15", newestFirst, 10, "https://example.com")).toBe(
       ["Dragonpunchedle #3 3/10", "⬛🟨⬛", "🟩🟨⬜", "🟩🟩🟩", "https://example.com"].join("\n"),
     );
   });
 
   it("scores a first-try solve as 1/10", () => {
-    const text = buildShareText("2026-11-10", [guess("Answer", ["correct"], true)], 10, "https://example.com");
+    const text = buildShareText("2026-11-13", [guess("Answer", ["correct"], true)], 10, "https://example.com");
     expect(text.split("\n")[0]).toBe("Dragonpunchedle #1 1/10");
   });
 
   it("scores running out of guesses as X/10", () => {
     const missed = Array.from({ length: 10 }, (_, i) => guess(`Miss ${i}`, ["wrong"]));
-    const text = buildShareText("2026-11-10", missed, 10, "https://example.com");
+    const text = buildShareText("2026-11-13", missed, 10, "https://example.com");
     expect(text.split("\n")[0]).toBe("Dragonpunchedle #1 X/10");
   });
 
   it("never includes character names", () => {
-    const text = buildShareText("2026-11-10", [guess("Ryu", ["correct"], true)], 10, "https://example.com");
+    const text = buildShareText("2026-11-13", [guess("Ryu", ["correct"], true)], 10, "https://example.com");
     expect(text).not.toContain("Ryu");
   });
 });
