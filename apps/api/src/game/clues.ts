@@ -35,7 +35,9 @@ export interface CharacterClues {
    *  Counts once: updated versions of the same game (Super Turbo, Ultra, Street Fighter III's
    *  2nd Impact and 3rd Strike).
    *  Doesn't count: crossovers, ports, remasters, mobile and non-fighting spin-offs,
-   *  non-playable appearances. */
+   *  non-playable appearances.
+   *  One exception, by choice: the Marvel vs. Capcom series (X-Men vs. Street Fighter
+   *  through MvC Infinite) counts for both its Marvel and its Capcom characters. */
   gamesAppearedIn: number;
 }
 
