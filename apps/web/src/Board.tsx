@@ -69,9 +69,11 @@ interface BoardProps {
   guesses: GuessResult[];
   /** The guess just made: its tiles flip in. Earlier ones appear as they are. */
   freshId?: string;
+  /** Once the round is over (won or lost), the day's character, shown above every guess. */
+  answer?: Character;
 }
 
-export function Board({ clues, guesses, freshId }: BoardProps) {
+export function Board({ clues, guesses, freshId, answer }: BoardProps) {
   if (guesses.length === 0) return null;
 
   return (
@@ -89,6 +91,28 @@ export function Board({ clues, guesses, freshId }: BoardProps) {
           </tr>
         </thead>
         <tbody>
+          {answer && (
+            <tr className="answer-row">
+              <th scope="row" className="guess-name is-answer">
+                <span className="guess-cell">
+                  <Thumb character={answer} />
+                  <span className="guess-text">
+                    <span className="answer-label">Answer</span>
+                    <span className="guess-title">{answer.name}</span>
+                    <span className="guess-franchise">{answer.franchise}</span>
+                  </span>
+                </span>
+              </th>
+              {clues.map((clue) => {
+                const text = valueText(answer, clue.key);
+                return (
+                  <td key={clue.key} className="tile tile--answer" aria-label={`${clue.label}: ${text}`} title={`${clue.label}: ${text}`}>
+                    <span className="tile-value">{text}</span>
+                  </td>
+                );
+              })}
+            </tr>
+          )}
           {guesses.map(({ guess, clues: results, solved }) => {
             const fresh = guess.id === freshId;
             return (

@@ -252,7 +252,7 @@ export function App() {
         </section>
       )}
 
-      <Board clues={puzzle.clues} guesses={guesses} freshId={freshId} />
+      <Board clues={puzzle.clues} guesses={guesses} freshId={freshId} answer={winner ? winner.guess : answer} />
       <Leaderboard version={standingsVersion} />
     </Shell>
   );

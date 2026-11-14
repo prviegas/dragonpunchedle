@@ -388,6 +388,25 @@ body {
   box-shadow: inset 3px 0 0 var(--correct);
 }
 
+/* The day's character, shown above the guesses once the round is over. */
+.guess-name.is-answer {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.answer-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.tile--answer {
+  color: var(--text);
+  background: var(--panel-raised);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
 .guess-cell {
   display: flex;
   align-items: center;
