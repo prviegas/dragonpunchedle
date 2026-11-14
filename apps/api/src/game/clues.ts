@@ -36,8 +36,11 @@ export interface CharacterClues {
    *  2nd Impact and 3rd Strike).
    *  Doesn't count: crossovers, ports, remasters, mobile and non-fighting spin-offs,
    *  non-playable appearances.
-   *  One exception, by choice: the Marvel vs. Capcom series (X-Men vs. Street Fighter
-   *  through MvC Infinite) counts for both its Marvel and its Capcom characters. */
+   *  Exceptions, by choice: the Marvel vs. Capcom series (X-Men vs. Street Fighter
+   *  through MvC Infinite) counts for both its Marvel and its Capcom characters, and
+   *  Mortal Kombat vs. DC Universe for both its DC and its Mortal Kombat characters.
+   *  Marvel and DC characters also count their other licensed fighters (e.g. Justice
+   *  League Task Force). */
   gamesAppearedIn: number;
 }
 
