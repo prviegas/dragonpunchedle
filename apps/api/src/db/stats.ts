@@ -40,7 +40,7 @@ export async function playerStats(pool: pg.Pool, userId: number, today: string):
               count(*) AS guesses,
               bool_or(g.character_id = p.character_id) AS solved
        FROM guesses g JOIN daily_puzzles p USING (puzzle_date)
-       WHERE g.user_id = $1 AND g.puzzle_date <= $2
+       WHERE g.user_id = $1 AND g.puzzle_date <= $2 AND NOT g.late -- rounds played on their day only
        GROUP BY g.puzzle_date
      ),
      runs AS (
@@ -80,6 +80,9 @@ export interface ScoreDistribution {
   lost: number;
   /** The viewer's own finished result: guesses taken, "lost", or null (not finished). */
   you: number | "lost" | null;
+  /** True when `you` was finished after the day, so it isn't one of the counts
+   *  above: the chart shows where it would have landed. */
+  youLate: boolean;
 }
 
 /**
@@ -97,7 +100,7 @@ export async function scoreDistribution(
     `SELECT coalesce('u' || g.user_id::text, 'g' || g.guest_id) AS player,
             count(*)::int AS guesses, bool_or(g.character_id = p.character_id) AS solved
      FROM guesses g JOIN daily_puzzles p USING (puzzle_date)
-     WHERE g.puzzle_date = $1
+     WHERE g.puzzle_date = $1 AND NOT g.late
      GROUP BY 1
      HAVING bool_or(g.character_id = p.character_id) OR count(*) >= $2`,
     [date, maxGuesses],
@@ -113,7 +116,26 @@ export async function scoreDistribution(
     else solvedIn[result - 1]!++;
     if (row.player === viewerKey) you = result;
   }
-  return { players: rows.length, solvedIn, lost, you };
+
+  // A viewer who finished the round late isn't among the day's players, but
+  // still gets their own result, to compare against the day's curve.
+  let youLate = false;
+  if (viewer && you === null) {
+    const column = "userId" in viewer ? "user_id" : "guest_id";
+    const value = "userId" in viewer ? viewer.userId : viewer.guestId;
+    const mine = await pool.query<{ guesses: number; solved: boolean }>(
+      `SELECT count(*)::int AS guesses, coalesce(bool_or(g.character_id = p.character_id), false) AS solved
+       FROM guesses g JOIN daily_puzzles p USING (puzzle_date)
+       WHERE g.${column} = $1 AND g.puzzle_date = $2`,
+      [value, date],
+    );
+    const { guesses, solved } = mine.rows[0]!;
+    if (solved || guesses >= maxGuesses) {
+      you = solved ? Math.min(guesses, maxGuesses) : "lost";
+      youLate = true;
+    }
+  }
+  return { players: rows.length, solvedIn, lost, you, youLate };
 }
 
 export interface TodayEntry {
@@ -138,7 +160,7 @@ export async function todayLeaderboard(
               count(*)::int AS guesses,
               max(g.created_at) FILTER (WHERE g.character_id = p.character_id) AS solved_at
        FROM guesses g JOIN daily_puzzles p USING (puzzle_date)
-       WHERE g.puzzle_date = $1 AND g.user_id IS NOT NULL -- accounts only: guests have no name to show
+       WHERE g.puzzle_date = $1 AND g.user_id IS NOT NULL AND NOT g.late -- accounts only: guests have no name to show
        GROUP BY g.user_id
      )
      SELECT rank() OVER (ORDER BY d.guesses, d.solved_at)::int AS rank,
@@ -178,7 +200,7 @@ export async function streakLeaderboard(
        SELECT g.user_id, g.puzzle_date
        FROM guesses g
        JOIN daily_puzzles p ON p.puzzle_date = g.puzzle_date AND p.character_id = g.character_id
-       WHERE g.puzzle_date <= $1 AND g.user_id IS NOT NULL
+       WHERE g.puzzle_date <= $1 AND g.user_id IS NOT NULL AND NOT g.late
      ),
      runs AS (
        SELECT user_id, puzzle_date,

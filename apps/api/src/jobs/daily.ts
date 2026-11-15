@@ -53,6 +53,7 @@ export async function runDailyJob(pool: pg.Pool, now = new Date(), daysAhead = D
   const guests = await pool.query(
     "DELETE FROM guesses WHERE guest_id IS NOT NULL AND puzzle_date < current_date - 30",
   );
+  await pool.query("DELETE FROM round_reveals WHERE guest_id IS NOT NULL AND puzzle_date < current_date - 30");
 
   return {
     puzzlesCreated,

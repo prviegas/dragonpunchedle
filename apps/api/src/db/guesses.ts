@@ -11,11 +11,14 @@ function playerColumn(player: Player): { column: "user_id" | "guest_id"; value: 
 
 export type SaveGuessResult =
   | { saved: true; guessNumber: number }
-  | { saved: false; reason: "solved" | "duplicate" | "out-of-guesses" };
+  | { saved: false; reason: "solved" | "duplicate" | "out-of-guesses" | "revealed" };
 
 /**
  * Records a guess, if the rules allow it: not after solving, not the same
- * character twice, and no more than maxGuesses a day.
+ * character twice, no more than maxGuesses a day, and not after "Show answer".
+ *
+ * `late` marks a guess on a past day's round: kept for the player's history,
+ * left out of that day's chart, the leaderboards and streaks.
  *
  * The checks and the insert run in one transaction that first takes a lock
  * for this player. Without it, two guesses sent at the same moment could both
@@ -30,6 +33,7 @@ export async function saveGuess(
   date: string,
   characterId: string,
   maxGuesses: number,
+  late = false,
 ): Promise<SaveGuessResult> {
   const { column, value } = playerColumn(player);
   const client = await pool.connect();
@@ -46,16 +50,22 @@ export async function saveGuess(
       [value, date, characterId],
     );
     const { count, solved, repeated } = rows[0]!;
+    const revealed = await client.query(`SELECT 1 FROM round_reveals WHERE ${column} = $1 AND puzzle_date = $2`, [
+      value,
+      date,
+    ]);
 
     let result: SaveGuessResult;
     if (solved) result = { saved: false, reason: "solved" };
+    else if (revealed.rows.length > 0) result = { saved: false, reason: "revealed" };
     else if (repeated) result = { saved: false, reason: "duplicate" };
     else if (count >= maxGuesses) result = { saved: false, reason: "out-of-guesses" };
     else {
-      await client.query(`INSERT INTO guesses (${column}, puzzle_date, character_id) VALUES ($1, $2, $3)`, [
+      await client.query(`INSERT INTO guesses (${column}, puzzle_date, character_id, late) VALUES ($1, $2, $3, $4)`, [
         value,
         date,
         characterId,
+        late,
       ]);
       result = { saved: true, guessNumber: count + 1 };
     }
@@ -109,4 +119,49 @@ export async function claimGuestGuesses(pool: pg.Pool, guestId: string, userId: 
   } finally {
     client.release();
   }
+}
+
+/**
+ * "Show answer" on a past round: records that this player saw the answer, so
+ * the round is over for them. Takes the same per-player lock as saveGuess, so
+ * a guess can't slip in alongside it. Doing it twice is harmless.
+ */
+export async function revealRound(pool: pg.Pool, player: Player, date: string): Promise<void> {
+  const { column, value } = playerColumn(player);
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [`${column}:${value}`]);
+    await client.query(
+      `INSERT INTO round_reveals (${column}, puzzle_date) VALUES ($1, $2)
+       ON CONFLICT DO NOTHING`,
+      [value, date],
+    );
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+/** Whether this player chose "Show answer" for a day. */
+export async function hasRevealed(pool: pg.Pool, player: Player, date: string): Promise<boolean> {
+  const { column, value } = playerColumn(player);
+  const { rows } = await pool.query(`SELECT 1 FROM round_reveals WHERE ${column} = $1 AND puzzle_date = $2`, [
+    value,
+    date,
+  ]);
+  return rows.length > 0;
+}
+
+/** Whether any of this player's guesses for a day were made after it: played late. */
+export async function playedLate(pool: pg.Pool, player: Player, date: string): Promise<boolean> {
+  const { column, value } = playerColumn(player);
+  const { rows } = await pool.query(`SELECT 1 FROM guesses WHERE ${column} = $1 AND puzzle_date = $2 AND late LIMIT 1`, [
+    value,
+    date,
+  ]);
+  return rows.length > 0;
 }

@@ -120,6 +120,28 @@ describe.skipIf(!process.env.DATABASE_URL)("stats and leaderboards", () => {
     ]);
   });
 
+  it("leaves rounds played late out of stats, streaks and the day's results", async () => {
+    // Casey goes back and solves days 6-9 late (and today on time is untouched).
+    for (let n = 6; n <= 9; n++) {
+      await pool.query("INSERT INTO guesses (user_id, puzzle_date, character_id, late) VALUES ($1, $2, $3, true)", [
+        ids.casey,
+        day(n),
+        ANSWER,
+      ]);
+    }
+    try {
+      expect(await playerStats(pool, ids.casey!, TODAY)).toMatchObject({ played: 1, solved: 1, currentStreak: 0, maxStreak: 1 });
+      expect(ours(await streakLeaderboard(pool, TODAY, null)).map((r) => r.username)).not.toContain(`${PREFIX}casey`);
+      expect(await scoreDistribution(pool, day(9), { userId: ids.casey! }, 10)).toMatchObject({
+        players: 1, // alex, on the day
+        you: 1,
+        youLate: true,
+      });
+    } finally {
+      await pool.query("DELETE FROM guesses WHERE user_id = $1 AND late", [ids.casey]);
+    }
+  });
+
   it("serves stats to the logged-in player only", async () => {
     const { token } = await createSession(pool, ids.alex!);
     const mine = await app.inject({ method: "GET", url: "/api/me/stats", headers: { cookie: `${SESSION_COOKIE}=${token}` } });
@@ -137,6 +159,7 @@ describe.skipIf(!process.env.DATABASE_URL)("stats and leaderboards", () => {
       solvedIn: [2, 0, 1, 0, 0, 0, 0, 0, 0, 0], // blair and emery in 1, drew in 3
       lost: 0,
       you: 3,
+      youLate: false,
     });
   });
 

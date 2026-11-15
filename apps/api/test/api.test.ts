@@ -77,8 +77,9 @@ describe.skipIf(!process.env.DATABASE_URL)("puzzle API", () => {
     expect((await guess(TODAY, "nobody")).statusCode).toBe(400);
   });
 
-  it("rejects guesses for any day but today", async () => {
-    expect((await guess("2098-12-31", answerId)).statusCode).toBe(400);
+  it("rejects guesses for days ahead, and past days that had no round", async () => {
+    expect((await guess("2099-01-02", answerId)).statusCode).toBe(400);
+    expect((await guess("2098-12-31", answerId)).statusCode).toBe(404);
   });
 
   it("rejects a malformed request", async () => {

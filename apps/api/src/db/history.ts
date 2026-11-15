@@ -3,11 +3,15 @@ import type { Player } from "./guesses.js";
 
 export interface PastRound {
   date: string;
-  /** The day's character: safe to show, since the day is over. */
+  /** The day's character. The route hides it from players who can still play the round. */
   answer: { id: string; name: string; franchise: string; portraitUrl: string | null };
   /** How many guesses this player made that day (0 if they didn't play). */
   guesses: number;
   solved: boolean;
+  /** Some of those guesses came after the day: the round was played later. */
+  late: boolean;
+  /** The player chose "Show answer". */
+  revealed: boolean;
 }
 
 /**
@@ -36,10 +40,14 @@ export async function listPastRounds(
     hash: string | null;
     guesses: number;
     solved: boolean;
+    late: boolean;
+    revealed: boolean;
   }>(
     `SELECT p.puzzle_date::text AS date, c.id, c.name, c.franchise, cp.hash,
             count(g.id)::int AS guesses,
-            coalesce(bool_or(g.character_id = p.character_id), false) AS solved
+            coalesce(bool_or(g.character_id = p.character_id), false) AS solved,
+            coalesce(bool_or(g.late), false) AS late,
+            EXISTS (SELECT 1 FROM round_reveals r WHERE r.puzzle_date = p.puzzle_date AND r.${column} = $1) AS revealed
      FROM daily_puzzles p
      JOIN characters c ON c.id = p.character_id
      LEFT JOIN character_portraits cp ON cp.character_id = c.id
@@ -61,6 +69,8 @@ export async function listPastRounds(
     },
     guesses: row.guesses,
     solved: row.solved,
+    late: row.late,
+    revealed: row.revealed,
   }));
 }
 

@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import type pg from "pg";
 import { findCharacter } from "../db/characters.js";
+import { findPuzzleAnswerId } from "../db/history.js";
 import rateLimit from "@fastify/rate-limit";
 import { ensureGuestId, readGuestId } from "../auth/guests.js";
 import { listGuessIds, saveGuess, type Player } from "../db/guesses.js";
@@ -86,29 +87,43 @@ export const puzzleRoutes: FastifyPluginAsync<PuzzleRouteOptions> = async (
     { schema: guessSchema, config: { rateLimit: { max: guessRateLimitPerMinute, timeWindow: "1 minute" } } },
     async (request, reply) => {
       const { date } = request.params;
-      // Only today's puzzle takes guesses. The date is part of the URL so a
-      // player who loaded the page before midnight gets a clear error rather
-      // than having their guess checked against a different answer.
-      if (date !== puzzleDateFor(now())) {
-        return reply.code(400).send({ error: "That puzzle isn't open for guesses. Reload for today's." });
+      // Today's round, or any past day's (played late). The date is in the URL,
+      // so a guess is always checked against the round the player is looking
+      // at, even from a page loaded before midnight. Days ahead stay closed:
+      // their answers are already picked.
+      const today = puzzleDateFor(now());
+      if (date > today) {
+        return reply.code(400).send({ error: "That round hasn't started yet." });
       }
+      const late = date < today;
 
       const guess = await findCharacter(pool, request.body.characterId);
       if (!guess) {
         return reply.code(400).send({ error: "Unknown character." });
       }
-      const answer = await todaysAnswer(date);
+      let answer;
+      if (late) {
+        // A past day is looked up, never created: no round then, no round now.
+        const answerId = await findPuzzleAnswerId(pool, date);
+        answer = answerId && (await findCharacter(pool, answerId));
+        if (!answer) return reply.code(404).send({ error: "There was no round that day." });
+      } else {
+        answer = await todaysAnswer(date);
+      }
 
       // Every guess is saved, an account's or a guest's, and the database enforces the rules.
       const player: Player = request.user
         ? { userId: request.user.id }
         : { guestId: ensureGuestId(request, reply, secureCookies) };
-      const saved = await saveGuess(pool, player, date, guess.id, MAX_GUESSES);
+      const saved = await saveGuess(pool, player, date, guess.id, MAX_GUESSES, late);
       if (!saved.saved) {
         const message = {
           solved: "You've already solved today's puzzle.",
           duplicate: "You already guessed that character.",
-          "out-of-guesses": "You're out of guesses for today. A new character arrives tomorrow.",
+          "out-of-guesses": late
+            ? "You're out of guesses for this round."
+            : "You're out of guesses for today. A new character arrives tomorrow.",
+          revealed: "You've already seen the answer for this round.",
         }[saved.reason];
         return reply.code(409).send({ error: message });
       }

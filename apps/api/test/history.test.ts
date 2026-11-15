@@ -14,7 +14,9 @@ const SOLVED_DAY = "2096-07-09";
 const SKIPPED_DAY = "2096-07-08";
 const TOMORROW = "2096-07-11";
 const DATES = [SKIPPED_DAY, SOLVED_DAY, TODAY, TOMORROW];
-const GUEST = "zz_test_history_guest_0000000000".slice(0, 32);
+const GUEST = "zz_test_history_guest_0000000000";
+const LATE_GUEST = "zz_test_history_late_00000000000".slice(0, 32);
+const PEEK_GUEST = "zz_test_history_peek_00000000000".slice(0, 32);
 
 describe.skipIf(!process.env.DATABASE_URL)("past rounds", () => {
   const pool = createPool();
@@ -24,6 +26,7 @@ describe.skipIf(!process.env.DATABASE_URL)("past rounds", () => {
 
   const cleanUp = async () => {
     await pool.query("DELETE FROM guesses WHERE puzzle_date = ANY($1)", [DATES]);
+    await pool.query("DELETE FROM round_reveals WHERE puzzle_date = ANY($1)", [DATES]);
     await pool.query("DELETE FROM daily_puzzles WHERE puzzle_date = ANY($1)", [DATES]);
   };
 
@@ -52,17 +55,21 @@ describe.skipIf(!process.env.DATABASE_URL)("past rounds", () => {
     await pool.end();
   });
 
-  const asGuest = (url: string) => app.inject({ method: "GET", url, cookies: { dp_guest: GUEST } });
+  const asGuest = (url: string, guest = GUEST) => app.inject({ method: "GET", url, cookies: { dp_guest: guest } });
+  const guessAs = (guest: string, date: string, characterId: string) =>
+    app.inject({ method: "POST", url: `/api/puzzles/${date}/guesses`, payload: { characterId }, cookies: { dp_guest: guest } });
 
-  it("lists finished days with their answers and the player's result, newest first", async () => {
+  it("lists finished days newest first, hiding the answers of rounds the player can still play", async () => {
     const response = await asGuest("/api/history");
-    const { rounds } = response.json<{ rounds: { date: string; answer: { id: string }; guesses: number; solved: boolean }[] }>();
+    const { rounds } = response.json<{ rounds: Record<string, unknown>[] }>();
 
     expect(response.statusCode).toBe(200);
     expect(rounds.slice(0, 2)).toMatchObject([
-      { date: SOLVED_DAY, answer: { id: answers[SOLVED_DAY] }, guesses: 2, solved: true },
-      { date: SKIPPED_DAY, answer: { id: answers[SKIPPED_DAY] }, guesses: 0, solved: false },
+      { date: SOLVED_DAY, answer: { id: answers[SOLVED_DAY] }, guesses: 2, solved: true, late: false },
+      { date: SKIPPED_DAY, guesses: 0, solved: false, revealed: false },
     ]);
+    expect(rounds[1]).not.toHaveProperty("answer");
+    expect(response.body).not.toContain(answers[SKIPPED_DAY]!);
   });
 
   it("never lists today or the days picked ahead", async () => {
@@ -83,12 +90,55 @@ describe.skipIf(!process.env.DATABASE_URL)("past rounds", () => {
     expect(day.results).toMatchObject({ players: 1, you: 2 });
   });
 
-  it("shows the answer to someone who didn't play", async () => {
-    const day = (await app.inject({ method: "GET", url: `/api/history/${SOLVED_DAY}` })).json();
+  it("keeps a past round's answer from someone who hasn't played it", async () => {
+    const response = await app.inject({ method: "GET", url: `/api/history/${SOLVED_DAY}` });
 
-    expect(day.answer.id).toBe(answers[SOLVED_DAY]);
-    expect(day.guesses).toEqual([]);
-    expect(day.results.you).toBeNull();
+    expect(response.json()).toMatchObject({ guesses: [], revealed: false, late: false });
+    expect(response.json()).not.toHaveProperty("answer");
+    expect(response.json()).not.toHaveProperty("results");
+    expect(response.body).not.toContain(answers[SOLVED_DAY]!);
+  });
+
+  it("plays a past round late, outside that day's results", async () => {
+    const miss = await guessAs(LATE_GUEST, SOLVED_DAY, wrongId);
+    expect(miss.statusCode).toBe(200);
+    expect(miss.json()).not.toHaveProperty("answer");
+
+    const midway = (await asGuest(`/api/history/${SOLVED_DAY}`, LATE_GUEST)).json();
+    expect(midway).toMatchObject({ late: true, revealed: false });
+    expect(midway).not.toHaveProperty("answer");
+
+    expect((await guessAs(LATE_GUEST, SOLVED_DAY, answers[SOLVED_DAY]!)).json().solved).toBe(true);
+    const done = (await asGuest(`/api/history/${SOLVED_DAY}`, LATE_GUEST)).json();
+    expect(done.answer.id).toBe(answers[SOLVED_DAY]);
+    // Still only the one player who finished on the day; this result is shown beside it.
+    expect(done.results).toMatchObject({ players: 1, you: 2, youLate: true });
+
+    const { rounds } = (await asGuest("/api/history", LATE_GUEST)).json();
+    expect(rounds[0]).toMatchObject({ date: SOLVED_DAY, solved: true, late: true });
+  });
+
+  it("shows the answer on request, and ends the round there", async () => {
+    const reveal = await app.inject({
+      method: "POST",
+      url: `/api/history/${SKIPPED_DAY}/reveal`,
+      cookies: { dp_guest: PEEK_GUEST },
+    });
+    expect(reveal.statusCode).toBe(200);
+    expect(reveal.json()).toMatchObject({ revealed: true, answer: { id: answers[SKIPPED_DAY] } });
+
+    const after = await guessAs(PEEK_GUEST, SKIPPED_DAY, answers[SKIPPED_DAY]!);
+    expect(after.statusCode).toBe(409);
+  });
+
+  it("gives a guest who reveals without a cookie one, so the reveal sticks", async () => {
+    const reveal = await app.inject({ method: "POST", url: `/api/history/${SKIPPED_DAY}/reveal` });
+    expect(reveal.statusCode).toBe(200);
+    expect(reveal.cookies.some((c) => c.name === "dp_guest")).toBe(true);
+  });
+
+  it("doesn't take guesses for days ahead", async () => {
+    expect((await guessAs(LATE_GUEST, TOMORROW, answers[TOMORROW]!)).statusCode).toBe(400);
   });
 
   it("refuses today, the days ahead, days without a round and malformed dates", async () => {

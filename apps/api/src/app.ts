@@ -106,7 +106,7 @@ export function buildApp({
     app.register(characterRoutes, { pool });
     app.register(puzzleRoutes, { pool, now, secureCookies, guessRateLimitPerMinute });
     app.register(statsRoutes, { pool, now });
-    app.register(historyRoutes, { pool, now });
+    app.register(historyRoutes, { pool, now, secureCookies });
   }
 
   if (staticDir) {
