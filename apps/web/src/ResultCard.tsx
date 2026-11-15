@@ -1,4 +1,5 @@
 import type { Character, GuessResult, PlayerStats } from "./api";
+import { Countdown } from "./Countdown";
 import { Portrait } from "./Portrait";
 import { ResultsChart } from "./ResultsChart";
 import { ShareButton } from "./ShareButton";
@@ -36,7 +37,10 @@ export function ResultCard({ outcome, character, date, guesses, maxGuesses, logg
           <p className="result-meta">
             {character.franchise} · since {character.debutYear}
           </p>
-          {!won && <p className="result-score">Out of guesses. A new fighter arrives tomorrow.</p>}
+          {!won && <p className="result-score">Out of guesses.</p>}
+          <p className="result-next">
+            <Countdown date={date} />
+          </p>
           <ShareButton date={date} guesses={guesses} maxGuesses={maxGuesses} />
         </div>
       </div>
