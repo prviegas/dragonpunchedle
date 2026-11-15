@@ -69,7 +69,8 @@ interface BoardProps {
   guesses: GuessResult[];
   /** The guess just made: its tiles flip in. Earlier ones appear as they are. */
   freshId?: string;
-  /** Once the round is over (won or lost), the day's character, shown above every guess. */
+  /** After a lost round, the day's character, shown above every guess. A win
+   *  doesn't need it: the winning row already is the answer, and stands out. */
   answer?: Character;
 }
 
@@ -116,11 +117,12 @@ export function Board({ clues, guesses, freshId, answer }: BoardProps) {
           {guesses.map(({ guess, clues: results, solved }) => {
             const fresh = guess.id === freshId;
             return (
-              <tr key={guess.id} className={fresh ? "is-fresh" : undefined}>
+              <tr key={guess.id} className={[fresh && "is-fresh", solved && "is-winner"].filter(Boolean).join(" ") || undefined}>
                 <th scope="row" className={solved ? "guess-name is-solved" : "guess-name"}>
                   <span className="guess-cell">
                     <Thumb character={guess} />
                     <span className="guess-text">
+                      {solved && <span className="winner-label">Got it</span>}
                       <span className="guess-title">{guess.name}</span>
                       <span className="guess-franchise">{guess.franchise}</span>
                     </span>
