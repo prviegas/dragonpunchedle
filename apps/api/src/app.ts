@@ -7,6 +7,7 @@ import type pg from "pg";
 import { findSessionUser, SESSION_COOKIE, type User } from "./auth/sessions.js";
 import { authRoutes, type OAuthOptions } from "./routes/auth.js";
 import { characterRoutes } from "./routes/characters.js";
+import { historyRoutes } from "./routes/history.js";
 import { puzzleRoutes } from "./routes/puzzles.js";
 import { statsRoutes } from "./routes/stats.js";
 
@@ -105,6 +106,7 @@ export function buildApp({
     app.register(characterRoutes, { pool });
     app.register(puzzleRoutes, { pool, now, secureCookies, guessRateLimitPerMinute });
     app.register(statsRoutes, { pool, now });
+    app.register(historyRoutes, { pool, now });
   }
 
   if (staticDir) {

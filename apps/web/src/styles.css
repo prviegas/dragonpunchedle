@@ -19,6 +19,7 @@
 
   /* Tile colours. Every tile also says its status in words (see Board.tsx). */
   --correct: #178a49;
+  --correct-ring: #5fd796; /* the winning row's outline */
   --partial: #d9a014;
   --partial-ink: #221800;
   --wrong: #343b55;
@@ -93,6 +94,20 @@ body {
   color: var(--accent-text);
 }
 
+.logo a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.nav-link {
+  color: var(--muted);
+  text-underline-offset: 3px;
+}
+
+.nav-link:hover {
+  color: var(--text);
+}
+
 .account {
   display: flex;
   align-items: center;
@@ -140,6 +155,7 @@ body {
 }
 
 .round-date::before,
+.round-next::before,
 .round-tagline::before {
   content: "· ";
   color: var(--dim);
@@ -388,7 +404,26 @@ body {
   box-shadow: inset 3px 0 0 var(--correct);
 }
 
-/* The day's character, shown above the guesses once the round is over. */
+/* The winning guess: a green ring around the whole row, so a solved board
+   reads at a glance without a separate answer row. */
+.board tr.is-winner .guess-name {
+  background: #12301f;
+  box-shadow: inset 0 0 0 2px var(--correct-ring);
+}
+
+.board tr.is-winner .tile {
+  box-shadow: inset 0 0 0 2px var(--correct-ring);
+}
+
+.winner-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--correct-ring);
+}
+
+/* After a lost round: the day's character, shown above the guesses. */
 .guess-name.is-answer {
   box-shadow: inset 0 0 0 1px var(--accent);
 }
@@ -571,6 +606,19 @@ body {
 
 .result-score {
   margin-top: 12px !important;
+}
+
+.result-next {
+  margin-top: 12px !important;
+  color: var(--muted);
+}
+
+/* ---- Countdown to the next round ---- */
+
+.countdown-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .share {
@@ -1050,6 +1098,145 @@ body {
   color: var(--muted);
 }
 
+/* ---- Past rounds ---- */
+
+.history {
+  margin-top: 20px;
+}
+
+/* The board keeps the page's full width, as on today's round; the rest stays in a column. */
+.history > :not(.board-scroll) {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.history-nav {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+}
+
+.history-nav a {
+  color: var(--accent-text);
+  text-underline-offset: 3px;
+}
+
+.history-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-bottom: 12px;
+}
+
+.history-title {
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.history-head .history-title {
+  margin: 0;
+}
+
+.history-date {
+  margin-left: 8px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+}
+
+.history-summary,
+.history-note {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.history-note {
+  margin-bottom: 14px;
+}
+
+.rounds {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.round-link {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px 8px 8px;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--panel);
+  border-radius: var(--radius);
+  transition: background-color 0.15s;
+}
+
+.round-link:hover {
+  background: var(--panel-raised);
+}
+
+.round-link-text {
+  display: grid;
+  line-height: 1.2;
+}
+
+.round-link-when {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* How the player did: a small label, coloured like the tiles. */
+.outcome {
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border-radius: 999px;
+}
+
+.outcome--solved {
+  color: #fff;
+  background: var(--correct);
+}
+
+.outcome--lost {
+  color: var(--text);
+  background: var(--wrong);
+}
+
+.outcome--unfinished,
+.outcome--skipped {
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+
+.outcome--large {
+  display: inline-block;
+  margin-top: 12px !important;
+  font-size: 0.95rem;
+}
+
+.past-result {
+  margin-bottom: 20px;
+}
+
 /* ---- Footer ---- */
 
 .footer {
@@ -1070,6 +1257,17 @@ body {
 /* ---- Small screens ---- */
 
 @media (max-width: 640px) {
+  .account {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px 12px;
+  }
+
+  .round-link {
+    gap: 10px;
+    padding-right: 10px;
+  }
+
   .round-tagline {
     flex-basis: 100%;
     text-align: center;

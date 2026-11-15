@@ -6,6 +6,8 @@ interface ResultsChartProps {
   maxGuesses: number;
   /** The viewer's finished round. */
   mine: RoundResult;
+  /** A past day's numbers, already loaded: the chart then shows them instead of today's. */
+  pastResults?: TodayResults;
 }
 
 const HEIGHT = 190;
@@ -28,14 +30,18 @@ function curvePoints(counts: number[], steps = 120): number[] {
   return peak > 0 ? values.map((v) => v / peak) : values;
 }
 
-export function ResultsChart({ maxGuesses, mine }: ResultsChartProps) {
-  const [fetched, setFetched] = useState<TodayResults>();
+export function ResultsChart({ maxGuesses, mine, pastResults }: ResultsChartProps) {
+  const [fetchedToday, setFetched] = useState<TodayResults>();
+  const fetched = pastResults ?? fetchedToday;
+  // How the text names the day: "today's players", or "that day's players".
+  const day = pastResults ? "that day" : "today";
   const [failed, setFailed] = useState(false);
   const [hover, setHover] = useState<number>();
   const [width, setWidth] = useState(600);
   const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (pastResults) return;
     let current = true;
     fetchTodayResults().then(
       (data) => current && setFetched(data),
@@ -44,7 +50,7 @@ export function ResultsChart({ maxGuesses, mine }: ResultsChartProps) {
     return () => {
       current = false;
     };
-  }, [mine]);
+  }, [mine, pastResults]);
 
   // Draw in real pixels rather than stretching a fixed drawing, so labels stay
   // readable on a phone.
@@ -80,11 +86,11 @@ export function ResultsChart({ maxGuesses, mine }: ResultsChartProps) {
   const caption =
     mine === "lost"
       ? results.players > 1
-        ? `${percentSolved(results)}% of today's players solved it`
-        : "Nobody else has finished yet"
+        ? `${percentSolved(results)}% of ${day}'s players solved it`
+        : pastResults ? "Nobody else finished that day" : "Nobody else has finished yet"
       : beaten === null
-        ? "First to finish today"
-        : `Better than ${beaten}% of today's players`;
+        ? `First to finish ${day}`
+        : `Better than ${beaten}% of ${day}'s players`;
 
   function onPointerMove(event: PointerEvent<SVGSVGElement>) {
     const x = event.clientX - event.currentTarget.getBoundingClientRect().left;
@@ -107,7 +113,7 @@ export function ResultsChart({ maxGuesses, mine }: ResultsChartProps) {
           {mine !== "lost" && <small>/{maxGuesses}</small>}
         </p>
         <p className="chart-players">
-          {results.players} {results.players === 1 ? "player" : "players"} today
+          {results.players} {results.players === 1 ? "player" : "players"} {day}
         </p>
       </div>
 
@@ -156,7 +162,7 @@ export function ResultsChart({ maxGuesses, mine }: ResultsChartProps) {
 
       {/* The same numbers as a table, for screen readers. */}
       <table className="visually-hidden">
-        <caption>Today's players by number of guesses</caption>
+        <caption>{pastResults ? "That day's" : "Today's"} players by number of guesses</caption>
         <thead>
           <tr>
             <th scope="col">Result</th>

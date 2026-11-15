@@ -17,8 +17,10 @@ import {
 } from "./api";
 import { AuthPanel } from "./AuthPanel";
 import { Board } from "./Board";
+import { Countdown } from "./Countdown";
 import { GuessInput } from "./GuessInput";
 import { HealthBar } from "./HealthBar";
+import { History, HISTORY_HASH } from "./History";
 import { Leaderboard } from "./Leaderboard";
 import { Modal } from "./Modal";
 import { ResultCard } from "./ResultCard";
@@ -75,7 +77,30 @@ function takeLoginError(): string | undefined {
 // Read once when the page loads, not on every render.
 const initialLoginError = takeLoginError();
 
+/** Which view the address asks for: today's game, the list of past rounds, or one past day. */
+type View = { name: "today" } | { name: "history"; date?: string };
+
+function viewFromHash(hash: string): View {
+  if (hash === HISTORY_HASH) return { name: "history" };
+  const date = hash.startsWith(`${HISTORY_HASH}/`) ? hash.slice(HISTORY_HASH.length + 1) : "";
+  return /^\d{4}-\d{2}-\d{2}$/.test(date) ? { name: "history", date } : { name: "today" };
+}
+
+function useView(): View {
+  const [view, setView] = useState(() => viewFromHash(window.location.hash));
+  useEffect(() => {
+    const onChange = () => {
+      setView(viewFromHash(window.location.hash));
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener("hashchange", onChange);
+    return () => window.removeEventListener("hashchange", onChange);
+  }, []);
+  return view;
+}
+
 export function App() {
+  const view = useView();
   const [load, setLoad] = useState<Load>({ state: "loading" });
   const [user, setUser] = useState<User | null>(null);
   // A failed Discord/Google sign-in reopens the login panel with the reason.
@@ -201,6 +226,9 @@ export function App() {
 
   const account = user ? (
     <div className="account">
+      <a className="nav-link" href={HISTORY_HASH}>
+        Past rounds
+      </a>
       <span className="account-name">{user.username}</span>
       {stats && stats.currentStreak > 0 && (
         <span className="streak" title={`${stats.currentStreak}-day streak`}>
@@ -214,6 +242,9 @@ export function App() {
     </div>
   ) : (
     <div className="account">
+      <a className="nav-link" href={HISTORY_HASH}>
+        Past rounds
+      </a>
       <button type="button" className="button button--small" onClick={() => setShowAuth(true)}>
         Log in
       </button>
@@ -222,11 +253,24 @@ export function App() {
 
   const roundOver = winner ?? answer;
 
+  const authModal = (
+    <Modal open={showAuth && !user} onClose={() => setShowAuth(false)} label="Log in or sign up">
+      <AuthPanel initialError={initialLoginError} onSignedIn={signedIn} onClose={() => setShowAuth(false)} />
+    </Modal>
+  );
+
+  if (view.name === "history") {
+    return (
+      <Shell account={account}>
+        {authModal}
+        <History key={user?.id ?? "guest"} date={view.date} loggedIn={user !== null} onLogIn={() => setShowAuth(true)} />
+      </Shell>
+    );
+  }
+
   return (
     <Shell date={puzzle.date} account={account}>
-      <Modal open={showAuth && !user} onClose={() => setShowAuth(false)} label="Log in or sign up">
-        <AuthPanel initialError={initialLoginError} onSignedIn={signedIn} onClose={() => setShowAuth(false)} />
-      </Modal>
+      {authModal}
 
       {roundOver ? (
         <ResultCard
@@ -252,7 +296,7 @@ export function App() {
         </section>
       )}
 
-      <Board clues={puzzle.clues} guesses={guesses} freshId={freshId} answer={winner ? winner.guess : answer} />
+      <Board clues={puzzle.clues} guesses={guesses} freshId={freshId} answer={winner ? undefined : answer} />
       <Leaderboard version={standingsVersion} />
     </Shell>
   );
@@ -263,7 +307,9 @@ function Shell({ date, account, children }: { date?: string; account?: ReactNode
     <div className="page">
       <header className="topbar">
         <h1 className="logo">
-          Dragon<span className="logo-punch">punched</span>le
+          <a href="#">
+            Dragon<span className="logo-punch">punched</span>le
+          </a>
         </h1>
         {account}
       </header>
@@ -271,6 +317,9 @@ function Shell({ date, account, children }: { date?: string; account?: ReactNode
         <p className="round">
           <span className="round-number">Round {puzzleNumber(date)}</span>
           <span className="round-date">{formatDate(date)}</span>
+          <span className="round-next">
+            <Countdown date={date} compact />
+          </span>
           <span className="round-tagline">Guess today's fighting game character</span>
         </p>
       )}

@@ -167,3 +167,27 @@ export interface TodayResults {
 }
 
 export const fetchTodayResults = () => request<TodayResults>("/api/puzzles/today/results");
+
+export interface PastRound {
+  date: string;
+  answer: { id: string; name: string; franchise: string; portraitUrl: string | null };
+  /** Guesses this player made that day; 0 if they didn't play. */
+  guesses: number;
+  solved: boolean;
+}
+
+/** Finished days, newest first, with the answer and how this player did. */
+export const fetchHistory = () => request<{ maxGuesses: number; rounds: PastRound[] }>("/api/history");
+
+export interface PastDay {
+  date: string;
+  maxGuesses: number;
+  clues: ClueInfo[];
+  answer: Character;
+  /** This player's guesses that day, newest first. */
+  guesses: GuessResult[];
+  results: TodayResults;
+}
+
+/** One finished day in full: the answer, this player's board, and how everyone did. */
+export const fetchPastDay = (date: string) => request<PastDay>(`/api/history/${encodeURIComponent(date)}`);
