@@ -263,7 +263,13 @@ export function App() {
     return (
       <Shell account={account}>
         {authModal}
-        <History key={user?.id ?? "guest"} date={view.date} loggedIn={user !== null} onLogIn={() => setShowAuth(true)} />
+        <History
+          key={user?.id ?? "guest"}
+          date={view.date}
+          characters={characters}
+          playerName={user?.username ?? null}
+          onLogIn={() => setShowAuth(true)}
+        />
       </Shell>
     );
   }

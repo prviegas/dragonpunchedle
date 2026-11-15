@@ -164,16 +164,23 @@ export interface TodayResults {
   lost: number;
   /** The viewer's own finished result. */
   you: number | "lost" | null;
+  /** `you` was finished after the day, so it isn't in the counts above. */
+  youLate?: boolean;
 }
 
 export const fetchTodayResults = () => request<TodayResults>("/api/puzzles/today/results");
 
 export interface PastRound {
   date: string;
-  answer: { id: string; name: string; franchise: string; portraitUrl: string | null };
+  /** Only once the round is over for this player: solved, out of guesses, or "Show answer". */
+  answer?: { id: string; name: string; franchise: string; portraitUrl: string | null };
   /** Guesses this player made that day; 0 if they didn't play. */
   guesses: number;
   solved: boolean;
+  /** Some guesses came after the day. */
+  late: boolean;
+  /** The player chose "Show answer". */
+  revealed: boolean;
 }
 
 /** Finished days, newest first, with the answer and how this player did. */
@@ -183,11 +190,18 @@ export interface PastDay {
   date: string;
   maxGuesses: number;
   clues: ClueInfo[];
-  answer: Character;
   /** This player's guesses that day, newest first. */
   guesses: GuessResult[];
-  results: TodayResults;
+  revealed: boolean;
+  late: boolean;
+  /** Only once the round is over for this player. */
+  answer?: Character;
+  results?: TodayResults;
 }
 
 /** One finished day in full: the answer, this player's board, and how everyone did. */
 export const fetchPastDay = (date: string) => request<PastDay>(`/api/history/${encodeURIComponent(date)}`);
+
+/** "Show answer" on a past round: ends it for this player and returns it with the answer. */
+export const revealPastDay = (date: string) =>
+  request<PastDay>(`/api/history/${encodeURIComponent(date)}/reveal`, { method: "POST" });

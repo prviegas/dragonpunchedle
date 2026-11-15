@@ -1221,10 +1221,78 @@ body {
   background: var(--wrong);
 }
 
+/* Still playable: shaped like a button, in the accent colour. */
 .outcome--unfinished,
 .outcome--skipped {
+  color: var(--accent-text);
+  border: 1px solid var(--accent);
+}
+
+.outcome--revealed {
   color: var(--muted);
   border: 1px solid var(--line);
+}
+
+.round-link-result {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+/* On the day or later: plain small text, so it reads as a note on the result. */
+.when {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.when--on-day {
+  color: var(--correct-ring);
+}
+
+.when--later {
+  color: var(--dim);
+}
+
+.when--later::before {
+  content: "↻ ";
+}
+
+.guess-title.is-hidden {
+  font-weight: 500;
+  color: var(--dim);
+}
+
+.result-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 12px !important;
+}
+
+.result-tags .outcome--large {
+  margin-top: 0 !important;
+}
+
+.late-note {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.reveal {
+  margin: 12px 0 0;
+  font-size: 0.85rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.link--quiet {
+  color: var(--dim);
 }
 
 .outcome--large {

@@ -37,3 +37,11 @@ describe("percentSolved", () => {
     expect(percentSolved({ players: 0, solvedIn: [], lost: 0, you: null })).toBe(0);
   });
 });
+
+describe("percentBeaten for a round played late", () => {
+  it("compares against everyone who played on the day, since the viewer isn't among them", () => {
+    // 4 players on the day: 1 solved in 2, 2 in 5, 1 lost. A late solve in 3 beats 3 of 4.
+    const day = { players: 4, solvedIn: [0, 1, 0, 0, 2], lost: 1, you: 3, youLate: true };
+    expect(percentBeaten(day, 3)).toBe(75);
+  });
+});

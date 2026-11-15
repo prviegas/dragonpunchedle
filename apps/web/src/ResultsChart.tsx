@@ -83,8 +83,13 @@ export function ResultsChart({ maxGuesses, mine, pastResults }: ResultsChartProp
   const youY = yAt(curve[Math.round((youIndex / (counts.length - 1)) * steps)] ?? 0);
 
   const beaten = percentBeaten(results, mine);
-  const caption =
-    mine === "lost"
+  const caption = results.youLate
+    ? results.players === 0
+      ? "Nobody finished it on the day"
+      : mine === "lost"
+        ? `${percentSolved(results)}% of ${day}'s players solved it`
+        : `Would have beaten ${beaten}% of ${day}'s players`
+    : mine === "lost"
       ? results.players > 1
         ? `${percentSolved(results)}% of ${day}'s players solved it`
         : pastResults ? "Nobody else finished that day" : "Nobody else has finished yet"

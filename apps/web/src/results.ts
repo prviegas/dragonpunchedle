@@ -5,11 +5,12 @@ export type RoundResult = number | "lost";
 
 /**
  * The share of the other players the viewer did better than: everyone who
- * needed more guesses or ran out. Ties don't count as beaten. `results` must
- * include the viewer, as the server's counts do. null when nobody else finished.
+ * needed more guesses or ran out. Ties don't count as beaten. `results`
+ * includes the viewer, as the server's counts do, unless they played late
+ * (`youLate`). null when nobody else finished.
  */
 export function percentBeaten(results: TodayResults, mine: RoundResult): number | null {
-  const others = results.players - 1;
+  const others = results.youLate ? results.players : results.players - 1;
   if (others <= 0) return null;
   if (mine === "lost") return 0;
   const slower = results.solvedIn.slice(mine).reduce((sum, count) => sum + count, 0);
