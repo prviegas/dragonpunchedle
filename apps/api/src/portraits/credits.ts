@@ -11,6 +11,7 @@ export const CREDITS: Readonly<Record<string, string>> = {
   "Fatal Fury": "© SNK",
   "Granblue Fantasy Versus": "© Cygames",
   "Guilty Gear": "© Arc System Works",
+  "Hunter x Hunter": "© Yoshihiro Togashi/Shueisha; game © Bushiroad, Eighting",
   "Killer Instinct": "© Microsoft",
   "Melty Blood": "© TYPE-MOON, French-Bread",
   "Mortal Kombat": "© Warner Bros. Games",
