@@ -98,16 +98,25 @@ export function Board({ clues, guesses, freshId, answer, onHelp }: BoardProps) {
                   </th>
                 );
               }
-              const tip = `Yellow: ${clue.close}`;
+              // The tip: a yellow square and the rule in a few words ("±3 years").
+              const tip = (
+                <span className="column-tip" aria-hidden="true">
+                  <span className="swatch tile--partial" />
+                  {clue.closeShort}
+                </span>
+              );
+              const label = `${clue.label}. Close (yellow): ${clue.close}`;
               return (
                 <th scope="col" key={clue.key} className="has-tip">
                   {onHelp ? (
-                    <button type="button" className="column-name" data-tip={tip} aria-label={`${clue.label}. ${tip}`} onClick={onHelp}>
+                    <button type="button" className="column-name" aria-label={label} onClick={onHelp}>
                       {clue.label}
+                      {tip}
                     </button>
                   ) : (
-                    <span className="column-name" data-tip={tip} tabIndex={0} aria-label={`${clue.label}. ${tip}`}>
+                    <span className="column-name" tabIndex={0} aria-label={label}>
                       {clue.label}
+                      {tip}
                     </span>
                   )}
                 </th>

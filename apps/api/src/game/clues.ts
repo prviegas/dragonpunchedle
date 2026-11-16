@@ -62,13 +62,15 @@ export interface ClueDefinition {
    *  play". null: it never does (right or wrong only). Kept next to the rule it
    *  describes so the two can't drift apart (a test checks the numbers match). */
   close: string | null;
+  /** The same rule in a few words, for the hover tip on the column name. */
+  closeShort?: string;
 }
 
 export const CLUES: readonly ClueDefinition[] = [
   { key: "franchise", label: "Franchise", kind: "exact", close: null },
   { key: "developer", label: "Developer", kind: "exact", close: null },
-  { key: "debutYear", label: "Debut year", kind: "number", closeWithin: 3, close: "Within 3 years of the answer" },
-  { key: "archetypes", label: "Archetypes", kind: "set", close: "Shares at least one archetype, but not all" },
+  { key: "debutYear", label: "Debut year", kind: "number", closeWithin: 3, close: "Within 3 years of the answer", closeShort: "±3 years" },
+  { key: "archetypes", label: "Archetypes", kind: "set", close: "Shares at least one archetype, but not all", closeShort: "Some shared" },
   { key: "species", label: "Species", kind: "exact", close: null },
   { key: "gender", label: "Gender", kind: "exact", close: null },
   {
@@ -77,11 +79,12 @@ export const CLUES: readonly ClueDefinition[] = [
     kind: "exact",
     groupOf: continentOf,
     close: "Same continent. Fictional places are never close",
+    closeShort: "Same continent",
   },
-  { key: "gamesAppearedIn", label: "Games appeared in", kind: "number", closeWithin: 2, close: "Within 2 games of the answer" },
+  { key: "gamesAppearedIn", label: "Games appeared in", kind: "number", closeWithin: 2, close: "Within 2 games of the answer", closeShort: "±2 games" },
 ];
 
 /** The clue list as the page gets it: what each column is and when it turns yellow. */
 export function publicClues() {
-  return CLUES.map(({ key, label, kind, close }) => ({ key, label, kind, close }));
+  return CLUES.map(({ key, label, kind, close, closeShort }) => ({ key, label, kind, close, closeShort: closeShort ?? close }));
 }

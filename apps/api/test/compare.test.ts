@@ -139,12 +139,14 @@ describe("the yellow rules the player reads", () => {
     for (const clue of CLUES) {
       const canBeClose = clue.kind !== "exact" || clue.groupOf !== undefined;
       expect(clue.close !== null, clue.key).toBe(canBeClose);
+      expect(clue.closeShort !== undefined, clue.key).toBe(canBeClose);
     }
   });
 
   it("quotes the same distance the comparison uses", () => {
     for (const clue of CLUES.filter((c) => c.kind === "number")) {
       expect(clue.close, clue.key).toContain(`Within ${clue.closeWithin} `);
+      expect(clue.closeShort, clue.key).toContain(`±${clue.closeWithin} `);
     }
   });
 });

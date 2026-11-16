@@ -9,6 +9,8 @@ export interface ClueInfo {
   kind: ClueKind;
   /** When this column turns yellow, in words; null when it never does. */
   close: string | null;
+  /** The same in a few words, for the hover tip. */
+  closeShort: string | null;
 }
 
 export interface Puzzle {
