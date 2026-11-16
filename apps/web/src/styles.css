@@ -383,7 +383,7 @@ body {
 }
 
 .board thead th {
-  padding: 0 4px 4px;
+  padding: 0 4px 7px;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -1123,9 +1123,19 @@ body {
   border-radius: 50%;
 }
 
-/* Column names: hover or focus shows when the column turns yellow, just
-   below the name. Drawn by CSS from data-tip, because the browser's own
-   title tooltip only shows after a long pause and never on touch. */
+/* Column names: plain text on a short bar, like other games of this kind.
+   Columns that can turn yellow show when on hover or focus, just below the
+   name, and their bar lights up. Drawn by CSS from data-tip, because the
+   browser's own title tooltip only shows after a long pause and never on touch. */
+.board thead th {
+  box-shadow: inset 0 -2px 0 var(--line);
+}
+
+.board thead th.has-tip:hover,
+.board thead th.has-tip:focus-within {
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
 .column-name {
   position: relative;
   padding: 0;
@@ -1135,49 +1145,21 @@ body {
   color: inherit;
   background: none;
   border: none;
+}
+
+.column-name[data-tip] {
   cursor: help;
 }
 
-.column-name:hover,
-.column-name:focus-visible {
+.column-name[data-tip]:hover,
+.column-name[data-tip]:focus-visible {
   color: var(--text);
 }
 
-/* The mark hangs off the last word like a superscript and takes no width, so
-   column names wrap exactly as they would without it. */
-.column-last {
-  position: relative;
-}
-
-/* The small "?" after a column name that can turn yellow. */
-.column-mark {
-  position: absolute;
-  top: -5px;
-  left: 100%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 12px;
-  height: 12px;
-  margin-left: 2px;
-  font-size: 0.55rem;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--accent-text);
-  border: 1px solid var(--accent);
-  border-radius: 50%;
-}
-
-.column-name:hover .column-mark,
-.column-name:focus-visible .column-mark {
-  color: var(--accent-ink);
-  background: var(--accent);
-}
-
-.column-name::after {
+.column-name[data-tip]::after {
   content: attr(data-tip);
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 10px);
   left: 50%;
   z-index: 2;
   width: max-content;
@@ -1200,14 +1182,14 @@ body {
   transition: opacity 0.12s;
 }
 
-.column-name:hover::after,
-.column-name:focus-visible::after {
+.column-name[data-tip]:hover::after,
+.column-name[data-tip]:focus-visible::after {
   opacity: 1;
 }
 
 /* The last column's tip opens leftwards, so it never sticks out past the board
    (even hidden, it would add a sideways scroll). */
-.board thead th:last-child .column-name::after {
+.board thead th:last-child .column-name[data-tip]::after {
   left: auto;
   right: 0;
   transform: none;

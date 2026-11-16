@@ -87,41 +87,27 @@ export function Board({ clues, guesses, freshId, answer, onHelp }: BoardProps) {
           <tr>
             <th scope="col">Fighter</th>
             {clues.map((clue) => {
-              // Columns that can turn yellow get a small "?" mark: hovering (or
-              // focusing) shows when, and clicking opens "How to play", which
-              // also works on touch screens, where there's no hover. Columns
-              // that are only ever right or wrong stay plain.
+              // Like other games of this kind: plain column names with a bar
+              // underneath. Columns that can turn yellow show when on hover or
+              // focus, and clicking opens "How to play", which also works on
+              // touch screens, where there's no hover. The rest stay plain.
               if (!clue.close) {
                 return (
                   <th scope="col" key={clue.key}>
-                    <span>{clue.label}</span>
+                    <span className="column-name">{clue.label}</span>
                   </th>
                 );
               }
               const tip = `Yellow: ${clue.close}`;
-              // The mark hangs off the last word (see .column-mark).
-              const words = clue.label.split(" ");
-              const last = words.pop();
-              const content = (
-                <>
-                  {words.length > 0 && `${words.join(" ")} `}
-                  <span className="column-last">
-                    {last}
-                    <span className="column-mark" aria-hidden="true">
-                      ?
-                    </span>
-                  </span>
-                </>
-              );
               return (
-                <th scope="col" key={clue.key}>
+                <th scope="col" key={clue.key} className="has-tip">
                   {onHelp ? (
                     <button type="button" className="column-name" data-tip={tip} aria-label={`${clue.label}. ${tip}`} onClick={onHelp}>
-                      {content}
+                      {clue.label}
                     </button>
                   ) : (
                     <span className="column-name" data-tip={tip} tabIndex={0} aria-label={`${clue.label}. ${tip}`}>
-                      {content}
+                      {clue.label}
                     </span>
                   )}
                 </th>

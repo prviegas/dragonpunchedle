@@ -316,7 +316,8 @@ export function App() {
               {guessError}
             </p>
           )}
-          {guesses.length === 0 && <Legend onHelp={() => setShowHelp(true)} />}
+          {/* Stays for the whole round, like other games' colour key. */}
+          <Legend onHelp={() => setShowHelp(true)} />
         </section>
       )}
 
