@@ -53,6 +53,8 @@ export const SPECIES = [
   "Symbiote",
   // DC
   "Atlantean",
+  // Hunter x Hunter
+  "Chimera Ant",
 ] as const;
 
 export const GENDERS = ["Male", "Female", "Other"] as const;

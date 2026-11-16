@@ -9,6 +9,7 @@ const CONTINENT_BY_COUNTRY: Readonly<Record<string, Continent>> = {
   Egypt: "Africa",
   Ghana: "Africa",
   Kenya: "Africa",
+  Madagascar: "Africa",
   Morocco: "Africa",
   Nigeria: "Africa",
   "South Africa": "Africa",
@@ -115,6 +116,11 @@ export const FICTIONAL_PLACES: ReadonlySet<string> = new Set([
   "Piltover",
   "Shadow Isles",
   "Zaun",
+  // Hunter x Hunter
+  "Kukuroo Mountain",
+  "Lukso",
+  "Meteor City",
+  "Whale Island",
 ]);
 
 export function continentOf(country: string): Continent | undefined {
