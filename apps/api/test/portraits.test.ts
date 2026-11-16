@@ -44,7 +44,7 @@ describe.skipIf(!process.env.DATABASE_URL)("portraits in the database", () => {
     await pool.query("DELETE FROM characters WHERE id = $1", [TEST_ID]);
     await pool.query(
       `INSERT INTO characters (id, name, franchise, developer, debut_year, archetypes, species, home_country, games_appeared_in)
-       VALUES ($1, 'Test Fighter', $2, 'Test Studio', 2000, '{rushdown}', 'Human', NULL, 1)`,
+       VALUES ($1, 'Test Fighter', $2, 'Test Studio', 2000, '{rushdown}', '{Human}', NULL, 1)`,
       [TEST_ID, TEST_FRANCHISE],
     );
   });

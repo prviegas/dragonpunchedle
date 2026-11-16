@@ -11,7 +11,7 @@ function guess(name: string, statuses: ClueStatus[], solved = false): GuessResul
       developer: "Test",
       debutYear: 2000,
       archetypes: ["rushdown"],
-      species: "Human",
+      species: ["Human"],
       homeCountry: null,
       gamesAppearedIn: 1,
     },

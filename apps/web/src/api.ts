@@ -30,7 +30,7 @@ export interface Character extends CharacterSummary {
   developer: string;
   debutYear: number;
   archetypes: string[];
-  species: string;
+  species: string[];
   homeCountry: string | null;
   gamesAppearedIn: number;
   /** Official art, when one has been loaded for this character. */

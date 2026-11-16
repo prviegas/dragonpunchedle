@@ -30,7 +30,6 @@ export const SPECIES = [
   "Deity",
   "Demon",
   "Undead",
-  "Hybrid",
   "Edenian",
   "Tarkatan",
   "Saurian",
@@ -52,6 +51,8 @@ export const SPECIES = [
   // Marvel
   "Mutant",
   "Symbiote",
+  // DC
+  "Atlantean",
 ] as const;
 
 export const GENDERS = ["Male", "Female", "Other"] as const;
@@ -63,7 +64,12 @@ const rosterEntrySchema = z.strictObject({
   developer: z.string().min(1),
   debutYear: z.number().int().min(1980).max(2100),
   archetypes: z.array(z.enum(ARCHETYPES)).min(1),
-  species: z.enum(SPECIES),
+  // One, or two for a half-and-half (Blade: Human + Vampire). No "Hybrid":
+  // list both halves, so each can match on its own.
+  species: z
+    .array(z.enum(SPECIES))
+    .min(1)
+    .refine((list) => new Set(list).size === list.length, "species listed twice"),
   gender: z.enum(GENDERS),
   homeCountry: z
     .string()

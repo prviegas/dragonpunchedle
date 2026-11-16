@@ -22,8 +22,8 @@ export interface CharacterClues {
   /** Year of the character's first playable appearance in any fighting game. */
   debutYear: number;
   archetypes: readonly string[];
-  /** e.g. "Human", "Robot", "Demon". */
-  species: string;
+  /** e.g. ["Human"], ["Robot"]; two for a half-and-half like Blade: ["Human", "Vampire"]. */
+  species: readonly string[];
   /** "Male", "Female", or "Other" for the few the games describe as neither
    *  (e.g. Testament, non-binary in Guilty Gear Strive). The roster requires
    *  one for every character; null only for a row the sync hasn't reached yet. */
@@ -71,7 +71,13 @@ export const CLUES: readonly ClueDefinition[] = [
   { key: "developer", label: "Developer", kind: "exact", close: null },
   { key: "debutYear", label: "Debut year", kind: "number", closeWithin: 3, close: "Within 3 years of the answer", closeShort: "±3 years" },
   { key: "archetypes", label: "Archetypes", kind: "set", close: "Shares at least one archetype, but not all", closeShort: "Some shared" },
-  { key: "species", label: "Species", kind: "exact", close: null },
+  {
+    key: "species",
+    label: "Species",
+    kind: "set",
+    close: "Shares at least one species, but not all (e.g. half-vampire Blade and a vampire)",
+    closeShort: "Some shared",
+  },
   { key: "gender", label: "Gender", kind: "exact", close: null },
   {
     key: "homeCountry",

@@ -10,7 +10,7 @@ interface CharacterRow {
   developer: string;
   debut_year: number;
   archetypes: string[];
-  species: string;
+  species: string[];
   home_country: string | null;
   games_appeared_in: number;
   gender: string | null;

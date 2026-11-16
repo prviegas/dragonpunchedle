@@ -27,7 +27,7 @@ describe.skipIf(!process.env.DATABASE_URL)("migrations", () => {
     await expect(
       pool.query(
         `INSERT INTO characters (id, name, franchise, developer, debut_year, archetypes, species, games_appeared_in)
-         VALUES ('test-nobody', 'Nobody', 'Test', 'Test', 2000, '{}', 'Human', 1)`,
+         VALUES ('test-nobody', 'Nobody', 'Test', 'Test', 2000, '{}', '{Human}', 1)`,
       ),
     ).rejects.toThrow(/check constraint/);
   });

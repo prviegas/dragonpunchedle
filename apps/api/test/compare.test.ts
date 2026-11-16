@@ -11,7 +11,7 @@ function character(overrides: Partial<Character>): Character {
     developer: "Studio",
     debutYear: 2000,
     archetypes: ["rushdown"],
-    species: "Human",
+    species: ["Human"],
     gender: "Male",
     homeCountry: "Japan",
     gamesAppearedIn: 5,
@@ -148,5 +148,22 @@ describe("the yellow rules the player reads", () => {
       expect(clue.close, clue.key).toContain(`Within ${clue.closeWithin} `);
       expect(clue.closeShort, clue.key).toContain(`±${clue.closeWithin} `);
     }
+  });
+});
+
+describe("species of half-and-half characters", () => {
+  const species = CLUES.find((clue) => clue.key === "species")!;
+  const blade = ["Human", "Vampire"];
+
+  it("counts a shared half as close", () => {
+    expect(compareClue(species, blade, ["Vampire"]).status).toBe("partial");
+    expect(compareClue(species, ["Vampire"], blade).status).toBe("partial");
+    expect(compareClue(species, blade, ["Human"]).status).toBe("partial");
+  });
+
+  it("matches only the same mix exactly", () => {
+    expect(compareClue(species, blade, ["Vampire", "Human"]).status).toBe("correct");
+    expect(compareClue(species, blade, ["Human", "Saiyan"]).status).toBe("partial");
+    expect(compareClue(species, blade, ["Edenian", "Tarkatan"]).status).toBe("wrong");
   });
 });
