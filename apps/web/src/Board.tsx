@@ -99,7 +99,7 @@ export function Board({ clues, guesses, freshId, answer, onHelp }: BoardProps) {
                 );
               }
               const tip = `Yellow: ${clue.close}`;
-              // The mark sticks to the last word, so it never wraps onto a line of its own.
+              // The mark hangs off the last word (see .column-mark).
               const words = clue.label.split(" ");
               const last = words.pop();
               const content = (

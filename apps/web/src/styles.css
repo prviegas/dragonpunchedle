@@ -1143,20 +1143,24 @@ body {
   color: var(--text);
 }
 
+/* The mark hangs off the last word like a superscript and takes no width, so
+   column names wrap exactly as they would without it. */
 .column-last {
-  white-space: nowrap;
+  position: relative;
 }
 
 /* The small "?" after a column name that can turn yellow. */
 .column-mark {
+  position: absolute;
+  top: -5px;
+  left: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 13px;
-  height: 13px;
-  margin-left: 4px;
-  vertical-align: 1px;
-  font-size: 0.6rem;
+  width: 12px;
+  height: 12px;
+  margin-left: 2px;
+  font-size: 0.55rem;
   font-weight: 700;
   line-height: 1;
   color: var(--accent-text);
