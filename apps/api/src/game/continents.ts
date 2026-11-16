@@ -78,6 +78,7 @@ const CONTINENT_BY_COUNTRY: Readonly<Record<string, Continent>> = {
 // real country name still fails validation instead of passing as "fictional".
 export const FICTIONAL_PLACES: ReadonlySet<string> = new Set([
   // Mortal Kombat
+  "Chaosrealm",
   "Edenia",
   "Netherrealm",
   "Outworld",
