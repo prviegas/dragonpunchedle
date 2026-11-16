@@ -231,7 +231,7 @@ export function App() {
       <span className="help-icon" aria-hidden="true">
         ?
       </span>
-      How to play
+      <span className="nav-help-text">How to play</span>
     </button>
   );
 
@@ -320,7 +320,13 @@ export function App() {
         </section>
       )}
 
-      <Board clues={puzzle.clues} guesses={guesses} freshId={freshId} answer={winner ? undefined : answer} />
+      <Board
+        clues={puzzle.clues}
+        guesses={guesses}
+        freshId={freshId}
+        answer={winner ? undefined : answer}
+        onHelp={() => setShowHelp(true)}
+      />
       <Leaderboard version={standingsVersion} />
     </Shell>
   );
@@ -365,7 +371,14 @@ function Legend({ onHelp }: { onHelp: () => void }) {
         <span className="swatch tile--correct" /> Correct
       </li>
       <li>
-        <span className="swatch tile--partial" /> Close: shared archetype, same continent, or a near number
+        <span className="swatch tile--partial" />
+        {/* What counts as close differs per column; the full table is one click away. */}
+        <button type="button" className="legend-help" onClick={onHelp} aria-label="Close: see what counts as close in each column">
+          Close
+          <span className="help-icon help-icon--small" aria-hidden="true">
+            ?
+          </span>
+        </button>
       </li>
       <li>
         <span className="swatch tile--wrong" /> Not it
@@ -375,11 +388,6 @@ function Legend({ onHelp }: { onHelp: () => void }) {
           ▲▼
         </span>{" "}
         The answer is higher or lower
-      </li>
-      <li>
-        <button type="button" className="link" onClick={onHelp}>
-          What counts as close?
-        </button>
       </li>
     </ul>
   );

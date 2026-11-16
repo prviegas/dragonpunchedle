@@ -69,12 +69,14 @@ interface BoardProps {
   guesses: GuessResult[];
   /** The guess just made: its tiles flip in. Earlier ones appear as they are. */
   freshId?: string;
+  /** Opens "How to play". With it, column names are buttons that open it. */
+  onHelp?: () => void;
   /** After a lost round, the day's character, shown above every guess. A win
    *  doesn't need it: the winning row already is the answer, and stands out. */
   answer?: Character;
 }
 
-export function Board({ clues, guesses, freshId, answer }: BoardProps) {
+export function Board({ clues, guesses, freshId, answer, onHelp }: BoardProps) {
   if (guesses.length === 0) return null;
 
   return (
@@ -84,13 +86,25 @@ export function Board({ clues, guesses, freshId, answer }: BoardProps) {
         <thead>
           <tr>
             <th scope="col">Fighter</th>
-            {clues.map((clue) => (
-              // Hovering a column's name shows when it turns yellow. The full
-              // list is in "How to play", for touch screens too.
-              <th scope="col" key={clue.key} title={`Yellow: ${clue.close ?? "never, right or wrong only"}`}>
-                <span className={clue.close ? "has-rule" : undefined}>{clue.label}</span>
-              </th>
-            ))}
+            {clues.map((clue) => {
+              // Hovering (or focusing) a column's name shows when it turns
+              // yellow; clicking it opens "How to play", which also works on
+              // touch screens, where there's no hover.
+              const tip = `Yellow: ${clue.close ?? "never, right or wrong only"}`;
+              return (
+                <th scope="col" key={clue.key}>
+                  {onHelp ? (
+                    <button type="button" className="column-name" data-tip={tip} aria-label={`${clue.label}. ${tip}`} onClick={onHelp}>
+                      {clue.label}
+                    </button>
+                  ) : (
+                    <span className="column-name" data-tip={tip} tabIndex={0} aria-label={`${clue.label}. ${tip}`}>
+                      {clue.label}
+                    </span>
+                  )}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>

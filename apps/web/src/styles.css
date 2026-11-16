@@ -1071,8 +1071,39 @@ body {
   font: inherit;
   background: none;
   border: none;
-  text-decoration: underline;
+  text-decoration: none;
   cursor: pointer;
+}
+
+/* Only the words are underlined, like the other header links; the round icon stays clean. */
+.nav-help-text {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.help-icon--small {
+  width: 15px;
+  height: 15px;
+  font-size: 0.65rem;
+}
+
+/* "Close" in the legend: opens the table of what close means per column. */
+.legend-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  font: inherit;
+  color: var(--text);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.legend-help:hover .help-icon,
+.nav-help:hover .help-icon {
+  color: var(--accent-ink);
+  background: var(--accent);
 }
 
 .help-icon {
@@ -1088,11 +1119,65 @@ body {
   border-radius: 50%;
 }
 
-/* A column name with a yellow rule: a dotted underline hints there's more on hover. */
-.board thead .has-rule {
+/* Column names: hover or focus shows when the column turns yellow, just
+   below the name. Drawn by CSS from data-tip, because the browser's own
+   title tooltip only shows after a long pause and never on touch. */
+.column-name {
+  position: relative;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: none;
+  border: none;
   text-decoration: underline dotted;
   text-underline-offset: 3px;
   cursor: help;
+}
+
+.column-name:hover,
+.column-name:focus-visible {
+  color: var(--text);
+}
+
+.column-name::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  z-index: 2;
+  width: max-content;
+  max-width: 180px;
+  padding: 6px 9px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0;
+  text-transform: none;
+  text-align: left;
+  color: var(--text);
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.45);
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+}
+
+.column-name:hover::after,
+.column-name:focus-visible::after {
+  opacity: 1;
+}
+
+/* The last column's tip opens leftwards, so it never sticks out past the board
+   (even hidden, it would add a sideways scroll). */
+.board thead th:last-child .column-name::after {
+  left: auto;
+  right: 0;
+  transform: none;
 }
 
 @media (max-width: 480px) {
