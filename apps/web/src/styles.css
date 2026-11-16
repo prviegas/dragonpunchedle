@@ -1107,10 +1107,14 @@ body {
 }
 
 .help-icon {
-  display: inline-grid;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
   width: 18px;
   height: 18px;
+  /* line-height 1 so the glyph's own spacing doesn't push it off centre */
+  line-height: 1;
   font-size: 0.75rem;
   font-weight: 700;
   text-decoration: none;
@@ -1131,14 +1135,39 @@ body {
   color: inherit;
   background: none;
   border: none;
-  text-decoration: underline dotted;
-  text-underline-offset: 3px;
   cursor: help;
 }
 
 .column-name:hover,
 .column-name:focus-visible {
   color: var(--text);
+}
+
+.column-last {
+  white-space: nowrap;
+}
+
+/* The small "?" after a column name that can turn yellow. */
+.column-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  margin-left: 4px;
+  vertical-align: 1px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent-text);
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+}
+
+.column-name:hover .column-mark,
+.column-name:focus-visible .column-mark {
+  color: var(--accent-ink);
+  background: var(--accent);
 }
 
 .column-name::after {

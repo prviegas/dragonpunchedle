@@ -87,19 +87,41 @@ export function Board({ clues, guesses, freshId, answer, onHelp }: BoardProps) {
           <tr>
             <th scope="col">Fighter</th>
             {clues.map((clue) => {
-              // Hovering (or focusing) a column's name shows when it turns
-              // yellow; clicking it opens "How to play", which also works on
-              // touch screens, where there's no hover.
-              const tip = `Yellow: ${clue.close ?? "never, right or wrong only"}`;
+              // Columns that can turn yellow get a small "?" mark: hovering (or
+              // focusing) shows when, and clicking opens "How to play", which
+              // also works on touch screens, where there's no hover. Columns
+              // that are only ever right or wrong stay plain.
+              if (!clue.close) {
+                return (
+                  <th scope="col" key={clue.key}>
+                    <span>{clue.label}</span>
+                  </th>
+                );
+              }
+              const tip = `Yellow: ${clue.close}`;
+              // The mark sticks to the last word, so it never wraps onto a line of its own.
+              const words = clue.label.split(" ");
+              const last = words.pop();
+              const content = (
+                <>
+                  {words.length > 0 && `${words.join(" ")} `}
+                  <span className="column-last">
+                    {last}
+                    <span className="column-mark" aria-hidden="true">
+                      ?
+                    </span>
+                  </span>
+                </>
+              );
               return (
                 <th scope="col" key={clue.key}>
                   {onHelp ? (
                     <button type="button" className="column-name" data-tip={tip} aria-label={`${clue.label}. ${tip}`} onClick={onHelp}>
-                      {clue.label}
+                      {content}
                     </button>
                   ) : (
                     <span className="column-name" data-tip={tip} tabIndex={0} aria-label={`${clue.label}. ${tip}`}>
-                      {clue.label}
+                      {content}
                     </span>
                   )}
                 </th>
