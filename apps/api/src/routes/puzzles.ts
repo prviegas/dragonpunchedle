@@ -5,7 +5,7 @@ import { findPuzzleAnswerId } from "../db/history.js";
 import rateLimit from "@fastify/rate-limit";
 import { ensureGuestId, readGuestId } from "../auth/guests.js";
 import { listGuessIds, saveGuess, type Player } from "../db/guesses.js";
-import { CLUES } from "../game/clues.js";
+import { publicClues } from "../game/clues.js";
 import { compareGuess } from "../game/compare.js";
 import { ensurePuzzle, MAX_GUESSES, puzzleDateFor } from "../game/puzzles.js";
 
@@ -59,7 +59,7 @@ export const puzzleRoutes: FastifyPluginAsync<PuzzleRouteOptions> = async (
     return {
       date,
       maxGuesses: MAX_GUESSES,
-      clues: CLUES.map(({ key, label, kind }) => ({ key, label, kind })),
+      clues: publicClues(),
     };
   });
 

@@ -7,6 +7,8 @@ export interface ClueInfo {
   key: string;
   label: string;
   kind: ClueKind;
+  /** When this column turns yellow, in words; null when it never does. */
+  close: string | null;
 }
 
 export interface Puzzle {

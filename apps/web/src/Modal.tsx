@@ -5,7 +5,20 @@ import { useEffect, useRef, type ReactNode } from "react";
  * page behind can't be clicked or tabbed into, Esc closes it, and focus goes
  * back where it was afterwards. Clicking the dimmed backdrop closes it too.
  */
-export function Modal({ open, onClose, label, children }: { open: boolean; onClose: () => void; label: string; children: ReactNode }) {
+export function Modal({
+  open,
+  onClose,
+  label,
+  wide = false,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  label: string;
+  /** Room for a table, like the how-to-play rules. */
+  wide?: boolean;
+  children: ReactNode;
+}) {
   const dialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -18,7 +31,7 @@ export function Modal({ open, onClose, label, children }: { open: boolean; onClo
   return (
     <dialog
       ref={dialog}
-      className="modal"
+      className={wide ? "modal modal--wide" : "modal"}
       aria-label={label}
       // Esc, or the close() above: tell the parent, so its state matches.
       onClose={onClose}

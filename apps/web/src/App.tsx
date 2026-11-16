@@ -20,6 +20,7 @@ import { Board } from "./Board";
 import { Countdown } from "./Countdown";
 import { GuessInput } from "./GuessInput";
 import { HealthBar } from "./HealthBar";
+import { HowToPlay } from "./HowToPlay";
 import { History, HISTORY_HASH } from "./History";
 import { Leaderboard } from "./Leaderboard";
 import { Modal } from "./Modal";
@@ -105,6 +106,7 @@ export function App() {
   const [user, setUser] = useState<User | null>(null);
   // A failed Discord/Google sign-in reopens the login panel with the reason.
   const [showAuth, setShowAuth] = useState(initialLoginError !== undefined);
+  const [showHelp, setShowHelp] = useState(false);
   const [guesses, setGuesses] = useState<GuessResult[]>([]);
   // Guesses picked but not yet answered by the server, in the order picked.
   const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(new Set());
@@ -224,8 +226,18 @@ export function App() {
     refreshStandings();
   }
 
+  const help = (
+    <button type="button" className="nav-link nav-help" onClick={() => setShowHelp(true)}>
+      <span className="help-icon" aria-hidden="true">
+        ?
+      </span>
+      How to play
+    </button>
+  );
+
   const account = user ? (
     <div className="account">
+      {help}
       <a className="nav-link" href={HISTORY_HASH}>
         Past rounds
       </a>
@@ -242,6 +254,7 @@ export function App() {
     </div>
   ) : (
     <div className="account">
+      {help}
       <a className="nav-link" href={HISTORY_HASH}>
         Past rounds
       </a>
@@ -254,9 +267,14 @@ export function App() {
   const roundOver = winner ?? answer;
 
   const authModal = (
-    <Modal open={showAuth && !user} onClose={() => setShowAuth(false)} label="Log in or sign up">
-      <AuthPanel initialError={initialLoginError} onSignedIn={signedIn} onClose={() => setShowAuth(false)} />
-    </Modal>
+    <>
+      <Modal open={showAuth && !user} onClose={() => setShowAuth(false)} label="Log in or sign up">
+        <AuthPanel initialError={initialLoginError} onSignedIn={signedIn} onClose={() => setShowAuth(false)} />
+      </Modal>
+      <Modal open={showHelp} onClose={() => setShowHelp(false)} label="How to play" wide>
+        <HowToPlay clues={puzzle.clues} maxGuesses={puzzle.maxGuesses} onClose={() => setShowHelp(false)} />
+      </Modal>
+    </>
   );
 
   if (view.name === "history") {
@@ -298,7 +316,7 @@ export function App() {
               {guessError}
             </p>
           )}
-          {guesses.length === 0 && <Legend />}
+          {guesses.length === 0 && <Legend onHelp={() => setShowHelp(true)} />}
         </section>
       )}
 
@@ -340,7 +358,7 @@ function Shell({ date, account, children }: { date?: string; account?: ReactNode
   );
 }
 
-function Legend() {
+function Legend({ onHelp }: { onHelp: () => void }) {
   return (
     <ul className="legend" aria-label="How to read the tiles">
       <li>
@@ -357,6 +375,11 @@ function Legend() {
           ▲▼
         </span>{" "}
         The answer is higher or lower
+      </li>
+      <li>
+        <button type="button" className="link" onClick={onHelp}>
+          What counts as close?
+        </button>
       </li>
     </ul>
   );

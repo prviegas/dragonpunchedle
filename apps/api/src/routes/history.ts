@@ -5,7 +5,7 @@ import { findCharacter } from "../db/characters.js";
 import { hasRevealed, listGuessIds, playedLate, revealRound, type Player } from "../db/guesses.js";
 import { findPuzzleAnswerId, listPastRounds } from "../db/history.js";
 import { scoreDistribution } from "../db/stats.js";
-import { CLUES } from "../game/clues.js";
+import { publicClues } from "../game/clues.js";
 import { compareGuess } from "../game/compare.js";
 import { MAX_GUESSES, puzzleDateFor } from "../game/puzzles.js";
 
@@ -70,7 +70,7 @@ export const historyRoutes: FastifyPluginAsync<HistoryRouteOptions> = async (app
     return {
       date,
       maxGuesses: MAX_GUESSES,
-      clues: CLUES.map(({ key, label, kind }) => ({ key, label, kind })),
+      clues: publicClues(),
       guesses: guesses.reverse(), // newest first, as on today's board
       revealed,
       /** Some guesses came after the day. */

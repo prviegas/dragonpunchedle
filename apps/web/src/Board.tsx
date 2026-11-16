@@ -85,8 +85,10 @@ export function Board({ clues, guesses, freshId, answer }: BoardProps) {
           <tr>
             <th scope="col">Fighter</th>
             {clues.map((clue) => (
-              <th scope="col" key={clue.key}>
-                <span>{clue.label}</span>
+              // Hovering a column's name shows when it turns yellow. The full
+              // list is in "How to play", for touch screens too.
+              <th scope="col" key={clue.key} title={`Yellow: ${clue.close ?? "never, right or wrong only"}`}>
+                <span className={clue.close ? "has-rule" : undefined}>{clue.label}</span>
               </th>
             ))}
           </tr>

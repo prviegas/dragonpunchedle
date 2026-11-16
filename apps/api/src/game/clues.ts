@@ -58,15 +58,30 @@ export interface ClueDefinition {
   /** Exact clues only: two different values in the same group count as partial
    *  (e.g. two countries on the same continent). Undefined = no group. */
   groupOf?: (value: string) => string | undefined;
+  /** When this column turns yellow, in the words the player reads in "How to
+   *  play". null: it never does (right or wrong only). Kept next to the rule it
+   *  describes so the two can't drift apart (a test checks the numbers match). */
+  close: string | null;
 }
 
 export const CLUES: readonly ClueDefinition[] = [
-  { key: "franchise", label: "Franchise", kind: "exact" },
-  { key: "developer", label: "Developer", kind: "exact" },
-  { key: "debutYear", label: "Debut year", kind: "number", closeWithin: 3 },
-  { key: "archetypes", label: "Archetypes", kind: "set" },
-  { key: "species", label: "Species", kind: "exact" },
-  { key: "gender", label: "Gender", kind: "exact" },
-  { key: "homeCountry", label: "Home country", kind: "exact", groupOf: continentOf },
-  { key: "gamesAppearedIn", label: "Games appeared in", kind: "number", closeWithin: 2 },
+  { key: "franchise", label: "Franchise", kind: "exact", close: null },
+  { key: "developer", label: "Developer", kind: "exact", close: null },
+  { key: "debutYear", label: "Debut year", kind: "number", closeWithin: 3, close: "Within 3 years of the answer" },
+  { key: "archetypes", label: "Archetypes", kind: "set", close: "Shares at least one archetype, but not all" },
+  { key: "species", label: "Species", kind: "exact", close: null },
+  { key: "gender", label: "Gender", kind: "exact", close: null },
+  {
+    key: "homeCountry",
+    label: "Home country",
+    kind: "exact",
+    groupOf: continentOf,
+    close: "Same continent. Fictional places are never close",
+  },
+  { key: "gamesAppearedIn", label: "Games appeared in", kind: "number", closeWithin: 2, close: "Within 2 games of the answer" },
 ];
+
+/** The clue list as the page gets it: what each column is and when it turns yellow. */
+export function publicClues() {
+  return CLUES.map(({ key, label, kind, close }) => ({ key, label, kind, close }));
+}

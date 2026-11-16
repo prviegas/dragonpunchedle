@@ -19,9 +19,9 @@ function character(overrides: Partial<Character>): Character {
   };
 }
 
-const franchise: ClueDefinition = { key: "franchise", label: "Franchise", kind: "exact" };
-const archetypes: ClueDefinition = { key: "archetypes", label: "Archetypes", kind: "set" };
-const games: ClueDefinition = { key: "gamesAppearedIn", label: "Games appeared in", kind: "number", closeWithin: 2 };
+const franchise: ClueDefinition = { key: "franchise", label: "Franchise", kind: "exact", close: null };
+const archetypes: ClueDefinition = { key: "archetypes", label: "Archetypes", kind: "set", close: "shares" };
+const games: ClueDefinition = { key: "gamesAppearedIn", label: "Games appeared in", kind: "number", closeWithin: 2, close: "Within 2 games" };
 
 describe("exact clues", () => {
   it("is correct only when the values are the same", () => {
@@ -131,5 +131,20 @@ describe("compareGuess", () => {
       "gamesAppearedIn",
     ]);
     expect(result.clues[2]).toEqual({ key: "debutYear", status: "wrong", direction: "higher" });
+  });
+});
+
+describe("the yellow rules the player reads", () => {
+  it("describes every column that can turn yellow, and only those", () => {
+    for (const clue of CLUES) {
+      const canBeClose = clue.kind !== "exact" || clue.groupOf !== undefined;
+      expect(clue.close !== null, clue.key).toBe(canBeClose);
+    }
+  });
+
+  it("quotes the same distance the comparison uses", () => {
+    for (const clue of CLUES.filter((c) => c.kind === "number")) {
+      expect(clue.close, clue.key).toContain(`Within ${clue.closeWithin} `);
+    }
   });
 });

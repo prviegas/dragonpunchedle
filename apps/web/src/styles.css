@@ -950,6 +950,10 @@ body {
   border: none;
 }
 
+.modal--wide {
+  width: min(560px, calc(100% - 32px));
+}
+
 .modal::backdrop {
   background: rgb(5 7 12 / 0.72);
   backdrop-filter: blur(2px);
@@ -957,6 +961,145 @@ body {
 
 .modal[open] {
   animation: fade-up 0.2s ease-out both;
+}
+
+/* ---- How to play ---- */
+
+.panel {
+  padding: 22px 24px;
+  background: var(--panel);
+  clip-path: var(--cut);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.panel-close {
+  padding: 0 6px;
+  font: inherit;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.panel-close:hover {
+  color: var(--text);
+}
+
+.how-to p {
+  margin: 12px 0 0;
+  color: var(--muted);
+}
+
+.legend--panel {
+  justify-content: flex-start;
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.how-to-sub {
+  margin: 18px 0 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.close-rules {
+  margin: 0;
+}
+
+.close-rule {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr;
+  gap: 12px;
+  padding: 7px 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.close-rule:last-child {
+  border-bottom: none;
+}
+
+.close-rule dt {
+  font-weight: 600;
+}
+
+.close-rule dd {
+  margin: 0;
+  color: var(--text);
+}
+
+.close-rule dd.is-never {
+  color: var(--dim);
+}
+
+.how-to .how-to-foot {
+  margin-top: 16px;
+  font-size: 0.85rem;
+}
+
+.how-to-foot a {
+  color: var(--accent-text);
+}
+
+/* Header button: a small round "?" plus the words. */
+.nav-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  font: inherit;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.help-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--accent-text);
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+}
+
+/* A column name with a yellow rule: a dotted underline hints there's more on hover. */
+.board thead .has-rule {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+
+@media (max-width: 480px) {
+  .close-rule {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
 }
 
 /* ---- Log in / sign up ---- */
