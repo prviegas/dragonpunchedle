@@ -13,6 +13,17 @@ describe("roster data", () => {
     expect(roster.length).toBeGreaterThan(0);
   });
 
+  it("spells each developer one way, so the Developer clue can match across series", async () => {
+    // "French Bread" and "French-Bread" would never show green against each other.
+    const byKey = new Map<string, Set<string>>();
+    for (const { developer } of await loadRoster()) {
+      const key = developer.toLowerCase().replace(/[^a-z0-9]/g, "");
+      byKey.set(key, (byKey.get(key) ?? new Set()).add(developer));
+    }
+    const clashes = [...byKey.values()].filter((spellings) => spellings.size > 1).map((s) => [...s]);
+    expect(clashes).toEqual([]);
+  });
+
   it("keeps review notes out of the game data", async () => {
     const [first] = await loadRoster();
     expect(toCharacter(first!)).not.toHaveProperty("check");
