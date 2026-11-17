@@ -2043,8 +2043,21 @@ body {
 
 .arcade-stage {
   position: relative;
+  /* Its own layer above the board below it, so the open fighter list covers
+     the board's tiles, and the background (::before) stays behind the content. */
+  z-index: 2;
   min-height: 200px;
   padding: 20px 24px 24px;
+}
+
+/* The angled panel is drawn on a layer behind the content. A clip-path on the
+   panel itself would also cut off the fighter list where it opens past the
+   panel's bottom edge. */
+.arcade-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   background: var(--panel);
   clip-path: var(--cut);
 }
