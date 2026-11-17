@@ -32,8 +32,8 @@ export interface AppOptions extends FastifyServerOptions {
    *  page, so production needs only one server. Unset in development, where
    *  Vite serves the page. */
   staticDir?: string;
-  /** Usernames that may open the owner's dashboard. */
-  adminUsernames?: readonly string[];
+  /** Account ids that may open the owner's dashboard. */
+  adminUserIds?: readonly number[];
   /** Local development only: the dashboard without logging in. */
   dashboardOpen?: boolean;
 }
@@ -50,7 +50,7 @@ export function buildApp({
   guessRateLimitPerMinute = 120,
   oauth,
   staticDir,
-  adminUsernames = [],
+  adminUserIds = [],
   dashboardOpen = false,
   ...fastifyOptions
 }: AppOptions = {}) {
@@ -109,12 +109,12 @@ export function buildApp({
       request.user = (token && (await findSessionUser(pool, token))) || null;
     });
 
-    app.register(authRoutes, { pool, secureCookies, rateLimitPerMinute: authRateLimitPerMinute, oauth, now, adminUsernames, dashboardOpen });
+    app.register(authRoutes, { pool, secureCookies, rateLimitPerMinute: authRateLimitPerMinute, oauth, now, adminUserIds, dashboardOpen });
     app.register(characterRoutes, { pool });
     app.register(puzzleRoutes, { pool, now, secureCookies, guessRateLimitPerMinute });
     app.register(statsRoutes, { pool, now });
     app.register(historyRoutes, { pool, now, secureCookies });
-    app.register(siteStatsRoutes, { pool, now, adminUsernames, dashboardOpen });
+    app.register(siteStatsRoutes, { pool, now, adminUserIds, dashboardOpen });
   }
 
   if (staticDir) {

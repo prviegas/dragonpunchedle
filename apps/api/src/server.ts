@@ -5,6 +5,7 @@ import { createPool } from "./db/pool.js";
 import { seedCharacters } from "./db/seed.js";
 import { loadRoster, toCharacter } from "./game/roster.js";
 import { runDailyJob } from "./jobs/daily.js";
+import { parseUserIds } from "./routes/site-stats.js";
 import { startScheduler } from "./jobs/scheduler.js";
 
 const port = Number(process.env.PORT ?? 3000);
@@ -43,8 +44,8 @@ const app = buildApp({
   // Set in the Docker image, where the API also serves the built page.
   staticDir: process.env.STATIC_DIR,
   oauth,
-  // Who may open the dashboard: comma-separated usernames.
-  adminUsernames: (process.env.ADMIN_USERNAMES ?? "").split(",").map((name) => name.trim()).filter(Boolean),
+  // Who may open the dashboard: comma-separated account ids (see /api/auth/me).
+  adminUserIds: parseUserIds(process.env.ADMIN_USER_IDS),
   // DASHBOARD_OPEN=true lets anyone open the dashboard without logging in, for
   // local testing. Ignored in production (the Docker image sets NODE_ENV), so
   // a stray copy of the setting can never make the live dashboard public.

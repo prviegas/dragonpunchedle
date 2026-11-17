@@ -8,6 +8,16 @@ import { createPool } from "../src/db/pool.js";
 import { seedCharacters } from "../src/db/seed.js";
 import { deviceOf, looksLikeBot, referrerHost } from "../src/db/site-stats.js";
 import { loadRoster, toCharacter } from "../src/game/roster.js";
+import { parseUserIds } from "../src/routes/site-stats.js";
+
+describe("owner ids", () => {
+  it("reads whole positive numbers and ignores anything else", () => {
+    expect(parseUserIds("3")).toEqual([3]);
+    expect(parseUserIds(" 3, 12 ,")).toEqual([3, 12]);
+    expect(parseUserIds("Pedro, 0, -1, 2.5, 07")).toEqual([]);
+    expect(parseUserIds(undefined)).toEqual([]);
+  });
+});
 
 describe("visit helpers", () => {
   it("keeps only the other site's host name", () => {
@@ -34,7 +44,9 @@ const BROWSER = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0";
 
 describe.skipIf(!process.env.DATABASE_URL)("site stats", () => {
   const pool = createPool();
-  const app = buildApp({ pool, now: () => new Date(`${TODAY}T12:00:00Z`), adminUsernames: [`${PREFIX}Owner`] });
+  // Filled in once the owner's account exists; the app reads the same list.
+  const adminIds: number[] = [];
+  const app = buildApp({ pool, now: () => new Date(`${TODAY}T12:00:00Z`), adminUserIds: adminIds });
   const cookies: Record<string, string> = {};
 
   const visit = (body: object, options: { ip?: string; userAgent?: string; as?: string } = {}) =>
@@ -59,6 +71,7 @@ describe.skipIf(!process.env.DATABASE_URL)("site stats", () => {
         [PREFIX + name, hash],
       );
       cookies[name] = (await createSession(pool, Number(rows[0]!.id))).token;
+      if (name === "owner") adminIds.push(Number(rows[0]!.id));
     }
     // One player solved today's round in two guesses.
     const playerId = (await pool.query("SELECT id FROM users WHERE username = $1", [PREFIX + "player"])).rows[0].id;
@@ -130,5 +143,20 @@ describe.skipIf(!process.env.DATABASE_URL)("site stats", () => {
     const me = (as: string) => app.inject({ method: "GET", url: "/api/auth/me", cookies: { [SESSION_COOKIE]: cookies[as]! } });
     expect((await me("owner")).json().user.admin).toBe(true);
     expect((await me("player")).json().user.admin).toBeUndefined();
+  });
+
+  it("follows the owner's account, not its name", async () => {
+    // The owner renames; someone else signs up with the old name.
+    await pool.query("UPDATE users SET username = $1 WHERE username = $2", [PREFIX + "renamed", PREFIX + "owner"]);
+    const { rows } = await pool.query<{ id: string }>(
+      "INSERT INTO users (username, password_hash) VALUES ($1, 'x') RETURNING id",
+      [PREFIX + "owner"],
+    );
+    cookies.squatter = (await createSession(pool, Number(rows[0]!.id))).token;
+
+    const dashboardAs = (as: string) =>
+      app.inject({ method: "GET", url: "/api/admin/dashboard", cookies: { [SESSION_COOKIE]: cookies[as]! } });
+    expect((await dashboardAs("owner")).statusCode).toBe(200);
+    expect((await dashboardAs("squatter")).statusCode).toBe(404);
   });
 });

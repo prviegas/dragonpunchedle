@@ -7,15 +7,28 @@ import { MAX_GUESSES, puzzleDateFor } from "../game/puzzles.js";
 interface SiteStatsOptions {
   pool: pg.Pool;
   now: () => Date;
-  /** Who may open the dashboard (case-insensitive). Empty: nobody. */
-  adminUsernames: readonly string[];
+  /** Account ids that may open the dashboard. Empty: nobody. */
+  adminUserIds: readonly number[];
   /** Local development: anyone, logged in or not, may open the dashboard. */
   dashboardOpen?: boolean;
 }
 
-export function isAdmin(request: FastifyRequest, adminUsernames: readonly string[]): boolean {
-  const name = request.user?.username.toLowerCase();
-  return name !== undefined && adminUsernames.some((admin) => admin.toLowerCase() === name);
+/**
+ * The owner, by account id rather than username: an id is never reused, while a
+ * username could be freed (a deleted or renamed account) and claimed by someone else.
+ */
+export function isAdmin(request: FastifyRequest, adminUserIds: readonly number[]): boolean {
+  const id = request.user?.id;
+  return id !== undefined && adminUserIds.includes(Number(id));
+}
+
+/** "3, 12" → [3, 12]. Anything that isn't a whole positive number is ignored. */
+export function parseUserIds(value: string | undefined): number[] {
+  return (value ?? "")
+    .split(",")
+    .map((part) => part.trim())
+    .filter((part) => /^[1-9]\d*$/.test(part))
+    .map(Number);
 }
 
 const text = (maxLength: number) => ({ type: "string", maxLength });
@@ -33,7 +46,7 @@ const visitSchema = {
   },
 };
 
-export const siteStatsRoutes: FastifyPluginAsync<SiteStatsOptions> = async (app, { pool, now, adminUsernames, dashboardOpen = false }) => {
+export const siteStatsRoutes: FastifyPluginAsync<SiteStatsOptions> = async (app, { pool, now, adminUserIds, dashboardOpen = false }) => {
   await app.register(rateLimit, { global: false });
 
   // The page reports each view with this, so only real browsers that run the
@@ -44,7 +57,7 @@ export const siteStatsRoutes: FastifyPluginAsync<SiteStatsOptions> = async (app,
     { schema: visitSchema, config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
     async (request, reply) => {
       const userAgent = request.headers["user-agent"] ?? "";
-      if (!looksLikeBot(userAgent) && !isAdmin(request, adminUsernames)) {
+      if (!looksLikeBot(userAgent) && !isAdmin(request, adminUserIds)) {
         const { path, referrer, timezone, language } = request.body;
         await recordVisit(pool, {
           day: puzzleDateFor(now()),
@@ -62,7 +75,7 @@ export const siteStatsRoutes: FastifyPluginAsync<SiteStatsOptions> = async (app,
 
   // Anyone else gets the same 404 as a path that doesn't exist.
   app.get("/api/admin/dashboard", async (request, reply) => {
-    if (!dashboardOpen && !isAdmin(request, adminUsernames)) return reply.code(404).send({ error: "Not found." });
+    if (!dashboardOpen && !isAdmin(request, adminUserIds)) return reply.code(404).send({ error: "Not found." });
     reply.header("cache-control", "no-store");
     return dashboard(pool, puzzleDateFor(now()), MAX_GUESSES);
   });
