@@ -499,10 +499,14 @@ body {
 .tile--partial {
   color: var(--partial-ink);
   background: var(--partial);
+}
+
+/* Hovering a yellow tile says what "close" means in that column, in the same
+   words as the column's own tip; a "?" tile says why there's no hint. */
+.tile.has-tip {
   cursor: help;
 }
 
-/* Hovering a yellow tile says what "close" means in that column, like the column's own tip. */
 .tile-tip {
   position: absolute;
   bottom: calc(100% + 6px);
@@ -526,13 +530,13 @@ body {
   transition: opacity 0.12s;
 }
 
-.tile--partial:hover,
-.tile--partial:focus-visible {
+.tile.has-tip:hover,
+.tile.has-tip:focus-visible {
   z-index: 3;
 }
 
-.tile--partial:hover .tile-tip,
-.tile--partial:focus-visible .tile-tip {
+.tile.has-tip:hover .tile-tip,
+.tile.has-tip:focus-visible .tile-tip {
   opacity: 1;
 }
 
@@ -777,22 +781,60 @@ body {
   fill-opacity: 0.14;
 }
 
-/* The players the viewer beat: pink hatching under the curve, right of the marker. */
+/* The players the viewer beat: everything right of the marker, in the "you"
+   pink, or green for a perfect first-guess round. */
+.chart-svg {
+  --beaten: var(--you);
+}
+
+.chart-svg.is-perfect {
+  --beaten: var(--correct-ring);
+}
+
+.chart-beaten-stop {
+  stop-color: var(--beaten);
+}
+
 .chart-beaten-hatch {
-  stroke: var(--you);
+  stroke: var(--beaten);
+  stroke-width: 1.25px;
+  stroke-opacity: 0.5;
+}
+
+/* The curve itself turns the same colour over that stretch. */
+.chart-beaten-edge {
+  fill: none;
+  stroke: var(--beaten);
   stroke-width: 2px;
-  stroke-opacity: 0.85;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* A perfect round's marker matches its green. */
+.chart-svg.is-perfect .chart-you-line {
+  stroke: var(--beaten);
+}
+
+.chart-svg.is-perfect .chart-you-dot {
+  fill: var(--beaten);
 }
 
 .beaten-swatch {
+  --beaten: var(--you);
   display: inline-block;
   width: 12px;
   height: 12px;
   margin-right: 8px;
   vertical-align: -1px;
-  background: repeating-linear-gradient(45deg, rgb(224 74 120 / 0.75) 0 2px, transparent 2px 5px);
-  border: 1px solid rgb(224 74 120 / 0.6);
+  background:
+    repeating-linear-gradient(45deg, color-mix(in srgb, var(--beaten) 70%, transparent) 0 1.5px, transparent 1.5px 4px),
+    color-mix(in srgb, var(--beaten) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--beaten) 70%, transparent);
   border-radius: 2px;
+}
+
+.beaten-swatch.is-perfect {
+  --beaten: var(--correct-ring);
 }
 
 .chart-axis {
@@ -1068,20 +1110,16 @@ body {
   margin-top: 14px;
 }
 
-.how-to-sub {
-  margin: 18px 0 8px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
+/* The Yellow line of the key opens into each column's rule, right below it. */
+.legend li.legend-yellow {
+  display: block;
 }
 
-/* Closed by default: a summary line with a turning chevron. */
 .how-to-more > summary {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
   list-style: none;
 }
@@ -1094,22 +1132,37 @@ body {
   flex: none;
 }
 
-.how-to-more > summary::after {
+.how-to-more-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent-text);
+}
+
+.how-to-more > summary:hover .how-to-more-link {
+  text-decoration: underline;
+}
+
+/* A small chevron after the link: right when closed, down when open. */
+.how-to-more-link::after {
   content: "";
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   transform: rotate(-45deg);
   transition: transform 0.15s;
 }
 
-.how-to-more[open] > summary::after {
-  transform: rotate(45deg);
+.how-to-more[open] .how-to-more-link::after {
+  transform: rotate(45deg) translate(-2px, -2px);
 }
 
-.how-to-more > summary:hover {
-  color: var(--text);
+/* The rules sit under the yellow line, with a yellow edge tying them to it. */
+.how-to-more .close-rules {
+  margin: 8px 0 4px 6px;
+  padding: 2px 0 2px 14px;
+  border-left: 2px solid var(--partial);
 }
 
 .close-rules {
@@ -1919,4 +1972,9 @@ body {
   min-width: 2px;
   background: var(--accent);
   border-radius: 2px;
+}
+
+/* The "?" swatch is dark on dark: a thin edge keeps it visible in tips and the key. */
+.swatch.tile--unknown {
+  box-shadow: inset 0 0 0 1px var(--line);
 }

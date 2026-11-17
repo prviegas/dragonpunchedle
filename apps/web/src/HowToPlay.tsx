@@ -32,8 +32,22 @@ export function HowToPlay({ clues, maxGuesses, showCloseRules = false, onClose }
         <li>
           <span className="swatch tile--correct" /> <strong>Green:</strong> the same as the answer
         </li>
-        <li>
-          <span className="swatch tile--partial" /> <strong>Yellow:</strong> close (see each column below)
+        <li className="legend-yellow">
+          {/* The yellow line opens into each column's rule, right where it's explained. */}
+          <details className="how-to-more" open={showCloseRules}>
+            <summary>
+              <span className="swatch tile--partial" /> <strong>Yellow:</strong> close.{" "}
+              <span className="how-to-more-link">What counts as close?</span>
+            </summary>
+            <dl className="close-rules">
+              {clues.map((clue) => (
+                <div key={clue.key} className="close-rule">
+                  <dt>{clue.label}</dt>
+                  <dd className={clue.close ? undefined : "is-never"}>{clue.close ?? "Never: right or wrong"}</dd>
+                </div>
+              ))}
+            </dl>
+          </details>
         </li>
         <li>
           <span className="swatch tile--wrong" /> <strong>Grey:</strong> not it
@@ -48,21 +62,6 @@ export function HowToPlay({ clues, maxGuesses, showCloseRules = false, onClose }
           On numbers: the answer is higher or lower
         </li>
       </ul>
-
-      <details className="how-to-more" open={showCloseRules}>
-        <summary className="how-to-sub">
-          <span className="swatch tile--partial" aria-hidden="true" />
-          When each column turns yellow
-        </summary>
-        <dl className="close-rules">
-          {clues.map((clue) => (
-            <div key={clue.key} className="close-rule">
-              <dt>{clue.label}</dt>
-              <dd className={clue.close ? undefined : "is-never"}>{clue.close ?? "Never: right or wrong"}</dd>
-            </div>
-          ))}
-        </dl>
-      </details>
 
       <p className="how-to-foot">
         A new fighter every day at midnight UTC. Missed one? Play it from <a href="#past" onClick={onClose}>Past rounds</a>.

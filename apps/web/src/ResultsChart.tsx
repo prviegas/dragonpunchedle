@@ -88,6 +88,8 @@ export function ResultsChart({ maxGuesses, mine, pastResults }: ResultsChartProp
   // Everyone to the right of the marker took more guesses, or ran out: the
   // players the viewer beat. That part of the curve is hatched.
   const showBeaten = mine !== "lost" && beaten !== null && beaten > 0;
+  // A perfect round (first guess) paints it green instead of pink.
+  const perfect = mine === 1;
   const caption = results.youLate
     ? results.players === 0
       ? "Nobody finished it on the day"
@@ -132,13 +134,19 @@ export function ResultsChart({ maxGuesses, mine, pastResults }: ResultsChartProp
           width={width}
           height={HEIGHT}
           aria-hidden="true"
+          className={perfect ? "chart-svg is-perfect" : "chart-svg"}
           onPointerMove={onPointerMove}
           onPointerLeave={() => setHover(undefined)}
         >
           {showBeaten && (
             <defs>
-              <pattern id={`beaten-${uid}`} patternUnits="userSpaceOnUse" width={6} height={6} patternTransform="rotate(45)">
-                <line className="chart-beaten-hatch" x1={0} y1={0} x2={0} y2={6} />
+              {/* A wash that fades toward the axis, with fine diagonal lines over it. */}
+              <linearGradient id={`beaten-fade-${uid}`} x1={0} y1={0} x2={0} y2={1}>
+                <stop offset="0%" className="chart-beaten-stop" stopOpacity={0.42} />
+                <stop offset="100%" className="chart-beaten-stop" stopOpacity={0.06} />
+              </linearGradient>
+              <pattern id={`beaten-${uid}`} patternUnits="userSpaceOnUse" width={5} height={5} patternTransform="rotate(45)">
+                <line className="chart-beaten-hatch" x1={0} y1={0} x2={0} y2={5} />
               </pattern>
               <clipPath id={`beaten-clip-${uid}`}>
                 <rect x={xAt(youIndex)} y={0} width={Math.max(0, PAD.left + plotWidth - xAt(youIndex))} height={HEIGHT} />
@@ -146,10 +154,14 @@ export function ResultsChart({ maxGuesses, mine, pastResults }: ResultsChartProp
             </defs>
           )}
           <path className="chart-area" d={area} />
-          {showBeaten && (
-            <path d={area} fill={`url(#beaten-${uid})`} clipPath={`url(#beaten-clip-${uid})`} />
-          )}
           <path className="chart-line" d={line} />
+          {showBeaten && (
+            <g clipPath={`url(#beaten-clip-${uid})`}>
+              <path d={area} fill={`url(#beaten-fade-${uid})`} />
+              <path d={area} fill={`url(#beaten-${uid})`} />
+              <path className="chart-beaten-edge" d={line} />
+            </g>
+          )}
           <line className="chart-axis" x1={PAD.left} x2={PAD.left + plotWidth} y1={yAt(0)} y2={yAt(0)} />
 
           {labels.map((label, i) => (
@@ -182,7 +194,7 @@ export function ResultsChart({ maxGuesses, mine, pastResults }: ResultsChartProp
       </div>
 
       <p className="chart-caption">
-        {showBeaten && <span className="beaten-swatch" aria-hidden="true" />}
+        {showBeaten && <span className={perfect ? "beaten-swatch is-perfect" : "beaten-swatch"} aria-hidden="true" />}
         {caption}
       </p>
 

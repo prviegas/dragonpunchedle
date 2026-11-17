@@ -14,11 +14,20 @@ function valueText(character: Character, key: string): string {
   return String(value);
 }
 
+/** What a yellow tile means in a column, shown the same way on the column's name and on its tiles. */
+export function closeTipText(clue: ClueInfo): string | undefined {
+  return clue.closeShort ? `Close: ${clue.closeShort}` : undefined;
+}
+
+const UNKNOWN_TIP = "No data for one of the two, so no hint";
+
 function Tile({ clue, result, character, delay }: { clue: ClueInfo; result: ClueResult; character: Character; delay?: number }) {
   const text = valueText(character, clue.key);
   const arrow = result.direction === "higher" ? "▲" : result.direction === "lower" ? "▼" : "";
   // Colour alone isn't enough (colour blindness, screen readers), so every tile
   // also says its status in words.
+  // A yellow tile explains what close means here; a "?" tile why there's no hint.
+  const tip = result.status === "partial" ? closeTipText(clue) : result.status === "unknown" ? UNKNOWN_TIP : undefined;
   const close = result.status === "partial" && clue.closeShort ? ` (${clue.closeShort})` : "";
   const label = `${clue.label}: ${text}, ${STATUS_TEXT[result.status]}${close}${
     result.direction ? `, the answer is ${result.direction}` : ""
@@ -26,11 +35,11 @@ function Tile({ clue, result, character, delay }: { clue: ClueInfo; result: Clue
 
   return (
     <td
-      className={`tile tile--${result.status}`}
+      className={`tile tile--${result.status}${tip ? " has-tip" : ""}`}
       aria-label={label}
-      // Yellow tiles get their own tip below instead of the browser's.
-      title={result.status === "partial" ? undefined : label}
-      tabIndex={result.status === "partial" ? 0 : undefined}
+      // Tiles with their own tip don't also get the browser's.
+      title={tip ? undefined : label}
+      tabIndex={tip ? 0 : undefined}
       // Tiles of a new guess flip over one after another, left to right.
       style={delay === undefined ? undefined : { animationDelay: `${delay}ms` }}
     >
@@ -46,10 +55,10 @@ function Tile({ clue, result, character, delay }: { clue: ClueInfo; result: Clue
           {arrow}
         </span>
       )}
-      {result.status === "partial" && clue.closeShort && (
+      {tip && (
         <span className="tile-tip" aria-hidden="true">
-          <span className="swatch tile--partial" />
-          Close: {clue.closeShort}
+          <span className={`swatch tile--${result.status}`} />
+          {tip}
         </span>
       )}
     </td>
@@ -111,7 +120,7 @@ export function Board({ clues, guesses, freshId, answer, onHelp }: BoardProps) {
               const tip = (
                 <span className="column-tip" aria-hidden="true">
                   <span className="swatch tile--partial" />
-                  {clue.closeShort}
+                  {closeTipText(clue)}
                 </span>
               );
               const label = `${clue.label}. Close (yellow): ${clue.close}`;
