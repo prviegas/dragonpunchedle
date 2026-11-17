@@ -74,8 +74,23 @@ export async function latestRun(pool: pg.Pool, player: Player): Promise<ArcadeRu
   return rows[0] ? loadRun(pool, Number(rows[0].id)) : undefined;
 }
 
+/**
+ * Local testing only: ARCADE_TEST_CHARACTER=street-fighter-ryu makes every
+ * floor that fighter, to try combos and the K.O. quickly. Ignored in
+ * production and while the automated tests run.
+ */
+function testOpponent(): string | undefined {
+  if (process.env.NODE_ENV === "production" || process.env.VITEST) return undefined;
+  return process.env.ARCADE_TEST_CHARACTER || undefined;
+}
+
 /** A random fighter this run hasn't met yet. */
 async function addFloor(client: pg.PoolClient, runId: number, floor: number): Promise<void> {
+  const forced = testOpponent();
+  if (forced) {
+    await client.query("INSERT INTO arcade_floors (run_id, floor, character_id) VALUES ($1, $2, $3)", [runId, floor, forced]);
+    return;
+  }
   const inserted = await client.query(
     `INSERT INTO arcade_floors (run_id, floor, character_id)
      SELECT $1, $2, id FROM characters
