@@ -5,21 +5,22 @@ export const TOWER_NAME = "Tower of Endless Struggle";
 
 export const TOWER_HASH = "#tower";
 
-export type Danger = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type Danger = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14;
+
+/** The first floor of each danger level, from the bottom of the tower to the top. */
+export const DANGER_FLOORS = [1, 3, 6, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100] as const;
 
 /**
- * How menacing a floor looks, from 1 (the bottom of the tower) to 7. The
- * floor title darkens toward blood red as the climb gets harder, like a
- * fighting game's tower mode.
+ * How menacing a floor looks, from 1 (the bottom of the tower) to 14 (floor
+ * 100 and beyond). The floor title darkens toward blood red, then hellfire, as
+ * the climb gets harder, like a fighting game's tower mode.
  */
 export function floorDanger(floor: number): Danger {
-  if (floor >= 30) return 7;
-  if (floor >= 20) return 6;
-  if (floor >= 15) return 5;
-  if (floor >= 10) return 4;
-  if (floor >= 6) return 3;
-  if (floor >= 3) return 2;
-  return 1;
+  let level = 1;
+  DANGER_FLOORS.forEach((first, i) => {
+    if (floor >= first) level = i + 1;
+  });
+  return level as Danger;
 }
 
 /** A line under the floor title that grows more ominous with it. */
@@ -30,7 +31,14 @@ const OMENS: Record<Danger, string> = {
   4: "Few have come this far.",
   5: "There is no way down.",
   6: "The tower is watching.",
-  7: "Endless.",
+  7: "The walls are breathing.",
+  8: "Bones of those before you.",
+  9: "Turn back. You can't.",
+  10: "It knows your name.",
+  11: "The tower bleeds.",
+  12: "Embers of the fallen.",
+  13: "Almost nothing of you remains.",
+  14: "Endless.",
 };
 
 export function floorOmen(floor: number): string {

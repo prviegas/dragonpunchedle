@@ -9,15 +9,15 @@ const floor = (n: number, guesses: number): ArcadeCleared => ({
 });
 
 describe("floorDanger", () => {
-  it("gets more menacing the higher the floor", () => {
-    expect([1, 2, 3, 5, 6, 9, 10, 14, 15, 19, 20, 29, 30, 99].map(floorDanger)).toEqual([
-      1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7,
+  it("climbs through 14 levels up to floor 100", () => {
+    expect([1, 2, 3, 5, 6, 9, 10, 14, 15, 19, 20, 29, 30, 39, 40, 50, 60, 70, 80, 89, 90, 99, 100, 250].map(floorDanger)).toEqual([
+      1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 10, 11, 12, 12, 13, 13, 14, 14,
     ]);
   });
 
   it("has a line for every level", () => {
     expect(floorOmen(1)).toBe("The climb begins.");
-    expect(floorOmen(40)).toBe("Endless.");
+    expect(floorOmen(100)).toBe("Endless.");
   });
 });
 

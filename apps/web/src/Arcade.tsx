@@ -12,6 +12,7 @@ import {
 } from "./api";
 import {
   buildTowerShare,
+  DANGER_FLOORS,
   floorDanger,
   floorOmen,
   TOWER_NAME,
@@ -185,6 +186,16 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
                 {TOWER_NAME}
               </h2>
             )}
+            {run?.over && (
+              <div className="arcade-over-head">
+                <p className="arcade-over-title">Game over</p>
+                {run.floor > 1 && run.floor >= state.best ? (
+                  <p className="arcade-best is-new">New best!</p>
+                ) : (
+                  <p className="arcade-best">Your best: floor {state.best}</p>
+                )}
+              </div>
+            )}
           </header>
 
           {!run ? (
@@ -195,8 +206,6 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
             />
           ) : run.over ? (
             <GameOver
-              floorReached={run.floor}
-              best={state.best}
               share={buildTowerShare(
                 run.floor,
                 run.cleared,
@@ -372,22 +381,17 @@ function Intro({
 }
 
 function GameOver({
-  floorReached,
-  best,
   share,
   loggedIn,
   onLogIn,
   onAgain,
 }: {
-  floorReached: number;
-  best: number;
   share: string;
   loggedIn: boolean;
   onLogIn: () => void;
   onAgain: () => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const newBest = floorReached > 1 && floorReached >= best;
 
   async function copy() {
     const touch = window.matchMedia("(pointer: coarse)").matches;
@@ -411,16 +415,6 @@ function GameOver({
 
   return (
     <div className="arcade-over">
-      <p className="arcade-over-title">Game over</p>
-      <p className="arcade-over-score">
-        <span>Floor reached</span>
-        <span className="arcade-over-floors">{floorReached}</span>
-      </p>
-      {newBest ? (
-        <p className="arcade-best is-new">New best!</p>
-      ) : (
-        <p className="arcade-best">Your best: floor {best}</p>
-      )}
       <div className="arcade-over-actions">
         <button type="button" className="button" onClick={onAgain}>
           Continue? Play again
@@ -445,11 +439,12 @@ function GameOver({
 function Ladder({ run: given }: { run: NonNullable<ArcadeState["run"]> }) {
   const beatenNow = given.cleared.some((floor) => floor.floor === given.floor);
   const run = beatenNow ? { ...given, floor: given.floor + 1 } : given;
-  const beaten = [...run.cleared].reverse().slice(0, 8);
-  const hidden = run.cleared.length - beaten.length;
+  const beaten = [...run.cleared].reverse();
   return (
     <aside className="ladder" aria-label="Ladder">
-      <ol className="ladder-floors">
+      {/* About ten floors show; the rest scroll. Keyed on the floor, so the
+          whole list slides down a step as you climb, like the floor title. */}
+      <ol className={run.floor > 1 ? "ladder-floors is-climbing" : "ladder-floors"} key={run.floor}>
         {!run.over &&
           [2, 1].map((ahead) => (
             <li
@@ -500,7 +495,6 @@ function Ladder({ run: given }: { run: NonNullable<ArcadeState["run"]> }) {
             </span>
           </li>
         ))}
-        {hidden > 0 && <li className="ladder-more">+{hidden} more below</li>}
       </ol>
     </aside>
   );
@@ -561,6 +555,35 @@ function ArcadeLeaderboard({ version }: { version: number }) {
           ))}
         </ol>
       )}
+    </section>
+  );
+}
+
+/**
+ * Local preview of every floor level, side by side, for judging the look.
+ * Only reachable on a development server (see App.tsx): never on the live site.
+ */
+export function TowerPreview() {
+  return (
+    <section className="arcade tower-preview" aria-label="Tower floor preview">
+      <p className="history-nav">
+        <a href="#tower">← Back to the tower</a>
+      </p>
+      <div className="tower-preview-grid">
+        {DANGER_FLOORS.map((floor) => (
+          <div key={floor} className={`arcade-stage danger-${floorDanger(floor)}`}>
+            <header className="arcade-head">
+              <FloorTitle floor={floor} />
+              <span className="tower-preview-label">Level {floorDanger(floor)}</span>
+            </header>
+            <div className="tower-preview-hud" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </div>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

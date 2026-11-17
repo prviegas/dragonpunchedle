@@ -22,7 +22,7 @@ import { Countdown } from "./Countdown";
 import { GuessInput } from "./GuessInput";
 import { HealthBar } from "./HealthBar";
 import { HowToPlay } from "./HowToPlay";
-import { Arcade } from "./Arcade";
+import { Arcade, TowerPreview } from "./Arcade";
 import { TOWER_HASH, TOWER_NAME } from "./arcadeRules";
 import { Dashboard, DASHBOARD_HASH } from "./Dashboard";
 import { History, HISTORY_HASH } from "./History";
@@ -83,11 +83,13 @@ function takeLoginError(): string | undefined {
 const initialLoginError = takeLoginError();
 
 /** Which view the address asks for: today's game, the list of past rounds, or one past day. */
-type View = { name: "today" } | { name: "history"; date?: string } | { name: "dashboard" } | { name: "arcade" };
+type View = { name: "today" } | { name: "history"; date?: string } | { name: "dashboard" } | { name: "arcade" } | { name: "tower-preview" };
 
 function viewFromHash(hash: string): View {
   if (hash === DASHBOARD_HASH) return { name: "dashboard" };
   if (hash === TOWER_HASH) return { name: "arcade" };
+  // Development only: every floor level side by side.
+  if (hash === "#tower-preview" && import.meta.env.DEV) return { name: "tower-preview" };
   if (hash === HISTORY_HASH) return { name: "history" };
   const date = hash.startsWith(`${HISTORY_HASH}/`) ? hash.slice(HISTORY_HASH.length + 1) : "";
   return /^\d{4}-\d{2}-\d{2}$/.test(date) ? { name: "history", date } : { name: "today" };
@@ -97,6 +99,7 @@ function viewFromHash(hash: string): View {
 function pageName(view: View): string | undefined {
   if (view.name === "dashboard") return undefined;
   if (view.name === "arcade") return "/#tower";
+  if (view.name === "tower-preview") return undefined;
   if (view.name === "history") return view.date ? "/#past/day" : "/#past";
   return "/";
 }
@@ -336,6 +339,15 @@ export function App() {
         {authModal}
         {/* Remounted on login, so logging in on this page loads it. */}
         <Dashboard key={user?.id ?? "guest"} canReset={user?.admin === true} />
+      </Shell>
+    );
+  }
+
+  if (view.name === "tower-preview") {
+    return (
+      <Shell account={account}>
+        {authModal}
+        <TowerPreview />
       </Shell>
     );
   }

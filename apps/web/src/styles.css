@@ -28,8 +28,8 @@
   --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
   --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* Panels keep the angled look: two cut corners. */
-  --cut: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  /* Panels: rounded corners. */
+  --panel-radius: 12px;
   --radius: 6px;
 
   color-scheme: dark;
@@ -608,7 +608,7 @@ body {
   margin: 0 auto 28px;
   padding: 22px 24px 26px;
   background: var(--panel);
-  clip-path: var(--cut);
+  border-radius: var(--panel-radius);
 }
 
 .result-banner {
@@ -714,7 +714,7 @@ body {
 .portrait-frame {
   padding: 2px;
   background: var(--line);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+  border-radius: 10px;
 }
 
 .result:not(.is-lost) .portrait-frame {
@@ -727,7 +727,7 @@ body {
   height: 240px;
   object-fit: cover;
   background: var(--panel-raised);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 17px), calc(100% - 17px) 100%, 0 100%);
+  border-radius: 8px;
 }
 
 .result.is-lost img.portrait-art {
@@ -967,7 +967,7 @@ body {
   margin: 0 auto;
   padding: 18px 20px 20px;
   background: var(--panel);
-  clip-path: var(--cut);
+  border-radius: var(--panel-radius);
 }
 
 .leaderboard-head {
@@ -1091,7 +1091,7 @@ body {
 .panel {
   padding: 22px 24px;
   background: var(--panel);
-  clip-path: var(--cut);
+  border-radius: var(--panel-radius);
 }
 
 .panel-head {
@@ -1378,7 +1378,7 @@ body {
   margin: 0 auto;
   padding: 22px 24px;
   background: var(--panel);
-  clip-path: var(--cut);
+  border-radius: var(--panel-radius);
 }
 
 .auth-panel h2 {
@@ -2059,7 +2059,7 @@ body {
   inset: 0;
   z-index: -1;
   background: var(--panel);
-  clip-path: var(--cut);
+  border-radius: var(--panel-radius);
 }
 
 .arcade-stage.is-hit {
@@ -2104,159 +2104,29 @@ body {
   text-transform: uppercase;
 }
 
-/* The higher the floor, the more menacing the title: the number turns amber,
-   then blood red; the letters spread; a red glow comes up; at the top the word
-   goes black with a red edge. Straight and still: only the number punches in
-   when a floor starts. The panel behind darkens toward crimson with it. */
+/* ---- The tower's floor levels ----
+   The higher the floor, the more menacing the title, the line under it and
+   the panel behind. Fourteen levels from floor 1 to floor 100 (see
+   floorDanger in arcadeRules.ts). Text stays straight and still: only the
+   climb itself moves, plus a slow pulse on a few panel edges near the top. */
+
 .arcade-title {
   transition: color 0.5s, letter-spacing 0.5s, font-size 0.5s;
 }
 
-.arcade-title.danger-2 {
-  font-size: 2.4rem;
-}
-
-.arcade-title.danger-2 .arcade-floor {
-  color: #f0a040;
-}
-
-.arcade-title.danger-3 {
-  font-size: 2.7rem;
-  letter-spacing: 0.08em;
-  color: #f3e3dd;
-}
-
-.arcade-title.danger-3 .arcade-floor {
-  color: #e5484d;
-}
-
-.arcade-title.danger-4 {
-  font-size: 3rem;
-  letter-spacing: 0.1em;
-  color: #ff7466;
-  text-shadow: 0 0 22px rgb(229 30 30 / 0.45);
-}
-
-.arcade-title.danger-4 .arcade-floor,
-.arcade-title.danger-5 .arcade-floor {
-  color: transparent;
-  background: linear-gradient(180deg, #ff5a44 0%, #c8102e 55%, #5e0408 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
-.arcade-title.danger-5 {
-  font-size: 3.3rem;
-  letter-spacing: 0.14em;
-  color: #140304;
-  -webkit-text-stroke: 1.5px #ff2a1a;
-  text-shadow: 0 0 28px rgb(255 20 10 / 0.55);
-}
-
-.arcade-title.danger-5 .arcade-floor {
-  -webkit-text-stroke: 1.5px #ff6a50;
-}
-
-/* Floors 20+: bone letters on a blood-red plate. */
-.arcade-title.danger-6 {
-  display: inline-block;
-  padding: 6px 18px 4px;
-  font-size: 3.2rem;
-  letter-spacing: 0.16em;
-  color: #f3e6dc;
-  background: linear-gradient(180deg, #a10f1c 0%, #4e050b 100%);
-  border: 1px solid #ff3b2f;
-  border-radius: 2px;
-  box-shadow: 0 0 26px rgb(220 20 30 / 0.35);
-}
-
-.arcade-title.danger-6 .arcade-floor {
-  color: #fff;
-}
-
-/* Floors 30+: black on a burning red plate. */
-.arcade-title.danger-7 {
-  display: inline-block;
-  padding: 6px 20px 4px;
-  font-size: 3.4rem;
-  letter-spacing: 0.2em;
-  color: #0b0102;
-  background: linear-gradient(180deg, #ff4a2a 0%, #b30d16 100%);
-  border-radius: 2px;
-  box-shadow:
-    0 0 0 2px #2a0306,
-    0 0 40px rgb(255 30 20 / 0.5);
-}
-
-.arcade-title.danger-7 .arcade-floor {
-  color: #0b0102;
-}
-
-.arcade-stage.danger-3::before {
-  background: linear-gradient(180deg, #1e1620 0%, var(--panel) 60%);
-}
-
-.arcade-stage.danger-4::before {
-  background: linear-gradient(180deg, #2c1016 0%, #171523 70%);
-}
-
-.arcade-stage.danger-5::before {
-  background:
-    linear-gradient(#c8102e, #c8102e) top / 100% 2px no-repeat,
-    linear-gradient(180deg, #3d090e 0%, #1c0c12 75%);
-}
-
-.arcade-stage.danger-6::before {
-  background:
-    linear-gradient(#c8102e, #c8102e) top / 100% 2px no-repeat,
-    linear-gradient(#c8102e, #c8102e) bottom / 100% 2px no-repeat,
-    radial-gradient(ellipse at 50% 0%, #4a070d 0%, #12060a 70%);
-}
-
-.arcade-stage.danger-7::before {
-  background:
-    radial-gradient(ellipse at 50% 0%, #5c060c 0%, #0a0305 72%);
-}
-
-/* At the very top, the panel's edge glows red and fades, slowly, like a heartbeat. */
-.arcade-stage.danger-7::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    linear-gradient(#ff2a1a, #ff2a1a) top / 100% 2px no-repeat,
-    linear-gradient(#ff2a1a, #ff2a1a) bottom / 100% 2px no-repeat,
-    linear-gradient(#ff2a1a, #ff2a1a) left / 2px 100% no-repeat,
-    linear-gradient(#ff2a1a, #ff2a1a) right / 2px 100% no-repeat;
-  clip-path: var(--cut);
-  animation: tower-pulse 2.6s ease-in-out infinite;
-}
-
-@keyframes tower-pulse {
-  0%,
-  100% {
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-/* The floor number punches in when it changes (its key remounts it). */
 .arcade-floor {
   display: inline-block;
   color: var(--accent-text);
 }
 
-/* Climbing: the old floor scrolls up and out, the new one rises in from below.
-   Both sit in the same grid cell; the box clips them (with room for the glow). */
+/* Climbing: the tower moves down past you. The old floor slides down and
+   out, the new one comes in from above. Both sit in one grid cell; the box
+   clips them, with room for the glows. */
 .floor-roll {
   display: grid;
   overflow: hidden;
-  margin: -10px -6px;
-  padding: 10px 6px;
+  margin: -12px -8px;
+  padding: 12px 8px;
 }
 
 .floor-roll > * {
@@ -2273,14 +2143,14 @@ body {
 
 @keyframes floor-out {
   to {
-    transform: translateY(-120%);
+    transform: translateY(130%);
     opacity: 0;
   }
 }
 
 @keyframes floor-in {
   from {
-    transform: translateY(120%);
+    transform: translateY(-130%);
     opacity: 0;
   }
   to {
@@ -2289,37 +2159,12 @@ body {
   }
 }
 
-/* Under the title: a flourish that grows with the danger, and an omen line. */
+/* Under the title: a flourish that grows, and an omen line. */
 .floor-flourish {
   display: block;
   width: 0;
   height: 2px;
   margin-top: 6px;
-}
-
-.floor-block.danger-2 .floor-flourish {
-  width: 40px;
-  background: #f0a040;
-}
-
-.floor-block.danger-3 .floor-flourish {
-  width: 80px;
-  height: 3px;
-  background: #e5484d;
-}
-
-.floor-block.danger-4 .floor-flourish {
-  width: 140px;
-  height: 3px;
-  background: linear-gradient(90deg, #ff3b2f, rgb(255 59 47 / 0));
-}
-
-.floor-block.danger-5 .floor-flourish,
-.floor-block.danger-6 .floor-flourish,
-.floor-block.danger-7 .floor-flourish {
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, #ff2a1a, rgb(255 42 26 / 0.15));
 }
 
 .floor-omen {
@@ -2328,20 +2173,371 @@ body {
   color: var(--dim);
 }
 
-.floor-block.danger-3 .floor-omen,
-.floor-block.danger-4 .floor-omen {
-  color: #c79a9a;
+/* Plates: from floor 20 the title sits on a slab. */
+.danger-6.arcade-title,
+.danger-7.arcade-title,
+.danger-8.arcade-title,
+.danger-9.arcade-title,
+.danger-13.arcade-title,
+.danger-14.arcade-title {
+  display: inline-block;
+  padding: 6px 18px 4px;
+  border-radius: 6px;
 }
 
+/* From floor 15 the omen is a warning in red capitals. */
 .floor-block.danger-5 .floor-omen,
 .floor-block.danger-6 .floor-omen,
-.floor-block.danger-7 .floor-omen {
+.floor-block.danger-7 .floor-omen,
+.floor-block.danger-8 .floor-omen,
+.floor-block.danger-9 .floor-omen,
+.floor-block.danger-10 .floor-omen,
+.floor-block.danger-11 .floor-omen,
+.floor-block.danger-12 .floor-omen,
+.floor-block.danger-13 .floor-omen,
+.floor-block.danger-14 .floor-omen {
   font-family: var(--font-display);
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #ff5a4a;
+}
+
+.floor-block.danger-5 .floor-flourish,
+.floor-block.danger-6 .floor-flourish,
+.floor-block.danger-7 .floor-flourish,
+.floor-block.danger-8 .floor-flourish,
+.floor-block.danger-9 .floor-flourish,
+.floor-block.danger-10 .floor-flourish,
+.floor-block.danger-11 .floor-flourish,
+.floor-block.danger-12 .floor-flourish {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #ff2a1a, rgb(255 42 26 / 0.15));
+}
+
+/* Panel edges that glow and fade slowly, like a heartbeat (floor 30, 90, 100). */
+.arcade-stage.danger-7::after,
+.arcade-stage.danger-13::after,
+.arcade-stage.danger-14::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border: 2px solid #ff2a1a;
+  border-radius: var(--panel-radius);
+  animation: tower-pulse 2.6s ease-in-out infinite;
+}
+
+.arcade-stage.danger-13::after {
+  border-color: #ffb12e;
+}
+
+.arcade-stage.danger-14::after {
+  border-color: #ffb12e;
+  box-shadow: inset 0 0 40px rgb(255 60 20 / 0.35);
+}
+
+@keyframes tower-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 2 · floors 3–5: the number turns amber. */
+.arcade-title.danger-2 {
+  font-size: 2.4rem;
+}
+
+.arcade-title.danger-2 .arcade-floor {
+  color: #f0a040;
+}
+
+.floor-block.danger-2 .floor-flourish {
+  width: 40px;
+  background: #f0a040;
+}
+
+/* 3 · floors 6–9: blood red, the letters spread. */
+.arcade-title.danger-3 {
+  font-size: 2.7rem;
+  letter-spacing: 0.08em;
+  color: #f3e3dd;
+}
+
+.arcade-title.danger-3 .arcade-floor {
+  color: #e5484d;
+}
+
+.floor-block.danger-3 .floor-flourish {
+  width: 80px;
+  height: 3px;
+  background: #e5484d;
+}
+
+.floor-block.danger-3 .floor-omen,
+.floor-block.danger-4 .floor-omen {
+  color: #c79a9a;
+}
+
+.arcade-stage.danger-3::before {
+  background: linear-gradient(180deg, #1e1620 0%, var(--panel) 60%);
+}
+
+/* 4 · floors 10–14: a red glow, a blood-gradient number, a maroon panel. */
+.arcade-title.danger-4 {
+  font-size: 3rem;
+  letter-spacing: 0.1em;
+  color: #ff7466;
+  text-shadow: 0 0 22px rgb(229 30 30 / 0.45);
+}
+
+.arcade-title.danger-4 .arcade-floor,
+.arcade-title.danger-5 .arcade-floor {
+  color: transparent;
+  background: linear-gradient(180deg, #ff5a44 0%, #c8102e 55%, #5e0408 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.floor-block.danger-4 .floor-flourish {
+  width: 140px;
+  height: 3px;
+  background: linear-gradient(90deg, #ff3b2f, rgb(255 59 47 / 0));
+}
+
+.arcade-stage.danger-4::before {
+  background: linear-gradient(180deg, #2c1016 0%, #171523 70%);
+}
+
+/* 5 · floors 15–19: black letters with a burning outline, a crimson panel. */
+.arcade-title.danger-5 {
+  font-size: 3.2rem;
+  letter-spacing: 0.14em;
+  color: #140304;
+  -webkit-text-stroke: 1.5px #ff2a1a;
+  text-shadow: 0 0 28px rgb(255 20 10 / 0.55);
+}
+
+.arcade-title.danger-5 .arcade-floor {
+  -webkit-text-stroke: 1.5px #ff6a50;
+}
+
+.arcade-stage.danger-5::before {
+  background:
+    linear-gradient(#c8102e, #c8102e) top / 100% 2px no-repeat,
+    linear-gradient(180deg, #3d090e 0%, #1c0c12 75%);
+}
+
+/* 6 · floors 20–29: bone letters on a blood-red plate. */
+.arcade-title.danger-6 {
+  font-size: clamp(2.2rem, 7vw, 3.2rem);
+  letter-spacing: 0.16em;
+  color: #f3e6dc;
+  background: linear-gradient(180deg, #a10f1c 0%, #4e050b 100%);
+  border: 1px solid #ff3b2f;
+  box-shadow: 0 0 26px rgb(220 20 30 / 0.35);
+}
+
+.arcade-title.danger-6 .arcade-floor {
+  color: #fff;
+}
+
+.arcade-stage.danger-6::before {
+  background:
+    linear-gradient(#c8102e, #c8102e) top / 100% 2px no-repeat,
+    linear-gradient(#c8102e, #c8102e) bottom / 100% 2px no-repeat,
+    radial-gradient(ellipse at 50% 0%, #4a070d 0%, #12060a 70%);
+}
+
+/* 7 · floors 30–39: black on a burning red plate; the panel edge pulses. */
+.arcade-title.danger-7 {
+  font-size: clamp(2.2rem, 7vw, 3.3rem);
+  letter-spacing: 0.2em;
+  color: #0b0102;
+  background: linear-gradient(180deg, #ff4a2a 0%, #b30d16 100%);
+  box-shadow:
+    0 0 0 2px #2a0306,
+    0 0 40px rgb(255 30 20 / 0.5);
+}
+
+.arcade-title.danger-7 .arcade-floor {
+  color: #0b0102;
+}
+
+.arcade-stage.danger-7::before {
+  background: radial-gradient(ellipse at 50% 0%, #5c060c 0%, #0a0305 72%);
+}
+
+/* 8 · floors 40–49: bone on a black slab with a double red border; claw marks on the panel. */
+.arcade-title.danger-8 {
+  font-size: clamp(2.2rem, 7vw, 3.3rem);
+  letter-spacing: 0.2em;
+  color: #e9dccf;
+  background: #070102;
+  border: 5px double #ff2a1a;
+}
+
+.arcade-title.danger-8 .arcade-floor {
+  color: #ff3b2f;
+}
+
+.arcade-stage.danger-8::before,
+.arcade-stage.danger-9::before {
+  background:
+    repeating-linear-gradient(115deg, transparent 0 26px, rgb(255 40 30 / 0.07) 26px 28px),
+    radial-gradient(ellipse at 50% 0%, #3a050a 0%, #080204 75%);
+}
+
+/* 9 · floors 50–59: hazard stripes around the slab. */
+.arcade-title.danger-9 {
+  font-size: clamp(2.2rem, 7vw, 3.3rem);
+  letter-spacing: 0.2em;
+  color: #ff3b2f;
+  background: #070102;
+  border: 6px solid transparent;
+  border-image: repeating-linear-gradient(45deg, #ff2a1a 0 10px, #120204 10px 20px) 6;
+  border-radius: 0;
+}
+
+.arcade-title.danger-9 .arcade-floor {
+  color: #fff;
+}
+
+/* 10 · floors 60–69: letters that bleed from red to black, an eye of red light on the panel. */
+.arcade-title.danger-10 {
+  font-size: clamp(2.3rem, 7.5vw, 3.4rem);
+  letter-spacing: 0.22em;
+  color: transparent;
+  background: linear-gradient(180deg, #ff6a50 0%, #c8102e 50%, #2a0003 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 1.5px #ff2a1a;
+}
+
+.arcade-title.danger-10 .arcade-floor {
+  color: transparent;
+}
+
+.arcade-stage.danger-10::before {
+  background: radial-gradient(circle at 78% 35%, #7a0a14 0%, #2a0308 30%, #070203 70%);
+}
+
+/* 11 · floors 70–79: the tower bleeds: a blood-red panel, black words. */
+.arcade-title.danger-11 {
+  font-size: clamp(2.3rem, 7.5vw, 3.4rem);
+  letter-spacing: 0.22em;
+  color: #0b0102;
+}
+
+.arcade-title.danger-11 .arcade-floor {
+  color: #0b0102;
+}
+
+.floor-block.danger-11 .floor-omen {
+  color: #170203;
+}
+
+.floor-block.danger-11 .floor-flourish {
+  background: #170203;
+}
+
+.arcade-stage.danger-11::before {
+  background: linear-gradient(180deg, #a30f1b 0%, #5a060d 55%, #2a0307 100%);
+}
+
+/* 12 · floors 80–89: white-hot letters and embers in the dark. */
+.arcade-title.danger-12 {
+  font-size: clamp(2.3rem, 7.5vw, 3.4rem);
+  letter-spacing: 0.22em;
+  color: #fff6ee;
+  text-shadow:
+    0 0 8px #ff6a3d,
+    0 0 26px #ff1a0a,
+    0 0 56px #a0000a;
+}
+
+.arcade-title.danger-12 .arcade-floor {
+  color: #fff6ee;
+}
+
+.arcade-stage.danger-12::before {
+  background:
+    radial-gradient(circle, rgb(255 110 50 / 0.35) 1px, transparent 1.6px) 0 0 / 22px 22px,
+    radial-gradient(circle, rgb(255 60 30 / 0.25) 1px, transparent 1.6px) 11px 11px / 22px 22px,
+    radial-gradient(ellipse at 50% 100%, #3f0509 0%, #060203 70%);
+}
+
+/* 13 · floors 90–99: infernal gold on a black slab; the panel edge pulses gold. */
+.arcade-title.danger-13 {
+  font-size: clamp(2.3rem, 7.5vw, 3.4rem);
+  letter-spacing: 0.24em;
+  color: transparent;
+  /* Two layers: the gold gradient clipped to the letters, a black slab behind. */
+  background-image:
+    linear-gradient(180deg, #ffe08a 0%, #ff9a2e 45%, #c8102e 100%),
+    linear-gradient(#050101, #050101);
+  -webkit-background-clip: text, padding-box;
+  background-clip: text, padding-box;
+  border: 1px solid #ffb12e;
+  box-shadow: 0 0 34px rgb(255 160 40 / 0.35);
+}
+
+.arcade-title.danger-13 .arcade-floor {
+  color: transparent;
+}
+
+.floor-block.danger-13 .floor-omen,
+.floor-block.danger-14 .floor-omen {
+  color: #ffb12e;
+}
+
+.floor-block.danger-13 .floor-flourish,
+.floor-block.danger-14 .floor-flourish {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #ffb12e, #c8102e 60%, rgb(200 16 46 / 0));
+}
+
+.arcade-stage.danger-13::before,
+.arcade-stage.danger-14::before {
+  background:
+    radial-gradient(circle, rgb(255 170 60 / 0.3) 1px, transparent 1.6px) 0 0 / 24px 24px,
+    radial-gradient(ellipse at 50% 0%, #5c0a0c 0%, #070102 72%);
+}
+
+/* 14 · floor 100 and beyond: the top of the tower. Fire moving slowly
+   through the letters, a double gold frame, a glowing pulse around the panel. */
+.arcade-title.danger-14 {
+  font-size: clamp(2.4rem, 8vw, 3.6rem);
+  letter-spacing: 0.26em;
+  color: transparent;
+  background: linear-gradient(100deg, #fff4c2 0%, #ffb12e 22%, #ff3d2e 45%, #8a0a12 62%, #ffb12e 80%, #fff4c2 100%);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  border: 4px double #ffb12e;
+  box-shadow: 0 0 46px rgb(255 120 30 / 0.45);
+  animation: tower-fire 6s linear infinite;
+}
+
+.arcade-title.danger-14 .arcade-floor {
+  color: transparent;
+}
+
+@keyframes tower-fire {
+  from {
+    background-position: 0% 0;
+  }
+  to {
+    background-position: 300% 0;
+  }
 }
 
 @keyframes arcade-pop {
@@ -2421,6 +2617,7 @@ body {
 
 /* The K.O. stamp: lands tilted, like a rubber stamp, over a dimmed stage. */
 .arcade-ko {
+  border-radius: var(--panel-radius);
   background: rgb(10 12 20 / 0.6);
   animation: ko-dim 0.15s ease-out both;
 }
@@ -2542,6 +2739,19 @@ body {
   display: grid;
   justify-items: start;
   gap: 8px;
+  margin-top: 6px;
+}
+
+/* Game over, top right, opposite the floor title. */
+.arcade-over-head {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  text-align: right;
+}
+
+.arcade-over-head p {
+  margin: 0;
 }
 
 .arcade-over-title {
@@ -2592,9 +2802,28 @@ body {
 
 /* The ladder: locked floors above, the current one lit, beaten ones below. */
 .ladder {
+  /* About ten floors fit; the rest scroll inside the ladder. */
+  max-height: 540px;
+  overflow-y: auto;
   padding: 14px 12px;
   background: var(--panel);
-  clip-path: var(--cut);
+  border-radius: var(--panel-radius);
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+/* Climbing: the whole list slides down one step, like the floor title. */
+.ladder-floors.is-climbing {
+  animation: ladder-climb 0.65s 0.1s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+@keyframes ladder-climb {
+  from {
+    transform: translateY(-50px);
+  }
+  to {
+    transform: none;
+  }
 }
 
 .ladder-floors {
@@ -2699,9 +2928,6 @@ body {
 }
 
 /* A beaten fighter drops into its slot. */
-.ladder-floor.is-beaten {
-  animation: ladder-drop 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both;
-}
 
 @keyframes ladder-drop {
   from {
@@ -2749,11 +2975,30 @@ body {
     padding: 8px 10px;
   }
 
+  .ladder {
+    max-height: none;
+    overflow-x: auto;
+  }
+
   .ladder-floors {
     display: flex;
     flex-direction: row-reverse;
     justify-content: flex-end;
     gap: 4px;
+  }
+
+  /* On a phone the ladder is a strip, so it slides sideways instead. */
+  .ladder-floors.is-climbing {
+    animation-name: ladder-climb-x;
+  }
+
+  @keyframes ladder-climb-x {
+    from {
+      transform: translateX(44px);
+    }
+    to {
+      transform: none;
+    }
   }
 
   .ladder-floor {
@@ -2779,8 +3024,7 @@ body {
 
   .ladder-name,
   .ladder-guesses,
-  .ladder-more,
-  .ladder-floor.is-beaten:nth-child(n + 8) {
+  .ladder-more {
     display: none;
   }
 }
@@ -2816,4 +3060,29 @@ body {
   50% {
     box-shadow: 0 0 0 5px rgb(224 74 120 / 0);
   }
+}
+
+/* Development preview of every floor level (#tower-preview). */
+.tower-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 16px;
+}
+
+.tower-preview-label {
+  font-size: 0.75rem;
+  color: var(--dim);
+}
+
+.tower-preview-hud {
+  display: flex;
+  gap: 4px;
+  margin-top: 14px;
+}
+
+.tower-preview-hud span {
+  flex: 1;
+  height: 10px;
+  background: var(--correct);
+  border-radius: 2px;
 }
