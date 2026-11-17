@@ -79,21 +79,30 @@ export async function recordVisit(pool: pg.Pool, visit: Visit): Promise<void> {
 // UTC day boundaries, whatever time zone the database session uses.
 const DAY_START = (param: string) => `(${param}::date)::timestamp AT TIME ZONE 'UTC'`;
 
-/** Each day's numbers worked out from the raw rows. */
-export async function liveDayNumbers(pool: pg.Pool, from: string, to: string, maxGuesses: number): Promise<DayNumbers[]> {
+/**
+ * Each day's numbers worked out from the raw rows. With `since`, only what
+ * happened from that moment on counts (the dashboard's Reset counting).
+ */
+export async function liveDayNumbers(
+  pool: pg.Pool,
+  from: string,
+  to: string,
+  maxGuesses: number,
+  since: string | null = null,
+): Promise<DayNumbers[]> {
   const { rows } = await pool.query<DayNumbers>(
     `WITH days AS (
        SELECT d::date AS day FROM generate_series($1::date, $2::date, interval '1 day') AS d
      ),
      v AS (
        SELECT day, count(*) AS views, count(DISTINCT visitor) AS visitors
-       FROM page_views WHERE day BETWEEN $1 AND $2 GROUP BY day
+       FROM page_views WHERE day BETWEEN $1 AND $2 AND created_at >= $4 GROUP BY day
      ),
      per_player AS (
        SELECT g.puzzle_date AS day, coalesce(g.user_id::text, 'g:' || g.guest_id) AS who,
               bool_or(g.character_id = d.character_id) AS won, count(*) AS n
        FROM guesses g JOIN daily_puzzles d USING (puzzle_date)
-       WHERE NOT g.late AND g.puzzle_date BETWEEN $1 AND $2
+       WHERE NOT g.late AND g.puzzle_date BETWEEN $1 AND $2 AND g.created_at >= $4
        GROUP BY 1, 2
      ),
      p AS (
@@ -107,12 +116,14 @@ export async function liveDayNumbers(pool: pg.Pool, from: string, to: string, ma
               count(DISTINCT (coalesce(user_id::text, 'g:' || guest_id), puzzle_date)) AS late_players
        FROM guesses
        WHERE late AND created_at >= ${DAY_START("$1")} AND created_at < ${DAY_START("$2")} + interval '1 day'
+         AND created_at >= $4
        GROUP BY 1
      ),
      s AS (
        SELECT (created_at AT TIME ZONE 'UTC')::date AS day, count(*) AS signups
        FROM users
        WHERE created_at >= ${DAY_START("$1")} AND created_at < ${DAY_START("$2")} + interval '1 day'
+         AND created_at >= $4
        GROUP BY 1
      )
      SELECT to_char(days.day, 'YYYY-MM-DD') AS day,
@@ -126,9 +137,31 @@ export async function liveDayNumbers(pool: pg.Pool, from: string, to: string, ma
      FROM days
      LEFT JOIN v USING (day) LEFT JOIN p USING (day) LEFT JOIN l USING (day) LEFT JOIN s USING (day)
      ORDER BY days.day`,
-    [from, to, maxGuesses],
+    [from, to, maxGuesses, since ?? "-infinity"],
   );
   return rows;
+}
+
+/** When the dashboard started counting: the last Reset counting, or null for all along. */
+export async function statsSince(pool: pg.Pool): Promise<string | null> {
+  const { rows } = await pool.query<{ value: string }>("SELECT value FROM site_settings WHERE key = 'stats_since'");
+  return rows[0]?.value ?? null;
+}
+
+/**
+ * Start counting again from now. Nothing is deleted: only the mark moves.
+ * "Now" is the database's clock, the same one that stamps every visit, guess
+ * and account, so nothing slips through a gap between two clocks.
+ */
+export async function resetStatsSince(pool: pg.Pool): Promise<string> {
+  const { rows } = await pool.query<{ now: Date }>("SELECT now() AS now");
+  const since = rows[0]!.now.toISOString();
+  await pool.query(
+    `INSERT INTO site_settings (key, value) VALUES ('stats_since', $1)
+     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`,
+    [since],
+  );
+  return since;
 }
 
 /**
@@ -171,6 +204,8 @@ interface Count {
 
 export interface Dashboard {
   today: string;
+  /** Counting since this moment (ISO), or null when it never was reset. */
+  since: string | null;
   days: DayNumbers[];
   accounts: { total: number; google: number; newThisWeek: number };
   rounds: {
@@ -191,13 +226,20 @@ export interface Dashboard {
   firstGuesses: Count[];
 }
 
-async function topCounts(pool: pg.Pool, column: "referrer" | "device" | "timezone" | "language" | "path", from: string, to: string, limit = 8): Promise<Count[]> {
+async function topCounts(
+  pool: pg.Pool,
+  column: "referrer" | "device" | "timezone" | "language" | "path",
+  from: string,
+  to: string,
+  since: string | null,
+  limit = 8,
+): Promise<Count[]> {
   // Visitors, not views: one person reloading ten times is still one.
   const { rows } = await pool.query<Count>(
     `SELECT coalesce(${column}, '${column === "referrer" ? "Direct or bookmark" : "(unknown)"}') AS label, count(DISTINCT (day, visitor))::int AS count
-     FROM page_views WHERE day BETWEEN $1 AND $2
+     FROM page_views WHERE day BETWEEN $1 AND $2 AND created_at >= $4
      GROUP BY 1 ORDER BY 2 DESC, 1 LIMIT $3`,
-    [from, to, limit],
+    [from, to, limit, since ?? "-infinity"],
   );
   return rows;
 }
@@ -208,21 +250,30 @@ export async function dashboard(pool: pg.Pool, today: string, maxGuesses: number
     [today, dayCount],
   );
   const from = range[0]!.from;
+  const since = await statsSince(pool);
+  const sinceDay = since?.slice(0, 10);
+  const after = since ?? "-infinity";
 
-  // Frozen totals where a day has them, the raw rows for the rest (today, at least).
-  const live = await liveDayNumbers(pool, from, today, maxGuesses);
+  // Frozen totals where a day has them, the raw rows for the rest (today, at
+  // least). Frozen totals count the whole day, so the day of a reset, and the
+  // days before it, always come from the raw rows, filtered from the reset on.
+  const live = await liveDayNumbers(pool, from, today, maxGuesses, since);
   const { rows: frozen } = await pool.query<DayNumbers>(
     `SELECT to_char(day, 'YYYY-MM-DD') AS day, views, visitors, players, finished, won, signups, late_players AS "latePlayers"
      FROM daily_totals WHERE day BETWEEN $1 AND $2`,
     [from, today],
   );
   const frozenByDay = new Map(frozen.map((row) => [row.day, row]));
-  const days = live.map((row) => (row.day === today ? row : (frozenByDay.get(row.day) ?? row)));
+  const days = live.map((row) =>
+    row.day === today || (sinceDay !== undefined && row.day <= sinceDay) ? row : (frozenByDay.get(row.day) ?? row),
+  );
 
   const { rows: accountRows } = await pool.query<Dashboard["accounts"]>(
     `SELECT (SELECT count(*) FROM users)::int AS total,
             (SELECT count(DISTINCT user_id) FROM external_logins WHERE provider = 'google')::int AS google,
-            (SELECT count(*) FROM users WHERE created_at > now() - interval '7 days')::int AS "newThisWeek"`,
+            (SELECT count(*) FROM users
+              WHERE created_at > greatest(now() - interval '7 days', $1::timestamptz))::int AS "newThisWeek"`,
+    [after],
   );
 
   const { rows: rounds } = await pool.query<Dashboard["rounds"][number]>(
@@ -230,7 +281,7 @@ export async function dashboard(pool: pg.Pool, today: string, maxGuesses: number
        SELECT g.puzzle_date, coalesce(g.user_id::text, 'g:' || g.guest_id) AS who,
               bool_or(g.character_id = d.character_id) AS won, count(*) AS n
        FROM guesses g JOIN daily_puzzles d USING (puzzle_date)
-       WHERE NOT g.late AND g.puzzle_date BETWEEN $1::date - 13 AND $1
+       WHERE NOT g.late AND g.puzzle_date BETWEEN $1::date - 13 AND $1 AND g.created_at >= $3
        GROUP BY 1, 2
      )
      SELECT to_char(d.puzzle_date, 'YYYY-MM-DD') AS day, c.name AS answer, c.franchise,
@@ -244,32 +295,33 @@ export async function dashboard(pool: pg.Pool, today: string, maxGuesses: number
      WHERE d.puzzle_date BETWEEN $1::date - 13 AND $1
      GROUP BY d.puzzle_date, c.name, c.franchise
      ORDER BY d.puzzle_date DESC`,
-    [today, maxGuesses],
+    [today, maxGuesses, after],
   );
 
   // Each player's opening guess of each day: what people try first.
   const { rows: firstGuesses } = await pool.query<Count>(
     `WITH firsts AS (
        SELECT DISTINCT ON (puzzle_date, coalesce(user_id::text, 'g:' || guest_id)) character_id
-       FROM guesses WHERE puzzle_date BETWEEN $1 AND $2
+       FROM guesses WHERE puzzle_date BETWEEN $1 AND $2 AND created_at >= $3
        ORDER BY puzzle_date, coalesce(user_id::text, 'g:' || guest_id), created_at, id
      )
      SELECT c.name AS label, count(*)::int AS count
      FROM firsts f JOIN characters c ON c.id = f.character_id
      GROUP BY c.name ORDER BY 2 DESC, 1 LIMIT 8`,
-    [from, today],
+    [from, today, after],
   );
 
   return {
     today,
+    since,
     days,
     accounts: accountRows[0]!,
     rounds,
-    referrers: await topCounts(pool, "referrer", from, today),
-    devices: await topCounts(pool, "device", from, today),
-    timezones: await topCounts(pool, "timezone", from, today),
-    languages: await topCounts(pool, "language", from, today),
-    pages: await topCounts(pool, "path", from, today),
+    referrers: await topCounts(pool, "referrer", from, today, since),
+    devices: await topCounts(pool, "device", from, today, since),
+    timezones: await topCounts(pool, "timezone", from, today, since),
+    languages: await topCounts(pool, "language", from, today, since),
+    pages: await topCounts(pool, "path", from, today, since),
     firstGuesses,
   };
 }

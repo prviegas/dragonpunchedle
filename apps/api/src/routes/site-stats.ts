@@ -1,7 +1,7 @@
 import rateLimit from "@fastify/rate-limit";
 import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 import type pg from "pg";
-import { dashboard, looksLikeBot, recordVisit, referrerHost } from "../db/site-stats.js";
+import { dashboard, looksLikeBot, recordVisit, referrerHost, resetStatsSince } from "../db/site-stats.js";
 import { MAX_GUESSES, puzzleDateFor } from "../game/puzzles.js";
 
 interface SiteStatsOptions {
@@ -78,5 +78,13 @@ export const siteStatsRoutes: FastifyPluginAsync<SiteStatsOptions> = async (app,
     if (!dashboardOpen && !isAdmin(request, adminUserIds)) return reply.code(404).send({ error: "Not found." });
     reply.header("cache-control", "no-store");
     return dashboard(pool, puzzleDateFor(now()), MAX_GUESSES);
+  });
+
+  // Reset counting: the dashboard counts from this moment on. Owner only, even
+  // in local open mode, since it changes what the dashboard shows for good.
+  // Deletes nothing: visits, guesses and accounts all stay.
+  app.post("/api/admin/stats/reset", async (request, reply) => {
+    if (!isAdmin(request, adminUserIds)) return reply.code(404).send({ error: "Not found." });
+    return { since: await resetStatsSince(pool) };
   });
 };

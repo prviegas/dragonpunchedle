@@ -317,7 +317,7 @@ export function App() {
       <Shell account={account}>
         {authModal}
         {/* Remounted on login, so logging in on this page loads it. */}
-        <Dashboard key={user?.id ?? "guest"} />
+        <Dashboard key={user?.id ?? "guest"} canReset={user?.admin === true} />
       </Shell>
     );
   }

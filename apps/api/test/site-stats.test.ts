@@ -159,4 +159,37 @@ describe.skipIf(!process.env.DATABASE_URL)("site stats", () => {
     expect((await dashboardAs("owner")).statusCode).toBe(200);
     expect((await dashboardAs("squatter")).statusCode).toBe(404);
   });
+
+  it("resets counting for the owner only, without deleting anything", async () => {
+    // The mark is shared by the whole database: put back whatever was there.
+    const before = (await pool.query("SELECT value FROM site_settings WHERE key = 'stats_since'")).rows[0]?.value;
+    try {
+      const reset = (as?: string) =>
+        app.inject({ method: "POST", url: "/api/admin/stats/reset", cookies: as ? { [SESSION_COOKIE]: cookies[as]! } : {} });
+      expect((await reset()).statusCode).toBe(404);
+      expect((await reset("player")).statusCode).toBe(404);
+
+      const viewsBefore = (await pool.query("SELECT count(*)::int AS n FROM page_views WHERE day = $1", [TODAY])).rows[0].n;
+      const response = await reset("owner");
+      expect(response.statusCode).toBe(200);
+      expect(response.json().since).toBeTruthy();
+
+      const board = async () =>
+        (await app.inject({ method: "GET", url: "/api/admin/dashboard", cookies: { [SESSION_COOKIE]: cookies.owner! } })).json();
+      // Everything so far happened before the reset: the counts start again at zero...
+      let body = await board();
+      expect(body.since).toBe(response.json().since);
+      expect(body.days.at(-1)).toMatchObject({ views: 0, visitors: 0, players: 0 });
+      expect(body.firstGuesses).toEqual([]);
+      // ...but no row was deleted, and new activity counts.
+      expect((await pool.query("SELECT count(*)::int AS n FROM page_views WHERE day = $1", [TODAY])).rows[0].n).toBe(viewsBefore);
+      await new Promise((resolve) => setTimeout(resolve, 5)); // a visit after the reset, not in the same millisecond
+      await visit({ path: "/" }, { ip: "192.0.2.50" });
+      body = await board();
+      expect(body.days.at(-1)).toMatchObject({ views: 1, visitors: 1 });
+    } finally {
+      if (before === undefined) await pool.query("DELETE FROM site_settings WHERE key = 'stats_since'");
+      else await pool.query("UPDATE site_settings SET value = $1 WHERE key = 'stats_since'", [before]);
+    }
+  });
 });

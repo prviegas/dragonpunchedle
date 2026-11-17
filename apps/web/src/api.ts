@@ -247,6 +247,8 @@ export interface CountRow {
 
 export interface Dashboard {
   today: string;
+  /** Counting since this moment (ISO), or null when it was never reset. */
+  since: string | null;
   days: DayNumbers[];
   accounts: { total: number; google: number; newThisWeek: number };
   rounds: {
@@ -267,3 +269,6 @@ export interface Dashboard {
 }
 
 export const fetchDashboard = () => request<Dashboard>("/api/admin/dashboard");
+
+/** Owner only: the dashboard counts from now on. Deletes nothing. */
+export const resetCounting = () => request<{ since: string }>("/api/admin/stats/reset", { method: "POST" });

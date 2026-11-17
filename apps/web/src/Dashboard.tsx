@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   ApiError,
   fetchDashboard,
+  resetCounting,
   type CountRow,
   type Dashboard as DashboardData,
   type DayNumbers,
@@ -11,9 +12,11 @@ import { formatDay } from "./History";
 export const DASHBOARD_HASH = "#dashboard";
 
 /** The owner's view of the site: visits, players and rounds. Only the owner's account can load it. */
-export function Dashboard() {
+export function Dashboard({ canReset }: { canReset: boolean }) {
   const [data, setData] = useState<DashboardData>();
   const [error, setError] = useState<string>();
+  // Bumped after a reset, to load the numbers again.
+  const [version, setVersion] = useState(0);
 
   useEffect(() => {
     fetchDashboard().then(setData, (e: unknown) =>
@@ -23,7 +26,7 @@ export function Dashboard() {
           : "Couldn't load the dashboard.",
       ),
     );
-  }, []);
+  }, [version]);
 
   if (error) return <p className="status status--error">{error}</p>;
   if (!data) return <p className="status">Loading the dashboard…</p>;
@@ -54,6 +57,7 @@ export function Dashboard() {
         Times in UTC. Your own visits aren't counted. Visitors are counted once
         per day, without cookies.
       </p>
+      <CountingSince since={data.since} canReset={canReset} onReset={() => setVersion((v) => v + 1)} />
 
       <h3 className="dashboard-sub">Today so far</h3>
       <div className="stat-tiles">
@@ -231,6 +235,58 @@ export function Dashboard() {
         <CountList title="Pages" rows={data.pages} empty="No visits yet." />
       </div>
     </section>
+  );
+}
+
+/**
+ * Since when the numbers count, and the owner's Reset counting button. Two
+ * clicks, so a stray one can't restart the count. Nothing is deleted: the
+ * numbers before the reset are simply left out.
+ */
+function CountingSince({ since, canReset, onReset }: { since: string | null; canReset: boolean; onReset: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  const when = since
+    ? new Date(since).toLocaleString("en", { timeZone: "UTC", month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }) + " UTC"
+    : null;
+
+  async function reset() {
+    setBusy(true);
+    setFailed(false);
+    try {
+      await resetCounting();
+      setConfirming(false);
+      onReset();
+    } catch {
+      setFailed(true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <p className="dashboard-note counting-since">
+      {when ? <>Counting since <strong>{when}</strong>.</> : "Counting everything so far."}{" "}
+      {canReset &&
+        (confirming ? (
+          <>
+            Start counting again from now?{" "}
+            <button type="button" className="link" onClick={reset} disabled={busy}>
+              Yes, reset
+            </button>{" "}
+            <button type="button" className="link link--quiet" onClick={() => setConfirming(false)} disabled={busy}>
+              Cancel
+            </button>
+          </>
+        ) : (
+          <button type="button" className="link" onClick={() => setConfirming(true)}>
+            Reset counting
+          </button>
+        ))}
+      {failed && <span className="status--error"> Couldn't reset. Please try again.</span>}
+    </p>
   );
 }
 
