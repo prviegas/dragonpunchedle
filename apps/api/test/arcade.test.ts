@@ -97,7 +97,7 @@ describe.skipIf(!process.env.DATABASE_URL)("arcade ladder", () => {
 
     const after = (await get("guest")).json();
     expect(after.run).toMatchObject({ over: true, floorsCleared: 1, answer: expect.objectContaining({ id: secret }) });
-    expect(after.best).toBe(1);
+    expect(after.best).toBe(2); // the floor reached: 1 cleared, lost on 2
     expect((await guess("guest", misses[0]!)).statusCode).toBe(409); // no run in progress
   });
 
@@ -110,7 +110,7 @@ describe.skipIf(!process.env.DATABASE_URL)("arcade ladder", () => {
 
     const board = (await app.inject({ method: "GET", url: "/api/arcade/leaderboard", cookies: as("user") })).json();
     const mine = board.top.find((entry: { you: boolean }) => entry.you);
-    expect(mine).toMatchObject({ username: PREFIX + "climber", floor: 2 });
+    expect(mine).toMatchObject({ username: PREFIX + "climber", floor: 3 }); // 2 cleared: reached floor 3
     expect(JSON.stringify(board)).not.toContain(guestCookie);
   });
 
@@ -121,7 +121,7 @@ describe.skipIf(!process.env.DATABASE_URL)("arcade ladder", () => {
 
     const body = (await giveUp()).json();
     expect(body.run).toMatchObject({ over: true, floorsCleared: 2, floor: 3, answer: expect.objectContaining({ id: secret }) });
-    expect(body.best).toBe(2);
+    expect(body.best).toBe(3);
     expect((await giveUp()).statusCode).toBe(409); // nothing left to give up
   });
 

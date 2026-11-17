@@ -184,7 +184,7 @@ export interface LadderEntry {
 export async function arcadeLeaderboard(pool: pg.Pool, viewerId: number | null, limit = 10) {
   const { rows } = await pool.query<{ user_id: string; username: string; floor: number; rank: string }>(
     `WITH best AS (
-       SELECT DISTINCT ON (r.user_id) r.user_id, r.floors_cleared AS floor, coalesce(r.ended_at, now()) AS reached
+       SELECT DISTINCT ON (r.user_id) r.user_id, r.floors_cleared + 1 AS floor, coalesce(r.ended_at, now()) AS reached
        FROM arcade_runs r
        WHERE r.user_id IS NOT NULL AND r.floors_cleared > 0
        ORDER BY r.user_id, r.floors_cleared DESC, coalesce(r.ended_at, now())
@@ -205,9 +205,9 @@ export async function arcadeLeaderboard(pool: pg.Pool, viewerId: number | null, 
   return { top: entries.filter((e) => e.rank <= limit), you: entries.find((e) => e.you && e.rank > limit) };
 }
 
-/** The player's highest floor ever, for the "best" line on the ladder. */
+/** The highest floor the player has reached (the floor a run ended on), or 0 if they never played. */
 export async function bestFloor(pool: pg.Pool, player: Player): Promise<number> {
   const { column, value } = playerColumn(player);
-  const { rows } = await pool.query<{ best: number | null }>(`SELECT max(floors_cleared) AS best FROM arcade_runs WHERE ${column} = $1`, [value]);
+  const { rows } = await pool.query<{ best: number | null }>(`SELECT max(floors_cleared) + 1 AS best FROM arcade_runs WHERE ${column} = $1`, [value]);
   return rows[0]?.best ?? 0;
 }

@@ -10,15 +10,18 @@ import {
   type ArcadeState,
   type CharacterSummary,
 } from "./api";
-import { buildTowerShare, floorDanger, TOWER_NAME } from "./arcadeRules";
+import {
+  buildTowerShare,
+  floorDanger,
+  floorOmen,
+  TOWER_NAME,
+} from "./arcadeRules";
 import { Board } from "./Board";
 import { GuessInput } from "./GuessInput";
 import { HealthBar } from "./HealthBar";
 
 /** How long the K.O. stamp holds before the next opponent steps in. */
 const KO_MS = 1400;
-/** How long "FLOOR 3 · FIGHT!" stays up at the start of a floor. */
-const SPLASH_MS = 1100;
 
 interface ArcadeProps {
   characters: readonly CharacterSummary[];
@@ -34,8 +37,6 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
   const [state, setState] = useState<ArcadeState>();
   const [error, setError] = useState<string>();
   const [freshId, setFreshId] = useState<string>();
-  // The floor-start announcement, keyed so the same text can play again.
-  const [splash, setSplash] = useState<{ floor: number; key: number }>();
   // The K.O. stamp over the board, with who just went down.
   const [ko, setKoState] = useState<string>();
   // Also as a ref: queued guesses check it after renders they started before.
@@ -53,26 +54,23 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
   };
 
   useEffect(() => {
-    fetchArcade().then(show, () => setError("Couldn't load the tower. Please try again."));
+    fetchArcade().then(show, () =>
+      setError("Couldn't load the tower. Please try again."),
+    );
   }, [playerName]);
-
-  // Clear the announcement and the stamp after their moment.
-  useEffect(() => {
-    if (!splash) return;
-    const timer = setTimeout(() => setSplash(undefined), SPLASH_MS);
-    return () => clearTimeout(timer);
-  }, [splash]);
 
   const run = state?.run;
   const playing = run && !run.over;
-  const guessedIds = useMemo(() => new Set(run?.guesses.map((g) => g.guess.id) ?? []), [run]);
+  const guessedIds = useMemo(
+    () => new Set(run?.guesses.map((g) => g.guess.id) ?? []),
+    [run],
+  );
 
   async function start() {
     setError(undefined);
     try {
       const next = await startArcade();
       show(next);
-      setSplash({ floor: 1, key: Date.now() });
     } catch {
       setError("Couldn't start a run. Please try again.");
     }
@@ -86,7 +84,11 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
       show(await giveUpArcade());
       setLeaderboardVersion((v) => v + 1);
     } catch (failure) {
-      setError(failure instanceof ApiError ? failure.message : "Couldn't give up. Please try again.");
+      setError(
+        failure instanceof ApiError
+          ? failure.message
+          : "Couldn't give up. Please try again.",
+      );
     }
   }
 
@@ -98,7 +100,9 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
   function guess(characterId: string) {
     if (koRef.current) return;
     const round = floorRound.current;
-    queue.current = queue.current.then(() => (round === floorRound.current ? sendGuess(characterId) : undefined));
+    queue.current = queue.current.then(() =>
+      round === floorRound.current ? sendGuess(characterId) : undefined,
+    );
   }
 
   async function sendGuess(characterId: string) {
@@ -106,7 +110,13 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
     if (!current?.run || current.run.over || koRef.current) return;
     setError(undefined);
     try {
-      const { answer, floor: _floor, guessNumber: _n, runOver, ...result } = await submitArcadeGuess(characterId);
+      const {
+        answer,
+        floor: _floor,
+        guessNumber: _n,
+        runOver,
+        ...result
+      } = await submitArcadeGuess(characterId);
       setFreshId(result.guess.id);
       const run = { ...current.run, guesses: [result, ...current.run.guesses] };
 
@@ -115,26 +125,40 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
         // K.O.: the beaten fighter joins the ladder, then the next one steps in.
         const cleared = [
           ...run.cleared,
-          { floor: run.floor, guesses: run.guesses.length, character: result.guess },
+          {
+            floor: run.floor,
+            guesses: run.guesses.length,
+            character: result.guess,
+          },
         ];
-        // The ladder moves up at once; the board keeps the winning row under the stamp.
-        show({ ...current, run: { ...run, cleared, floorsCleared: cleared.length, floor: run.floor + 1 } });
+        // The floor title stays put under the stamp; it climbs when the next fighter is loaded.
+        show({
+          ...current,
+          run: { ...run, cleared, floorsCleared: cleared.length },
+        });
         setKo(result.guess.name);
         await new Promise((resolve) => setTimeout(resolve, KO_MS));
         setKo(undefined);
         const next = await fetchArcade();
         show(next);
         setFreshId(undefined);
-        if (next.run && !next.run.over) setSplash({ floor: next.run.floor, key: Date.now() });
-        else setLeaderboardVersion((v) => v + 1);
+        if (!next.run || next.run.over) setLeaderboardVersion((v) => v + 1);
       } else if (runOver) {
-        show({ ...current, best: Math.max(current.best, run.floorsCleared), run: { ...run, over: true, answer } });
+        show({
+          ...current,
+          best: Math.max(current.best, run.floor),
+          run: { ...run, over: true, answer },
+        });
         setLeaderboardVersion((v) => v + 1);
       } else {
         show({ ...current, run });
       }
     } catch (failure) {
-      setError(failure instanceof ApiError ? failure.message : "Couldn't send that guess. Please try again.");
+      setError(
+        failure instanceof ApiError
+          ? failure.message
+          : "Couldn't send that guess. Please try again.",
+      );
     }
   }
 
@@ -143,7 +167,7 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
   }
 
   // How menacing the floor title and panel look: they darken toward blood red as the tower climbs.
-  const danger = playing ? floorDanger(run.floor) : 1;
+  const danger = run ? floorDanger(run.floor) : 1;
 
   return (
     <section className="arcade" aria-labelledby="arcade-title">
@@ -154,35 +178,48 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
       <div className="arcade-layout">
         <div className={`arcade-stage danger-${danger}${ko ? " is-hit" : ""}`}>
           <header className="arcade-head">
-            <h2 id="arcade-title" className={`arcade-title danger-${danger}`}>
-              {playing ? (
-                <>
-                  Floor{" "}
-                  <span className="arcade-floor" key={run.floor}>
-                    {run.floor}
-                  </span>
-                </>
-              ) : (
-                TOWER_NAME
-              )}
-            </h2>
+            {run ? (
+              <FloorTitle floor={run.floor} />
+            ) : (
+              <h2 id="arcade-title" className="arcade-title">
+                {TOWER_NAME}
+              </h2>
+            )}
           </header>
 
           {!run ? (
-            <Intro best={state.best} maxGuesses={state.maxGuesses} onStart={start} />
+            <Intro
+              best={state.best}
+              maxGuesses={state.maxGuesses}
+              onStart={start}
+            />
           ) : run.over ? (
             <GameOver
-              floorsCleared={run.floorsCleared}
+              floorReached={run.floor}
               best={state.best}
-              share={buildTowerShare(run.cleared, run.answer !== undefined, `${window.location.origin}/#tower`)}
+              share={buildTowerShare(
+                run.floor,
+                run.cleared,
+                run.answer !== undefined,
+                `${window.location.origin}/#tower`,
+              )}
               loggedIn={playerName !== null}
               onLogIn={onLogIn}
               onAgain={start}
             />
           ) : (
             <div className="arcade-play">
-              <HealthBar player={playerName ?? "Guest"} used={run.guesses.length} max={state.maxGuesses} />
-              <GuessInput characters={characters} excludedIds={guessedIds} busy={ko !== undefined} onGuess={guess} />
+              <HealthBar
+                player={playerName ?? "Guest"}
+                used={run.guesses.length}
+                max={state.maxGuesses}
+              />
+              <GuessInput
+                characters={characters}
+                excludedIds={guessedIds}
+                busy={ko !== undefined}
+                onGuess={guess}
+              />
               <div className="arcade-under">
                 <GiveUp onGiveUp={giveUp} disabled={ko !== undefined} />
               </div>
@@ -195,13 +232,7 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
             </p>
           )}
 
-          {/* The moments: the floor announcement and the K.O. stamp. Screen readers get the words. */}
-          {splash && (
-            <div className="arcade-splash" key={splash.key} role="status">
-              <span className="arcade-splash-floor">Floor {splash.floor}</span>
-              <span className="arcade-splash-fight">Fight!</span>
-            </div>
-          )}
+          {/* The K.O. stamp. Screen readers get the words. */}
           {ko && (
             <div className="arcade-ko" role="status">
               <span className="arcade-ko-stamp">K.O.</span>
@@ -216,7 +247,12 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
       {/* Full page width, like the daily board: inside the panel its 9 columns would overflow. */}
       {run && (run.guesses.length > 0 || run.over) && (
         <div className="arcade-board">
-          <Board clues={state.clues} guesses={run.guesses} freshId={freshId} answer={run.over ? run.answer : undefined} />
+          <Board
+            clues={state.clues}
+            guesses={run.guesses}
+            freshId={freshId}
+            answer={run.over ? run.answer : undefined}
+          />
         </div>
       )}
 
@@ -225,12 +261,68 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
   );
 }
 
+/**
+ * "FLOOR 9" and its omen line. When the floor changes, the old title scrolls
+ * up and out while the new one rises in from below, as if climbing the tower.
+ * Its look comes from the floor's danger level (see floorDanger).
+ */
+function FloorTitle({ floor }: { floor: number }) {
+  const [leaving, setLeaving] = useState<number>();
+  const shown = useRef(floor);
+  useEffect(() => {
+    if (floor === shown.current) return;
+    setLeaving(shown.current);
+    shown.current = floor;
+    const timer = setTimeout(() => setLeaving(undefined), 700);
+    return () => clearTimeout(timer);
+  }, [floor]);
+
+  // The current floor's title is the page heading; the one scrolling away isn't.
+  const block = (n: number, extra: string, heading: boolean) => {
+    const Title = heading ? "h2" : "p";
+    return (
+      <div className={`floor-block danger-${floorDanger(n)} ${extra}`}>
+        <Title
+          id={heading ? "arcade-title" : undefined}
+          className={`arcade-title danger-${floorDanger(n)}`}
+        >
+          Floor <span className="arcade-floor">{n}</span>
+        </Title>
+        <span className="floor-flourish" aria-hidden="true" />
+        <p className="floor-omen">{floorOmen(n)}</p>
+      </div>
+    );
+  };
+
+  return (
+    <div className="floor-roll">
+      {leaving !== undefined && (
+        <div aria-hidden="true">{block(leaving, "floor-roll-out", false)}</div>
+      )}
+      <div key={floor}>
+        {block(floor, leaving !== undefined ? "floor-roll-in" : "", true)}
+      </div>
+    </div>
+  );
+}
+
 /** A quiet "Give up" that asks once, so a stray click can't throw a run away. */
-function GiveUp({ onGiveUp, disabled }: { onGiveUp: () => void; disabled: boolean }) {
+function GiveUp({
+  onGiveUp,
+  disabled,
+}: {
+  onGiveUp: () => void;
+  disabled: boolean;
+}) {
   const [asking, setAsking] = useState(false);
   if (!asking) {
     return (
-      <button type="button" className="link link--quiet arcade-giveup" onClick={() => setAsking(true)} disabled={disabled}>
+      <button
+        type="button"
+        className="link link--quiet arcade-giveup"
+        onClick={() => setAsking(true)}
+        disabled={disabled}
+      >
         Give up
       </button>
     );
@@ -241,19 +333,31 @@ function GiveUp({ onGiveUp, disabled }: { onGiveUp: () => void; disabled: boolea
       <button type="button" className="link" onClick={onGiveUp}>
         Yes, give up
       </button>{" "}
-      <button type="button" className="link link--quiet" onClick={() => setAsking(false)}>
+      <button
+        type="button"
+        className="link link--quiet"
+        onClick={() => setAsking(false)}
+      >
         Keep fighting
       </button>
     </span>
   );
 }
 
-function Intro({ best, maxGuesses, onStart }: { best: number; maxGuesses: number; onStart: () => void }) {
+function Intro({
+  best,
+  maxGuesses,
+  onStart,
+}: {
+  best: number;
+  maxGuesses: number;
+  onStart: () => void;
+}) {
   return (
     <div className="arcade-intro">
       <p className="arcade-pitch">
-        Climb the tower. Every floor is a random fighter and {maxGuesses} guesses. Win and the next one steps in; lose
-        one and the climb is over.
+        Climb the tower. Every floor is a random fighter and {maxGuesses}{" "}
+        guesses. Win and the next one steps in; lose one and the climb is over.
       </p>
       <ul className="arcade-rules">
         <li>It only gets harder to look at.</li>
@@ -268,14 +372,14 @@ function Intro({ best, maxGuesses, onStart }: { best: number; maxGuesses: number
 }
 
 function GameOver({
-  floorsCleared,
+  floorReached,
   best,
   share,
   loggedIn,
   onLogIn,
   onAgain,
 }: {
-  floorsCleared: number;
+  floorReached: number;
   best: number;
   share: string;
   loggedIn: boolean;
@@ -283,7 +387,7 @@ function GameOver({
   onAgain: () => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const newBest = floorsCleared > 0 && floorsCleared >= best;
+  const newBest = floorReached > 1 && floorReached >= best;
 
   async function copy() {
     const touch = window.matchMedia("(pointer: coarse)").matches;
@@ -292,7 +396,8 @@ function GameOver({
         await navigator.share({ text: share });
         return;
       } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") return;
+        if (error instanceof DOMException && error.name === "AbortError")
+          return;
       }
     }
     try {
@@ -308,12 +413,14 @@ function GameOver({
     <div className="arcade-over">
       <p className="arcade-over-title">Game over</p>
       <p className="arcade-over-score">
-        <span className="arcade-over-floors">{floorsCleared}</span>
-        <span>
-          {floorsCleared === 1 ? "floor" : "floors"} cleared
-        </span>
+        <span>Floor reached</span>
+        <span className="arcade-over-floors">{floorReached}</span>
       </p>
-      {newBest ? <p className="arcade-best is-new">New best!</p> : <p className="arcade-best">Your best: floor {best}</p>}
+      {newBest ? (
+        <p className="arcade-best is-new">New best!</p>
+      ) : (
+        <p className="arcade-best">Your best: floor {best}</p>
+      )}
       <div className="arcade-over-actions">
         <button type="button" className="button" onClick={onAgain}>
           Continue? Play again
@@ -335,7 +442,9 @@ function GameOver({
 }
 
 /** The tower: the next opponents locked above, the current one lit, the beaten ones below. */
-function Ladder({ run }: { run: NonNullable<ArcadeState["run"]> }) {
+function Ladder({ run: given }: { run: NonNullable<ArcadeState["run"]> }) {
+  const beatenNow = given.cleared.some((floor) => floor.floor === given.floor);
+  const run = beatenNow ? { ...given, floor: given.floor + 1 } : given;
   const beaten = [...run.cleared].reverse().slice(0, 8);
   const hidden = run.cleared.length - beaten.length;
   return (
@@ -343,31 +452,50 @@ function Ladder({ run }: { run: NonNullable<ArcadeState["run"]> }) {
       <ol className="ladder-floors">
         {!run.over &&
           [2, 1].map((ahead) => (
-            <li key={`ahead-${ahead}`} className="ladder-floor is-locked" aria-hidden="true">
+            <li
+              key={`ahead-${ahead}`}
+              className="ladder-floor is-locked"
+              aria-hidden="true"
+            >
               <span className="ladder-number">{run.floor + ahead}</span>
               <span className="ladder-slot">?</span>
             </li>
           ))}
-        <li className={run.over ? "ladder-floor is-lost" : "ladder-floor is-current"}>
+        <li
+          className={
+            run.over ? "ladder-floor is-lost" : "ladder-floor is-current"
+          }
+        >
           <span className="ladder-number">{run.floor}</span>
           {run.over && run.answer ? (
             <>
-              <LadderThumb name={run.answer.name} url={run.answer.portrait?.url} />
+              <LadderThumb
+                name={run.answer.name}
+                url={run.answer.portrait?.url}
+              />
               <span className="ladder-name">{run.answer.name}</span>
             </>
           ) : (
             <>
               <span className="ladder-slot">?</span>
-              <span className="ladder-name">{run.over ? "" : "Now fighting"}</span>
+              <span className="ladder-name">
+                {run.over ? "" : "Now fighting"}
+              </span>
             </>
           )}
         </li>
         {beaten.map((floor) => (
           <li key={floor.floor} className="ladder-floor is-beaten">
             <span className="ladder-number">{floor.floor}</span>
-            <LadderThumb name={floor.character.name} url={floor.character.portrait?.url} />
+            <LadderThumb
+              name={floor.character.name}
+              url={floor.character.portrait?.url}
+            />
             <span className="ladder-name">{floor.character.name}</span>
-            <span className="ladder-guesses" title={`${floor.guesses} ${floor.guesses === 1 ? "guess" : "guesses"}`}>
+            <span
+              className="ladder-guesses"
+              title={`${floor.guesses} ${floor.guesses === 1 ? "guess" : "guesses"}`}
+            >
               {floor.guesses}
             </span>
           </li>
@@ -380,7 +508,14 @@ function Ladder({ run }: { run: NonNullable<ArcadeState["run"]> }) {
 
 function LadderThumb({ name, url }: { name: string; url?: string }) {
   return url ? (
-    <img className="ladder-thumb" src={url} alt="" width={30} height={40} loading="lazy" />
+    <img
+      className="ladder-thumb"
+      src={url}
+      alt=""
+      width={30}
+      height={40}
+      loading="lazy"
+    />
   ) : (
     <span className="ladder-thumb ladder-thumb--empty" aria-hidden="true">
       {name
@@ -393,14 +528,20 @@ function LadderThumb({ name, url }: { name: string; url?: string }) {
 }
 
 function ArcadeLeaderboard({ version }: { version: number }) {
-  const [board, setBoard] = useState<{ top: ArcadeLadderEntry[]; you?: ArcadeLadderEntry }>();
+  const [board, setBoard] = useState<{
+    top: ArcadeLadderEntry[];
+    you?: ArcadeLadderEntry;
+  }>();
   useEffect(() => {
     fetchArcadeLeaderboard().then(setBoard, () => undefined);
   }, [version]);
   if (!board) return null;
   const rows = [...board.top, ...(board.you ? [board.you] : [])];
   return (
-    <section className="leaderboard arcade-leaderboard" aria-labelledby="arcade-board-title">
+    <section
+      className="leaderboard arcade-leaderboard"
+      aria-labelledby="arcade-board-title"
+    >
       <div className="leaderboard-head">
         <h2 id="arcade-board-title">Highest floors</h2>
       </div>
@@ -415,9 +556,7 @@ function ArcadeLeaderboard({ version }: { version: number }) {
                 {row.username}
                 {row.you && <span className="you-tag"> (you)</span>}
               </span>
-              <span className="score">
-                Floor {row.floor}
-              </span>
+              <span className="score">Floor {row.floor}</span>
             </li>
           ))}
         </ol>
