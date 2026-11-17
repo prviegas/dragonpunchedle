@@ -356,6 +356,12 @@ function Shell({ date, account, children }: { date?: string; account?: ReactNode
       )}
       <main>{children}</main>
       <footer className="footer">
+        <p className="footer-maker">
+          Made by{" "}
+          <a href="https://www.linkedin.com/in/pedro--viegas/" target="_blank" rel="noopener noreferrer">
+            pedromakesstuff
+          </a>
+        </p>
         <p>Unofficial fan game. Characters and art belong to their owners.</p>
         <p>
           <a href="/privacy.html">Privacy</a> · <a href="/privacy.html#credits">Credits</a>

@@ -1565,6 +1565,22 @@ body {
   color: var(--muted);
 }
 
+.footer .footer-maker {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.footer .footer-maker a {
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footer .footer-maker a:hover {
+  text-decoration: underline;
+}
+
 /* ---- Small screens ---- */
 
 @media (max-width: 640px) {
