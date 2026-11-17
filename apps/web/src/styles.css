@@ -2616,10 +2616,25 @@ body {
 }
 
 /* The K.O. stamp: lands tilted, like a rubber stamp, over a dimmed stage. */
+/* A flash, not a pause: it dims the panel lightly, lands, and fades on its
+   own while the next floor is already playable underneath. */
 .arcade-ko {
   border-radius: var(--panel-radius);
-  background: rgb(10 12 20 / 0.6);
-  animation: ko-dim 0.15s ease-out both;
+  background: rgb(10 12 20 / 0.45);
+  animation: ko-flash 0.9s ease-out both;
+}
+
+@keyframes ko-flash {
+  0% {
+    opacity: 0;
+  }
+  12%,
+  65% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes ko-dim {

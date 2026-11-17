@@ -15,9 +15,13 @@ describe("floorDanger", () => {
     ]);
   });
 
-  it("has a line for every level", () => {
+  it("says each level's line once, on the floor where it begins", () => {
     expect(floorOmen(1)).toBe("The climb begins.");
+    expect(floorOmen(2)).toBeNull();
+    expect(floorOmen(3)).toBe("It gets harder from here.");
+    expect(floorOmen(4)).toBeNull();
     expect(floorOmen(100)).toBe("Endless.");
+    expect(floorOmen(101)).toBeNull();
   });
 });
 

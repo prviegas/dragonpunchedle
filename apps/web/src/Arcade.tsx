@@ -21,8 +21,8 @@ import { Board } from "./Board";
 import { GuessInput } from "./GuessInput";
 import { HealthBar } from "./HealthBar";
 
-/** How long the K.O. stamp holds before the next opponent steps in. */
-const KO_MS = 1400;
+/** How long the K.O. stamp shows. It never holds the game up: the next floor loads at once. */
+const KO_MS = 900;
 
 interface ArcadeProps {
   characters: readonly CharacterSummary[];
@@ -38,14 +38,14 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
   const [state, setState] = useState<ArcadeState>();
   const [error, setError] = useState<string>();
   const [freshId, setFreshId] = useState<string>();
-  // The K.O. stamp over the board, with who just went down.
-  const [ko, setKoState] = useState<string>();
-  // Also as a ref: queued guesses check it after renders they started before.
-  const koRef = useRef<string>(undefined);
-  const setKo = (who: string | undefined) => {
-    koRef.current = who;
-    setKoState(who);
-  };
+  // The K.O. stamp, with who just went down. Only a picture: it never blocks
+  // guessing, and it fades on its own while the next floor is already playable.
+  const [ko, setKo] = useState<{ who: string; key: number }>();
+  useEffect(() => {
+    if (!ko) return;
+    const timer = setTimeout(() => setKo(undefined), KO_MS);
+    return () => clearTimeout(timer);
+  }, [ko]);
   const [leaderboardVersion, setLeaderboardVersion] = useState(0);
   const queue = useRef<Promise<void>>(Promise.resolve());
   const stateRef = useRef<ArcadeState>(undefined);
@@ -93,13 +93,13 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
     }
   }
 
-  // Which floor a pick was made on. A pick made while the K.O. plays, or typed
-  // ahead before the winning guess came back, was meant for the floor that
-  // just ended: it's dropped, never carried onto the next opponent.
+  // Which floor a pick was made on. A pick typed ahead before the winning
+  // guess came back was meant for the floor that just ended: it's dropped,
+  // never carried onto the next opponent. A pick made after the win is for the
+  // next floor, and waits in line until that floor has loaded.
   const floorRound = useRef(0);
 
   function guess(characterId: string) {
-    if (koRef.current) return;
     const round = floorRound.current;
     queue.current = queue.current.then(() =>
       round === floorRound.current ? sendGuess(characterId) : undefined,
@@ -108,7 +108,7 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
 
   async function sendGuess(characterId: string) {
     const current = stateRef.current;
-    if (!current?.run || current.run.over || koRef.current) return;
+    if (!current?.run || current.run.over) return;
     setError(undefined);
     try {
       const {
@@ -132,14 +132,12 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
             character: result.guess,
           },
         ];
-        // The floor title stays put under the stamp; it climbs when the next fighter is loaded.
         show({
           ...current,
           run: { ...run, cleared, floorsCleared: cleared.length },
         });
-        setKo(result.guess.name);
-        await new Promise((resolve) => setTimeout(resolve, KO_MS));
-        setKo(undefined);
+        // The stamp plays over the climb; the next floor loads straight away.
+        setKo({ who: result.guess.name, key: Date.now() });
         const next = await fetchArcade();
         show(next);
         setFreshId(undefined);
@@ -226,11 +224,11 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
               <GuessInput
                 characters={characters}
                 excludedIds={guessedIds}
-                busy={ko !== undefined}
+                busy={false}
                 onGuess={guess}
               />
               <div className="arcade-under">
-                <GiveUp onGiveUp={giveUp} disabled={ko !== undefined} />
+                <GiveUp onGiveUp={giveUp} disabled={false} />
               </div>
             </div>
           )}
@@ -243,9 +241,9 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
 
           {/* The K.O. stamp. Screen readers get the words. */}
           {ko && (
-            <div className="arcade-ko" role="status">
+            <div className="arcade-ko" role="status" key={ko.key}>
               <span className="arcade-ko-stamp">K.O.</span>
-              <span className="arcade-ko-who">{ko} is down</span>
+              <span className="arcade-ko-who">{ko.who} is down</span>
             </div>
           )}
         </div>
@@ -298,7 +296,7 @@ function FloorTitle({ floor }: { floor: number }) {
           Floor <span className="arcade-floor">{n}</span>
         </Title>
         <span className="floor-flourish" aria-hidden="true" />
-        <p className="floor-omen">{floorOmen(n)}</p>
+        {floorOmen(n) && <p className="floor-omen">{floorOmen(n)}</p>}
       </div>
     );
   };

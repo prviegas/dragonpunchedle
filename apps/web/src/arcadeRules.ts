@@ -41,8 +41,9 @@ const OMENS: Record<Danger, string> = {
   14: "Endless.",
 };
 
-export function floorOmen(floor: number): string {
-  return OMENS[floorDanger(floor)];
+/** The level's line, only on the floor where that level begins; null on the floors after it. */
+export function floorOmen(floor: number): string | null {
+  return (DANGER_FLOORS as readonly number[]).includes(floor) ? OMENS[floorDanger(floor)] : null;
 }
 
 /** One square per floor: quick (3 or fewer), steady (up to 5), or scraped through; a skull for the floor that ended it. */
