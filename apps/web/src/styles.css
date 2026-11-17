@@ -1,36 +1,38 @@
-/* Dragonpunchedle. A dark arena with angled, cut-corner panels, one calm
-   accent (cyan), and condensed type for headings. The tile colours (green,
-   amber, grey) are the game's own language and stay as they are. */
+/* Dragonpunchedle. Borrowed from fighting game menus rather than app UI: warm
+   off-black, bone-white type, one flame-orange accent (the dragon punch), hard
+   edges, and slanted condensed type for the big moments. The tile colours
+   (green, amber, grey) are the game's own language and stay as they are. */
 
 :root {
-  --bg: #0a0c14;
-  --panel: #141927;
-  --panel-raised: #1b2133;
-  --line: #2b3350;
-  --text: #eef0f6;
-  --muted: #a3a9c2;
-  --dim: #6c7392;
+  --bg: #0f0e0d;
+  --panel: #191715;
+  --panel-raised: #23201d;
+  --line: #34302b;
+  --text: #f2ede4;
+  --muted: #b3ab9e;
+  --dim: #857d71;
 
-  --accent: #24a0b0; /* cyan: buttons, the health bar, the chart's curve */
-  --accent-text: #6fd3df; /* the same hue, light enough to read as text on dark */
-  --accent-ink: #04161a; /* dark text on accent fills */
-  --you: #e04a78; /* pink: "you" on the chart, and a health bar running low */
-  --focus: #6fd3df;
+  --accent: #f0462d; /* flame: buttons, the logo, "you", a K.O. */
+  --accent-text: #ff7d5e; /* the same hue, light enough to read as text on dark */
+  --accent-ink: #1a0603; /* dark text on accent fills (5:1, better than white) */
+  --accent-tint: rgb(240 70 45 / 0.14);
+  --you: var(--accent);
+  --chart-ink: #d9d1c3; /* everyone else on charts: bone, so "you" stands out */
+  --focus: #f2ede4;
 
   /* Tile colours. Every tile also says its status in words (see Board.tsx). */
   --correct: #178a49;
   --correct-ring: #5fd796; /* the winning row's outline */
   --partial: #d9a014;
   --partial-ink: #221800;
-  --wrong: #343b55;
-  --ko: #c23b3b; /* red: a K.O. in past rounds */
+  --wrong: #3a3631;
+  --ko: var(--accent);
 
   --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
   --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* Panels keep the angled look: two cut corners. */
-  --cut: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
-  --radius: 6px;
+  /* Hard edges, like a game menu: barely rounded. */
+  --radius: 3px;
 
   color-scheme: dark;
 }
@@ -45,11 +47,10 @@ body {
   font-family: var(--font-body);
   font-size: 1rem;
   line-height: 1.5;
+  /* A flat surface with a faint film grain, instead of gradients. */
   background:
-    radial-gradient(1100px 480px at 50% -8%, rgb(255 59 48 / 0.2), transparent 65%),
-    repeating-linear-gradient(135deg, rgb(255 255 255 / 0.018) 0 2px, transparent 2px 16px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
     var(--bg);
-  background-attachment: fixed;
 }
 
 .visually-hidden {
@@ -85,14 +86,15 @@ body {
   margin: 0;
   font-family: var(--font-display);
   font-size: clamp(1.6rem, 5vw, 2.3rem);
+  font-style: italic;
   font-weight: 800;
   line-height: 1;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .logo-punch {
-  color: var(--accent-text);
+  color: var(--accent);
 }
 
 .logo a {
@@ -101,12 +103,15 @@ body {
 }
 
 .nav-link {
+  font-weight: 500;
   color: var(--muted);
-  text-underline-offset: 3px;
+  text-decoration: none;
+  text-underline-offset: 4px;
 }
 
 .nav-link:hover {
   color: var(--text);
+  text-decoration: underline;
 }
 
 .account {
@@ -127,7 +132,7 @@ body {
   font-weight: 600;
   color: var(--accent-text);
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--radius);
 }
 
 .streak::before {
@@ -166,19 +171,23 @@ body {
 
 .button {
   display: inline-block;
-  padding: 9px 20px;
-  font: inherit;
-  font-weight: 600;
+  padding: 8px 22px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   color: var(--accent-ink);
   background: var(--accent);
   border: none;
-  border-radius: var(--radius);
+  border-radius: 2px;
   cursor: pointer;
   transition: background-color 0.15s;
 }
 
 .button:hover {
-  background: #2cb4c5;
+  background: #ff5a3f;
 }
 
 .button:disabled {
@@ -187,8 +196,8 @@ body {
 }
 
 .button--small {
-  padding: 5px 14px;
-  font-size: 0.9rem;
+  padding: 3px 14px;
+  font-size: 1rem;
 }
 
 .link {
@@ -209,7 +218,7 @@ body {
 }
 
 .status--error {
-  color: #ff9db8;
+  color: var(--accent-text);
 }
 
 /* ---- The arena: health bar and guess box ---- */
@@ -238,7 +247,8 @@ body {
 
 .health {
   display: flex;
-  gap: 3px;
+  gap: 4px;
+  padding: 0 4px;
 }
 
 /* Straight-edged segments, coloured by how many guesses are left. */
@@ -246,6 +256,7 @@ body {
   flex: 1;
   height: 12px;
   background: var(--panel-raised);
+  transform: skewX(-24deg); /* slanted like a fighting game's life bar */
   transition: background 0.35s;
 }
 
@@ -258,7 +269,7 @@ body {
 }
 
 .hud.is-low .health-cell.is-full {
-  background: #e5484d;
+  background: var(--accent);
 }
 
 .hud-count {
@@ -287,7 +298,7 @@ body {
   color: var(--text);
   background: var(--panel-raised);
   border: 2px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 2px;
 }
 
 .guess-input input::placeholder {
@@ -321,12 +332,13 @@ body {
   justify-content: space-between;
   gap: 12px;
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
 }
 
 .guess-options li.is-active {
-  background: rgb(36 160 176 / 0.18);
+  background: var(--accent-tint);
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 
 .option-name {
@@ -387,7 +399,7 @@ body {
   padding: 0 4px 7px;
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--muted);
   vertical-align: bottom;
@@ -398,7 +410,7 @@ body {
   padding: 6px 10px 6px 6px;
   text-align: left;
   background: var(--panel);
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .guess-name.is-solved {
@@ -417,30 +429,34 @@ body {
 }
 
 .winner-label {
-  font-size: 0.68rem;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-style: italic;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--correct-ring);
 }
 
 /* After a lost round: the day's character, shown above the guesses. */
 .guess-name.is-answer {
-  box-shadow: inset 0 0 0 1px var(--accent);
+  box-shadow: inset 0 0 0 1px var(--chart-ink);
 }
 
 .answer-label {
-  font-size: 0.68rem;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-style: italic;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: var(--accent-text);
+  color: var(--text);
 }
 
 .tile--answer {
   color: var(--text);
   background: var(--panel-raised);
-  box-shadow: inset 0 0 0 1px var(--accent);
+  box-shadow: inset 0 0 0 1px var(--chart-ink);
 }
 
 .guess-cell {
@@ -455,7 +471,7 @@ body {
   height: 48px;
   object-fit: cover;
   background: var(--panel-raised);
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
 .thumb--empty {
@@ -489,7 +505,7 @@ body {
   line-height: 1.2;
   text-align: center;
   color: #fff;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .tile--correct {
@@ -546,7 +562,7 @@ body {
 
 .tile--unknown {
   color: var(--muted);
-  background: repeating-linear-gradient(135deg, #222839 0 6px, #1b2030 6px 12px);
+  background: repeating-linear-gradient(135deg, #2a2723 0 6px, #211e1b 6px 12px);
 }
 
 .tile-value {
@@ -582,19 +598,25 @@ body {
   margin: 0 auto 28px;
   padding: 22px 24px 26px;
   background: var(--panel);
-  clip-path: var(--cut);
+  border-top: 3px solid var(--accent);
+  border-radius: 2px;
+}
+
+.result.is-lost {
+  border-top-color: var(--line);
 }
 
 .result-banner {
   margin: 0 0 16px;
   text-align: center;
   font-family: var(--font-display);
-  font-size: clamp(2.2rem, 8vw, 3.2rem);
+  font-size: clamp(2.4rem, 8vw, 3.6rem);
+  font-style: italic;
   font-weight: 800;
   line-height: 1;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
-  color: var(--accent-text);
+  color: var(--text);
   animation: fade-up 0.4s ease-out both;
 }
 
@@ -625,10 +647,8 @@ body {
 }
 
 .result-kicker {
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 0.9rem;
+  font-weight: 500;
   color: var(--muted);
 }
 
@@ -688,7 +708,6 @@ body {
 .portrait-frame {
   padding: 2px;
   background: var(--line);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
 }
 
 .result:not(.is-lost) .portrait-frame {
@@ -701,7 +720,6 @@ body {
   height: 240px;
   object-fit: cover;
   background: var(--panel-raised);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 17px), calc(100% - 17px) 100%, 0 100%);
 }
 
 .result.is-lost img.portrait-art {
@@ -742,7 +760,8 @@ body {
   margin: 0;
   font-family: var(--font-display);
   font-size: 3rem;
-  font-weight: 700;
+  font-style: italic;
+  font-weight: 800;
   line-height: 1;
 }
 
@@ -767,22 +786,22 @@ body {
   overflow: visible;
 }
 
-/* The curve: a 2px line over a faint wash of the same hue. */
+/* The curve: everyone, in bone, a 2px line over a faint wash. */
 .chart-line {
   fill: none;
-  stroke: var(--accent);
+  stroke: var(--chart-ink);
   stroke-width: 2px;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
 .chart-area {
-  fill: var(--accent);
-  fill-opacity: 0.14;
+  fill: var(--chart-ink);
+  fill-opacity: 0.07;
 }
 
-/* The players the viewer beat: everything right of the marker, in the "you"
-   pink, or green for a perfect first-guess round. */
+/* The players the viewer beat: everything right of the marker, in the
+   accent, or green for a perfect first-guess round. */
 .chart-svg {
   --beaten: var(--you);
 }
@@ -856,7 +875,7 @@ body {
 
 .chart-tick.is-you {
   font-weight: 700;
-  fill: var(--text);
+  fill: var(--accent-text);
 }
 
 .chart-you-line {
@@ -879,9 +898,9 @@ body {
   font-size: 0.8rem;
   white-space: nowrap;
   color: var(--text);
-  background: #0d1020;
+  background: var(--bg);
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 2px;
   transform: translateX(-50%);
   pointer-events: none;
 }
@@ -889,11 +908,9 @@ body {
 .chart-caption {
   margin: 4px 0 0;
   text-align: right;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent-text);
+  color: var(--text);
 }
 
 .chart-note {
@@ -917,7 +934,7 @@ body {
   align-items: center;
   padding: 8px 4px;
   background: var(--panel-raised);
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .stats dt {
@@ -941,7 +958,7 @@ body {
   margin: 0 auto;
   padding: 18px 20px 20px;
   background: var(--panel);
-  clip-path: var(--cut);
+  border-radius: 2px;
 }
 
 .leaderboard-head {
@@ -952,38 +969,66 @@ body {
   margin-bottom: 10px;
 }
 
+/* Section titles: slanted condensed type behind a small slanted accent bar,
+   the site's one recurring mark. */
+.leaderboard h2,
+.panel-title,
+.auth-panel h2,
+.history-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-style: italic;
+}
+
+.leaderboard h2::before,
+.panel-title::before,
+.auth-panel h2::before,
+.history-title::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 0.8em;
+  background: var(--accent);
+  transform: skewX(-18deg);
+}
+
 .leaderboard h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
 }
 
-/* Two-option switch: plain, rounded. */
+/* Two-option switch: words, with an accent underline under the active one. */
 .tabs {
   display: flex;
-  padding: 3px;
-  background: var(--panel-raised);
-  border-radius: var(--radius);
+  gap: 4px;
 }
 
 .tab {
-  padding: 4px 14px;
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--muted);
+  padding: 4px 8px;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--dim);
   background: none;
   border: none;
-  border-radius: 4px;
+  border-bottom: 2px solid transparent;
   cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--muted);
 }
 
 .tab.is-active {
   color: var(--text);
-  background: var(--line);
+  border-bottom-color: var(--accent);
 }
 
 .ranking {
@@ -1006,8 +1051,8 @@ body {
 }
 
 .ranking li.is-you {
-  background: rgb(36 160 176 / 0.12);
-  border-radius: 4px;
+  background: var(--accent-tint);
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 
 .rank {
@@ -1052,7 +1097,7 @@ body {
 }
 
 .modal::backdrop {
-  background: rgb(5 7 12 / 0.72);
+  background: rgb(8 7 6 / 0.78);
   backdrop-filter: blur(2px);
 }
 
@@ -1065,7 +1110,8 @@ body {
 .panel {
   padding: 22px 24px;
   background: var(--panel);
-  clip-path: var(--cut);
+  border-top: 3px solid var(--accent);
+  border-radius: 2px;
 }
 
 .panel-head {
@@ -1079,8 +1125,8 @@ body {
   margin: 0;
   font-family: var(--font-display);
   font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 800;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
 }
 
@@ -1218,10 +1264,10 @@ body {
   cursor: pointer;
 }
 
-/* Only the words are underlined, like the other header links; the round icon stays clean. */
-.nav-help-text {
+/* Like the other header links: underlined only on hover, and only the words. */
+.nav-help:hover .nav-help-text {
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: 4px;
 }
 
 .help-icon--small {
@@ -1261,9 +1307,9 @@ body {
   font-size: 0.75rem;
   font-weight: 700;
   text-decoration: none;
-  color: var(--accent-text);
-  border: 1px solid var(--accent);
-  border-radius: 50%;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 2px;
 }
 
 /* Column names: plain text on a short bar, like other games of this kind.
@@ -1352,15 +1398,16 @@ body {
   margin: 0 auto;
   padding: 22px 24px;
   background: var(--panel);
-  clip-path: var(--cut);
+  border-top: 3px solid var(--accent);
+  border-radius: 2px;
 }
 
 .auth-panel h2 {
   margin: 0;
   font-family: var(--font-display);
   font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 800;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
 }
 
@@ -1385,7 +1432,7 @@ body {
   color: var(--text);
   background: var(--panel-raised);
   border: 2px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 2px;
 }
 
 .auth-panel input:focus {
@@ -1409,7 +1456,6 @@ body {
 .strength-meter span {
   height: 5px;
   background: var(--line);
-  border-radius: 3px;
   transition: background-color 0.15s;
 }
 
@@ -1418,7 +1464,7 @@ body {
 }
 
 .strength-meter.is-ok .filled {
-  background: #1fa65a;
+  background: var(--correct);
 }
 
 .auth-providers {
@@ -1503,8 +1549,14 @@ body {
 }
 
 .history-nav a {
-  color: var(--accent-text);
-  text-underline-offset: 3px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.history-nav a:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .history-head {
@@ -1519,9 +1571,9 @@ body {
 .history-title {
   margin: 0 0 14px;
   font-family: var(--font-display);
-  font-size: 1.6rem;
+  font-size: 1.7rem;
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
 }
 
@@ -1533,6 +1585,7 @@ body {
   margin-left: 8px;
   font-family: var(--font-body);
   font-size: 1rem;
+  font-style: normal;
   font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
@@ -1567,12 +1620,14 @@ body {
   color: var(--text);
   text-decoration: none;
   background: var(--panel);
-  border-radius: var(--radius);
-  transition: background-color 0.15s;
+  border-radius: 2px;
+  box-shadow: inset 2px 0 0 transparent;
+  transition: background-color 0.15s, box-shadow 0.15s;
 }
 
 .round-link:hover {
   background: var(--panel-raised);
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 
 .round-link-text {
@@ -1581,20 +1636,21 @@ body {
 }
 
 .round-link-when {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-weight: 500;
   color: var(--dim);
 }
 
 /* How the player did: a small label, coloured like the tiles. */
 .outcome {
-  padding: 2px 10px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  padding: 1px 9px;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   white-space: nowrap;
-  border-radius: 999px;
+  border-radius: 2px;
 }
 
 .outcome--solved {
@@ -1603,7 +1659,7 @@ body {
 }
 
 .outcome--lost {
-  color: #fff;
+  color: var(--accent-ink);
   background: var(--ko);
 }
 
@@ -1627,10 +1683,8 @@ body {
 
 /* On the day or later: plain small text, so it reads as a note on the result. */
 .when {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -1684,7 +1738,7 @@ body {
 .outcome--large {
   display: inline-block;
   margin-top: 12px !important;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
 }
 
 .past-result {
@@ -1715,7 +1769,7 @@ body {
 }
 
 .footer .footer-maker a {
-  color: var(--accent-text);
+  color: var(--text);
   font-weight: 600;
   text-decoration: none;
 }
@@ -1790,7 +1844,7 @@ body {
   display: grid;
   gap: 12px;
   max-width: 980px;
-  margin: 0 auto;
+  margin: 20px auto 0;
   padding: 0 16px 48px;
 }
 
@@ -1803,9 +1857,11 @@ body {
 
 .dashboard-sub {
   margin: 14px 0 4px;
-  font-size: 0.8rem;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-style: italic;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -1821,8 +1877,7 @@ body {
   gap: 2px;
   padding: 12px 14px;
   background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 2px;
 }
 
 .stat-tile-label {
@@ -1854,8 +1909,7 @@ body {
   margin: 0;
   padding: 12px 14px 6px;
   background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 2px;
 }
 
 .bar-chart-title {
@@ -1879,11 +1933,11 @@ body {
 }
 
 .chart-bar {
-  fill: var(--accent);
+  fill: var(--chart-ink);
 }
 
 .chart-bar.is-hover {
-  fill: var(--accent-text);
+  fill: var(--accent);
 }
 
 .chart-grid {
@@ -1971,8 +2025,8 @@ body {
   grid-area: bar;
   height: 4px;
   min-width: 2px;
-  background: var(--accent);
-  border-radius: 2px;
+  background: var(--chart-ink);
+  opacity: 0.7;
 }
 
 /* The "?" swatch is dark on dark: a thin edge keeps it visible in tips and the key. */

@@ -23,7 +23,7 @@ await sharp(screenshot).png({ compressionLevel: 9, palette: true, quality: 90 })
 // Phones want a square PNG with no transparency for the home-screen icon.
 await sharp(path("../public/favicon.svg"), { density: 600 })
   .resize(180, 180)
-  .flatten({ background: "#141927" })
+  .flatten({ background: "#191715" })
   .png()
   .toFile(path("../public/apple-touch-icon.png"));
 
