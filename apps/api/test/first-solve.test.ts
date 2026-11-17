@@ -92,6 +92,29 @@ describe.skipIf(!process.env.DATABASE_URL)("first solve of the day", () => {
     expect((await pastDay("bob")).json().firstSolve).toBe(false);
   });
 
+  it("isn't awarded before its launch round", async () => {
+    // Launch day itself (Nov 17, 2026) has no badge: players had solved it before the deploy.
+    const launchDay = "2026-11-17";
+    const exists = (await pool.query("SELECT 1 FROM daily_puzzles WHERE puzzle_date = $1", [launchDay])).rows.length > 0;
+    if (!exists) await pool.query("INSERT INTO daily_puzzles (puzzle_date, character_id) VALUES ($1, $2)", [launchDay, ANSWER]);
+    const answer = (await pool.query("SELECT character_id FROM daily_puzzles WHERE puzzle_date = $1", [launchDay])).rows[0].character_id;
+    const onLaunchDay = buildApp({ pool, now: () => new Date(`${launchDay}T12:00:00Z`) });
+    try {
+      const response = await onLaunchDay.inject({
+        method: "POST",
+        url: `/api/puzzles/${launchDay}/guesses`,
+        cookies: { [SESSION_COOKIE]: cookies.carol! },
+        payload: { characterId: answer },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.json().firstSolve).toBeUndefined();
+    } finally {
+      await pool.query("DELETE FROM guesses WHERE puzzle_date = $1 AND user_id = (SELECT id FROM users WHERE username = $2)", [launchDay, PREFIX + "carol"]);
+      if (!exists) await pool.query("DELETE FROM daily_puzzles WHERE puzzle_date = $1", [launchDay]);
+      await onLaunchDay.close();
+    }
+  });
+
   it("can't be earned on a past day played late", async () => {
     // Nobody solved EARLIER on the day; Carol solving it later still gets nothing.
     expect((await guess(EARLIER, ANSWER, "carol")).json().firstSolve).toBeUndefined();

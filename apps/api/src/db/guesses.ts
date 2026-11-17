@@ -9,6 +9,13 @@ function playerColumn(player: Player): { column: "user_id" | "guest_id"; value: 
   return "userId" in player ? { column: "user_id", value: player.userId } : { column: "guest_id", value: player.guestId };
 }
 
+/**
+ * The first round with a first-solve badge. It launched mid-round on Nov 17,
+ * when many players had already solved that day logged in: awarding it then
+ * would have handed it to whoever happened to solve right after the deploy.
+ */
+export const FIRST_SOLVE_FROM = "2026-11-18";
+
 export type SaveGuessResult =
   /** firstSolve: this guess made the player the day's first logged-in solver. */
   | { saved: true; guessNumber: number; firstSolve: boolean }
@@ -73,7 +80,7 @@ export async function saveGuess(
       // The primary key on the day settles a tie: if two players solve at the
       // same moment, only one insert lands. Guests and late plays never qualify.
       let firstSolve = false;
-      if ("userId" in player && !late) {
+      if ("userId" in player && !late && date >= FIRST_SOLVE_FROM) {
         const award = await client.query(
           `INSERT INTO first_solves (puzzle_date, user_id)
            SELECT $1, $2 FROM daily_puzzles WHERE puzzle_date = $1 AND character_id = $3
