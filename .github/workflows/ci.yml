@@ -92,7 +92,8 @@ jobs:
             sleep 2
           done
           curl -fsS http://localhost:3000/api/puzzles/today
-          curl -fsS http://localhost:3000/ | grep -q "<title>Dragonpunchedle</title>"
+          curl -fsS http://localhost:3000/ | grep -q "<title>Dragonpunchedle"
+          curl -fsS http://localhost:3000/robots.txt | grep -q "Sitemap:"
           test "$(docker inspect --format '{{.Config.User}}' dragonpunchedle)" = "node"
 
       - name: Show the container's log if anything failed
