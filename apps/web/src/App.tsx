@@ -280,7 +280,11 @@ export function App() {
         Past rounds
       </a>
       <a className="nav-link nav-tower" href={TOWER_HASH}>
-        <span className="nav-tower-text">{TOWER_NAME}</span>
+        {/* The full name on wide screens; just "Tower" on phones, where it would wrap. */}
+        <span className="nav-tower-text">
+          <span className="nav-tower-full">{TOWER_NAME}</span>
+          <span className="nav-tower-short">Tower</span>
+        </span>
         <span className="nav-new">New</span>
       </a>
       {canSeeDashboard && (
@@ -306,7 +310,11 @@ export function App() {
         Past rounds
       </a>
       <a className="nav-link nav-tower" href={TOWER_HASH}>
-        <span className="nav-tower-text">{TOWER_NAME}</span>
+        {/* The full name on wide screens; just "Tower" on phones, where it would wrap. */}
+        <span className="nav-tower-text">
+          <span className="nav-tower-full">{TOWER_NAME}</span>
+          <span className="nav-tower-short">Tower</span>
+        </span>
         <span className="nav-new">New</span>
       </a>
       {canSeeDashboard && (

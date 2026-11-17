@@ -3189,3 +3189,18 @@ body {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
+
+/* The Tower link: full name on wide screens, "Tower" on phones (it would wrap). */
+.nav-tower-short {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .nav-tower-full {
+    display: none;
+  }
+
+  .nav-tower-short {
+    display: inline;
+  }
+}
