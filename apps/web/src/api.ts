@@ -70,6 +70,8 @@ export class ApiError extends Error {
 export interface User {
   id: number;
   username: string;
+  /** The site owner: sees the dashboard link. */
+  admin?: boolean;
 }
 
 // Requests go to the same site that served the page, so the browser attaches
@@ -209,3 +211,58 @@ export const fetchPastDay = (date: string) => request<PastDay>(`/api/history/${e
 /** "Show answer" on a past round: ends it for this player and returns it with the answer. */
 export const revealPastDay = (date: string) =>
   request<PastDay>(`/api/history/${encodeURIComponent(date)}/reveal`, { method: "POST" });
+
+/**
+ * Reports a page view for the owner's dashboard. Fire and forget: a failure
+ * here must never get in the way of the game. keepalive lets it finish even
+ * when the player is already leaving the page.
+ */
+export function sendVisit(path: string, referrer?: string) {
+  let timezone: string | undefined;
+  try {
+    timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    // Old browsers: leave it out.
+  }
+  const body = { path, timezone, language: navigator.language, ...(referrer && { referrer }) };
+  fetch("/api/visit", { ...postJson(body), keepalive: true }).catch(() => undefined);
+}
+
+export interface DayNumbers {
+  day: string;
+  views: number;
+  visitors: number;
+  players: number;
+  finished: number;
+  won: number;
+  signups: number;
+  latePlayers: number;
+}
+
+export interface CountRow {
+  label: string;
+  count: number;
+}
+
+export interface Dashboard {
+  today: string;
+  days: DayNumbers[];
+  accounts: { total: number; google: number; newThisWeek: number };
+  rounds: {
+    day: string;
+    answer: string;
+    franchise: string;
+    players: number;
+    won: number;
+    finished: number;
+    averageGuesses: number | null;
+  }[];
+  referrers: CountRow[];
+  devices: CountRow[];
+  timezones: CountRow[];
+  languages: CountRow[];
+  pages: CountRow[];
+  firstGuesses: CountRow[];
+}
+
+export const fetchDashboard = () => request<Dashboard>("/api/admin/dashboard");

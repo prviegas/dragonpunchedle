@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import rateLimit from "@fastify/rate-limit";
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 import type pg from "pg";
+import { isAdmin } from "./site-stats.js";
 import {
   beginSignIn,
   finishSignIn,
@@ -42,6 +43,7 @@ interface AuthRouteOptions {
   rateLimitPerMinute: number;
   oauth?: OAuthOptions;
   now: () => Date;
+  adminUsernames?: readonly string[];
 }
 
 const credentialsSchema = {
@@ -78,7 +80,7 @@ function sameSecret(a: string, b: string) {
 
 export const authRoutes: FastifyPluginAsync<AuthRouteOptions> = async (
   app,
-  { pool, secureCookies, rateLimitPerMinute, oauth, now },
+  { pool, secureCookies, rateLimitPerMinute, oauth, now, adminUsernames = [] },
 ) => {
   // Limits only the routes below that opt in, so the game itself is unaffected.
   await app.register(rateLimit, { global: false });
@@ -129,7 +131,10 @@ export const authRoutes: FastifyPluginAsync<AuthRouteOptions> = async (
     return reply.code(204).send();
   });
 
-  app.get("/api/auth/me", async (request) => ({ user: request.user }));
+  // admin: true only for the owner, so the page knows to show the dashboard link.
+  app.get("/api/auth/me", async (request) => ({
+    user: request.user && { ...request.user, ...(isAdmin(request, adminUsernames) && { admin: true }) },
+  }));
 
   // ---- Sign in with Discord / Google (see src/auth/oauth.ts) ----
 

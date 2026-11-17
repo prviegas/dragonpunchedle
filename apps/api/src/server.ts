@@ -43,6 +43,8 @@ const app = buildApp({
   // Set in the Docker image, where the API also serves the built page.
   staticDir: process.env.STATIC_DIR,
   oauth,
+  // Who may open the dashboard: comma-separated usernames.
+  adminUsernames: (process.env.ADMIN_USERNAMES ?? "").split(",").map((name) => name.trim()).filter(Boolean),
 });
 
 let stopScheduler = () => {};

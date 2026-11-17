@@ -1,5 +1,6 @@
 import type pg from "pg";
-import { ensurePuzzle, puzzleDateFor } from "../game/puzzles.js";
+import { freezeFinishedDays, purgeOldVisitData } from "../db/site-stats.js";
+import { ensurePuzzle, MAX_GUESSES, puzzleDateFor } from "../game/puzzles.js";
 
 /** How many days of answers to keep picked in advance, beyond today. */
 export const DAYS_AHEAD = 7;
@@ -9,6 +10,9 @@ export interface DailyJobResult {
   puzzlesCreated: string[];
   expiredSessionsRemoved: number;
   oldGuestGuessesRemoved: number;
+  /** Finished days whose dashboard totals were written on this run. */
+  daysFrozen: number;
+  oldPageViewsRemoved: number;
 }
 
 export function addDays(date: string, days: number): string {
@@ -48,7 +52,12 @@ export async function runDailyJob(pool: pg.Pool, now = new Date(), daysAhead = D
   //    every real session in the database.
   const removed = await pool.query("DELETE FROM sessions WHERE expires_at < now()");
 
-  // 3. Guests' guesses are kept 30 days, for the results chart, then deleted.
+  // 3. The dashboard's totals for finished days, written before step 4 deletes
+  //    the guest guesses they count. Then old page views and salts go.
+  const daysFrozen = await freezeFinishedDays(pool, MAX_GUESSES);
+  const oldPageViewsRemoved = await purgeOldVisitData(pool);
+
+  // 4. Guests' guesses are kept 30 days, for the results chart, then deleted.
   //    Database clock again, for the same reason.
   const guests = await pool.query(
     "DELETE FROM guesses WHERE guest_id IS NOT NULL AND puzzle_date < current_date - 30",
@@ -59,5 +68,7 @@ export async function runDailyJob(pool: pg.Pool, now = new Date(), daysAhead = D
     puzzlesCreated,
     expiredSessionsRemoved: removed.rowCount ?? 0,
     oldGuestGuessesRemoved: guests.rowCount ?? 0,
+    daysFrozen,
+    oldPageViewsRemoved,
   };
 }

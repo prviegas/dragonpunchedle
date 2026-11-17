@@ -7,6 +7,7 @@ import {
   fetchMyStats,
   fetchPuzzle,
   logOut,
+  sendVisit,
   submitGuess,
   type Character,
   type CharacterSummary,
@@ -21,6 +22,7 @@ import { Countdown } from "./Countdown";
 import { GuessInput } from "./GuessInput";
 import { HealthBar } from "./HealthBar";
 import { HowToPlay } from "./HowToPlay";
+import { Dashboard, DASHBOARD_HASH } from "./Dashboard";
 import { History, HISTORY_HASH } from "./History";
 import { Leaderboard } from "./Leaderboard";
 import { Modal } from "./Modal";
@@ -79,12 +81,20 @@ function takeLoginError(): string | undefined {
 const initialLoginError = takeLoginError();
 
 /** Which view the address asks for: today's game, the list of past rounds, or one past day. */
-type View = { name: "today" } | { name: "history"; date?: string };
+type View = { name: "today" } | { name: "history"; date?: string } | { name: "dashboard" };
 
 function viewFromHash(hash: string): View {
+  if (hash === DASHBOARD_HASH) return { name: "dashboard" };
   if (hash === HISTORY_HASH) return { name: "history" };
   const date = hash.startsWith(`${HISTORY_HASH}/`) ? hash.slice(HISTORY_HASH.length + 1) : "";
   return /^\d{4}-\d{2}-\d{2}$/.test(date) ? { name: "history", date } : { name: "today" };
+}
+
+/** The page name a view is counted under on the dashboard; one name for every past day. */
+function pageName(view: View): string | undefined {
+  if (view.name === "dashboard") return undefined;
+  if (view.name === "history") return view.date ? "/#past/day" : "/#past";
+  return "/";
 }
 
 function useView(): View {
@@ -97,6 +107,15 @@ function useView(): View {
     window.addEventListener("hashchange", onChange);
     return () => window.removeEventListener("hashchange", onChange);
   }, []);
+
+  // Count each view for the dashboard. Only the first carries the address the
+  // visitor came from; later ones are moves inside the site.
+  const firstView = useRef(true);
+  useEffect(() => {
+    const page = pageName(view);
+    if (page) sendVisit(page, firstView.current ? document.referrer : undefined);
+    firstView.current = false;
+  }, [view]);
   return view;
 }
 
@@ -242,6 +261,11 @@ export function App() {
       <a className="nav-link" href={HISTORY_HASH}>
         Past rounds
       </a>
+      {user.admin && (
+        <a className="nav-link" href={DASHBOARD_HASH}>
+          Dashboard
+        </a>
+      )}
       <span className="account-name">{user.username}</span>
       {stats && stats.currentStreak > 0 && (
         <span className="streak" title={`${stats.currentStreak}-day streak`}>
@@ -277,6 +301,16 @@ export function App() {
       </Modal>
     </>
   );
+
+  if (view.name === "dashboard") {
+    return (
+      <Shell account={account}>
+        {authModal}
+        {/* Remounted on login, so logging in on this page loads it. */}
+        <Dashboard key={user?.id ?? "guest"} />
+      </Shell>
+    );
+  }
 
   if (view.name === "history") {
     return (

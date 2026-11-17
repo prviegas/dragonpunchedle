@@ -9,6 +9,7 @@ import { authRoutes, type OAuthOptions } from "./routes/auth.js";
 import { characterRoutes } from "./routes/characters.js";
 import { historyRoutes } from "./routes/history.js";
 import { puzzleRoutes } from "./routes/puzzles.js";
+import { siteStatsRoutes } from "./routes/site-stats.js";
 import { statsRoutes } from "./routes/stats.js";
 
 declare module "fastify" {
@@ -31,6 +32,8 @@ export interface AppOptions extends FastifyServerOptions {
    *  page, so production needs only one server. Unset in development, where
    *  Vite serves the page. */
   staticDir?: string;
+  /** Usernames that may open the owner's dashboard. */
+  adminUsernames?: readonly string[];
 }
 
 // Building the app separately from listening on a port lets tests send
@@ -45,6 +48,7 @@ export function buildApp({
   guessRateLimitPerMinute = 120,
   oauth,
   staticDir,
+  adminUsernames = [],
   ...fastifyOptions
 }: AppOptions = {}) {
   const app = Fastify({
@@ -102,11 +106,12 @@ export function buildApp({
       request.user = (token && (await findSessionUser(pool, token))) || null;
     });
 
-    app.register(authRoutes, { pool, secureCookies, rateLimitPerMinute: authRateLimitPerMinute, oauth, now });
+    app.register(authRoutes, { pool, secureCookies, rateLimitPerMinute: authRateLimitPerMinute, oauth, now, adminUsernames });
     app.register(characterRoutes, { pool });
     app.register(puzzleRoutes, { pool, now, secureCookies, guessRateLimitPerMinute });
     app.register(statsRoutes, { pool, now });
     app.register(historyRoutes, { pool, now, secureCookies });
+    app.register(siteStatsRoutes, { pool, now, adminUsernames });
   }
 
   if (staticDir) {
