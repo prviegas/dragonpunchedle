@@ -5,6 +5,7 @@ import fastifyStatic from "@fastify/static";
 import Fastify, { type FastifyServerOptions } from "fastify";
 import type pg from "pg";
 import { findSessionUser, SESSION_COOKIE, type User } from "./auth/sessions.js";
+import { arcadeRoutes } from "./routes/arcade.js";
 import { authRoutes, type OAuthOptions } from "./routes/auth.js";
 import { characterRoutes } from "./routes/characters.js";
 import { historyRoutes } from "./routes/history.js";
@@ -114,6 +115,7 @@ export function buildApp({
     app.register(puzzleRoutes, { pool, now, secureCookies, guessRateLimitPerMinute });
     app.register(statsRoutes, { pool, now });
     app.register(historyRoutes, { pool, now, secureCookies });
+    app.register(arcadeRoutes, { pool, secureCookies, guessRateLimitPerMinute });
     app.register(siteStatsRoutes, { pool, now, adminUserIds, dashboardOpen });
   }
 

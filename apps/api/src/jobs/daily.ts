@@ -63,6 +63,8 @@ export async function runDailyJob(pool: pg.Pool, now = new Date(), daysAhead = D
     "DELETE FROM guesses WHERE guest_id IS NOT NULL AND puzzle_date < current_date - 30",
   );
   await pool.query("DELETE FROM round_reveals WHERE guest_id IS NOT NULL AND puzzle_date < current_date - 30");
+  // Guests' finished arcade runs go after 30 days too (an account's stay, for the ladder).
+  await pool.query("DELETE FROM arcade_runs WHERE guest_id IS NOT NULL AND started_at < now() - interval '30 days'");
 
   return {
     puzzlesCreated,

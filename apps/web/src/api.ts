@@ -278,3 +278,53 @@ export const fetchDashboard = () => request<Dashboard>("/api/admin/dashboard");
 
 /** Owner only: the dashboard counts from now on. Deletes nothing. */
 export const resetCounting = () => request<{ since: string }>("/api/admin/stats/reset", { method: "POST" });
+
+// ---- Arcade Ladder ----
+
+export interface ArcadeCleared {
+  floor: number;
+  guesses: number;
+  character: { id: string; name: string; franchise: string; portrait?: Character["portrait"] };
+}
+
+export interface ArcadeRunView {
+  floorsCleared: number;
+  over: boolean;
+  /** The floor being played, or the one that was lost. */
+  floor: number;
+  /** Beaten floors, oldest first. */
+  cleared: ArcadeCleared[];
+  /** Guesses on the current floor, newest first. */
+  guesses: GuessResult[];
+  /** Who the lost floor's fighter was: only once the run is over. */
+  answer?: Character;
+}
+
+export interface ArcadeState {
+  maxGuesses: number;
+  clues: ClueInfo[];
+  /** The player's highest floor ever. */
+  best: number;
+  run: ArcadeRunView | null;
+}
+
+export interface ArcadeGuessResponse extends GuessResult {
+  floor: number;
+  guessNumber: number;
+  runOver: boolean;
+  answer?: Character;
+}
+
+export const fetchArcade = () => request<ArcadeState>("/api/arcade");
+export const startArcade = () => request<ArcadeState>("/api/arcade/start", { method: "POST" });
+export const submitArcadeGuess = (characterId: string) =>
+  request<ArcadeGuessResponse>("/api/arcade/guess", postJson({ characterId }));
+
+export interface ArcadeLadderEntry {
+  rank: number;
+  username: string;
+  floor: number;
+  you: boolean;
+}
+export const fetchArcadeLeaderboard = () =>
+  request<{ top: ArcadeLadderEntry[]; you?: ArcadeLadderEntry }>("/api/arcade/leaderboard");

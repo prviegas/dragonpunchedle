@@ -1995,3 +1995,550 @@ body {
 .swatch.tile--unknown {
   box-shadow: inset 0 0 0 1px var(--line);
 }
+
+/* ---- Arcade Ladder ----
+   Same look as the daily round; the fun is in the moments: a floor opens with
+   "FIGHT!", a solve lands a K.O. stamp and a small shake, the beaten fighter
+   drops into the ladder, and quick floors build a combo counter. All motion
+   stops for people who ask their system for less (see the rule above). */
+
+.button--ghost {
+  color: var(--accent-text);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.button--ghost:hover {
+  background: rgb(36 160 176 / 0.12);
+}
+
+.arcade {
+  margin-top: 20px;
+}
+
+.arcade-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 28px;
+}
+
+.arcade-stage {
+  position: relative;
+  min-height: 280px;
+  padding: 20px 24px 24px;
+  background: var(--panel);
+  clip-path: var(--cut);
+}
+
+.arcade-stage.is-hit {
+  animation: arcade-shake 0.32s ease-out;
+}
+
+@keyframes arcade-shake {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: translate(-5px, 2px);
+  }
+  40% {
+    transform: translate(4px, -2px);
+  }
+  60% {
+    transform: translate(-3px, 1px);
+  }
+  80% {
+    transform: translate(2px, 0);
+  }
+}
+
+.arcade-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-bottom: 14px;
+}
+
+.arcade-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* The floor number pops when it changes (its key remounts it). */
+.arcade-floor {
+  display: inline-block;
+  color: var(--accent-text);
+  animation: arcade-pop 0.35s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+@keyframes arcade-pop {
+  from {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.arcade-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+}
+
+.arcade-rank {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* The combo counter, like a hit counter: amber, slanted, kicking in bigger each time it grows. */
+.combo {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-style: italic;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--partial);
+  transform: rotate(-4deg);
+  animation: combo-kick 0.4s cubic-bezier(0.2, 1.8, 0.4, 1) both;
+}
+
+@keyframes combo-kick {
+  from {
+    transform: rotate(-4deg) scale(1.9);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(-4deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.arcade-play {
+  display: grid;
+  gap: 10px;
+}
+
+.arcade-next {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--dim);
+}
+
+.arcade-board {
+  margin-top: 18px;
+}
+
+.arcade-board .board-scroll {
+  margin-bottom: 0;
+}
+
+/* "FLOOR 3 / FIGHT!" slams in over the stage, then clears. Clicks pass through. */
+.arcade-splash,
+.arcade-ko {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.arcade-splash {
+  background: radial-gradient(closest-side, rgb(10 12 20 / 0.82), rgb(10 12 20 / 0));
+  animation: splash-out 1.1s ease-in both;
+}
+
+@keyframes splash-out {
+  0%,
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.arcade-splash-floor {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  animation: splash-drop 0.3s ease-out both;
+}
+
+.arcade-splash-fight {
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 12vw, 5.5rem);
+  font-style: italic;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--text);
+  animation: splash-slam 0.42s 0.18s cubic-bezier(0.2, 1.5, 0.45, 1) both;
+}
+
+@keyframes splash-drop {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes splash-slam {
+  from {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* The K.O. stamp: lands tilted, like a rubber stamp, over a dimmed stage. */
+.arcade-ko {
+  background: rgb(10 12 20 / 0.6);
+  animation: ko-dim 0.15s ease-out both;
+}
+
+@keyframes ko-dim {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.arcade-ko-stamp {
+  padding: 0 18px;
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 14vw, 6.5rem);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--you);
+  border: 5px solid var(--you);
+  border-radius: 6px;
+  transform: rotate(-7deg);
+  animation: ko-stamp 0.3s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+
+@keyframes ko-stamp {
+  from {
+    transform: rotate(-7deg) scale(3);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(-7deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.arcade-ko-who {
+  margin-top: 14px;
+  font-weight: 600;
+  color: var(--text);
+  animation: splash-drop 0.3s 0.25s ease-out both;
+}
+
+/* Before a run */
+.arcade-intro {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  max-width: 520px;
+}
+
+.arcade-pitch {
+  margin: 0;
+  color: var(--text);
+}
+
+.arcade-rules {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.arcade-rules li::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 10px;
+  background: var(--accent);
+}
+
+.arcade-start {
+  margin-top: 6px;
+  padding: 11px 30px;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* "Insert coin" breathes gently, like an arcade attract screen. */
+.arcade-start:not(:hover) {
+  animation: coin-blink 1.6s ease-in-out infinite;
+}
+
+@keyframes coin-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+
+.arcade-best {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.arcade-best.is-new {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-style: italic;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--partial);
+  animation: combo-kick 0.4s cubic-bezier(0.2, 1.8, 0.4, 1) both;
+}
+
+/* After a run */
+.arcade-over {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+}
+
+.arcade-over-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.arcade-over-score {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0;
+  color: var(--muted);
+}
+
+.arcade-over-floors {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+  animation: arcade-pop 0.45s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+.arcade-over-score strong {
+  color: var(--text);
+}
+
+.arcade-over-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.arcade-cta {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+/* The ladder: locked floors above, the current one lit, beaten ones below. */
+.ladder {
+  padding: 14px 12px;
+  background: var(--panel);
+  clip-path: var(--cut);
+}
+
+.ladder-floors {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ladder-floor {
+  display: grid;
+  grid-template-columns: 1.8rem 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 3px 8px 3px 4px;
+  background: var(--panel-raised);
+  border-radius: 4px;
+}
+
+.ladder-number {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--dim);
+}
+
+.ladder-slot,
+.ladder-thumb {
+  width: 30px;
+  height: 40px;
+  border-radius: 3px;
+}
+
+.ladder-slot {
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--dim);
+  background: var(--bg);
+}
+
+.ladder-thumb {
+  object-fit: cover;
+  background: var(--bg);
+}
+
+.ladder-thumb--empty {
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--dim);
+}
+
+.ladder-name {
+  overflow: hidden;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ladder-guesses {
+  min-width: 1.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--muted);
+}
+
+.ladder-floor.is-locked {
+  opacity: 0.35;
+}
+
+.ladder-floor.is-current {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.ladder-floor.is-current .ladder-number,
+.ladder-floor.is-current .ladder-name {
+  color: var(--accent-text);
+}
+
+/* The empty slot of the fighter being played pulses, waiting to be filled. */
+.ladder-floor.is-current .ladder-slot {
+  color: var(--accent-text);
+  animation: slot-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes slot-pulse {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  50% {
+    box-shadow: inset 0 0 0 2px var(--accent);
+  }
+}
+
+/* A beaten fighter drops into its slot. */
+.ladder-floor.is-beaten {
+  animation: ladder-drop 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+@keyframes ladder-drop {
+  from {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.ladder-floor.is-lost {
+  box-shadow: inset 0 0 0 2px var(--you);
+}
+
+.ladder-floor.is-lost .ladder-number {
+  color: var(--you);
+}
+
+.ladder-more {
+  padding: 4px;
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--dim);
+}
+
+.arcade-leaderboard .score {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .arcade-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .arcade-stage {
+    padding: 18px 16px 20px;
+  }
+}

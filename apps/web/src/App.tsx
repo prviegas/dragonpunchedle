@@ -22,6 +22,8 @@ import { Countdown } from "./Countdown";
 import { GuessInput } from "./GuessInput";
 import { HealthBar } from "./HealthBar";
 import { HowToPlay } from "./HowToPlay";
+import { Arcade } from "./Arcade";
+import { ARCADE_HASH } from "./arcadeRules";
 import { Dashboard, DASHBOARD_HASH } from "./Dashboard";
 import { History, HISTORY_HASH } from "./History";
 import { Leaderboard } from "./Leaderboard";
@@ -81,10 +83,11 @@ function takeLoginError(): string | undefined {
 const initialLoginError = takeLoginError();
 
 /** Which view the address asks for: today's game, the list of past rounds, or one past day. */
-type View = { name: "today" } | { name: "history"; date?: string } | { name: "dashboard" };
+type View = { name: "today" } | { name: "history"; date?: string } | { name: "dashboard" } | { name: "arcade" };
 
 function viewFromHash(hash: string): View {
   if (hash === DASHBOARD_HASH) return { name: "dashboard" };
+  if (hash === ARCADE_HASH) return { name: "arcade" };
   if (hash === HISTORY_HASH) return { name: "history" };
   const date = hash.startsWith(`${HISTORY_HASH}/`) ? hash.slice(HISTORY_HASH.length + 1) : "";
   return /^\d{4}-\d{2}-\d{2}$/.test(date) ? { name: "history", date } : { name: "today" };
@@ -93,6 +96,7 @@ function viewFromHash(hash: string): View {
 /** The page name a view is counted under on the dashboard; one name for every past day. */
 function pageName(view: View): string | undefined {
   if (view.name === "dashboard") return undefined;
+  if (view.name === "arcade") return "/#arcade";
   if (view.name === "history") return view.date ? "/#past/day" : "/#past";
   return "/";
 }
@@ -272,6 +276,9 @@ export function App() {
       <a className="nav-link" href={HISTORY_HASH}>
         Past rounds
       </a>
+      <a className="nav-link" href={ARCADE_HASH}>
+        Arcade
+      </a>
       {canSeeDashboard && (
         <a className="nav-link" href={DASHBOARD_HASH}>
           Dashboard
@@ -293,6 +300,9 @@ export function App() {
       {help}
       <a className="nav-link" href={HISTORY_HASH}>
         Past rounds
+      </a>
+      <a className="nav-link" href={ARCADE_HASH}>
+        Arcade
       </a>
       {canSeeDashboard && (
         <a className="nav-link" href={DASHBOARD_HASH}>
@@ -324,6 +334,21 @@ export function App() {
         {authModal}
         {/* Remounted on login, so logging in on this page loads it. */}
         <Dashboard key={user?.id ?? "guest"} canReset={user?.admin === true} />
+      </Shell>
+    );
+  }
+
+  if (view.name === "arcade") {
+    return (
+      <Shell account={account}>
+        {authModal}
+        {/* Remounted on login or logout: a guest's run and an account's are separate. */}
+        <Arcade
+          key={user?.id ?? "guest"}
+          characters={characters}
+          playerName={user?.username ?? null}
+          onLogIn={() => setShowAuth(true)}
+        />
       </Shell>
     );
   }
