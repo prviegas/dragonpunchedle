@@ -432,7 +432,6 @@ function Intro({
         guesses. Win and the next one steps in; lose one and the climb is over.
       </p>
       <ul className="arcade-rules">
-        <li>It only gets harder to look at.</li>
         <li>Doesn't touch your daily streak.</li>
       </ul>
       <button type="button" className="button arcade-start" onClick={onStart}>
