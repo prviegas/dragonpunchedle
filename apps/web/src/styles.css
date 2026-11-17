@@ -3077,7 +3077,8 @@ body {
   line-height: 1.4;
   text-transform: uppercase;
   color: #fff;
-  background: var(--you);
+  /* Blood red, to match the tower. */
+  background: linear-gradient(180deg, #ff2a1a 0%, #b3121f 100%);
   border-radius: 3px;
   animation: new-glow 2.2s ease-in-out infinite;
 }
@@ -3085,10 +3086,10 @@ body {
 @keyframes new-glow {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgb(224 74 120 / 0.55);
+    box-shadow: 0 0 0 0 rgb(255 42 26 / 0.6);
   }
   50% {
-    box-shadow: 0 0 0 5px rgb(224 74 120 / 0);
+    box-shadow: 0 0 0 5px rgb(255 42 26 / 0);
   }
 }
 
