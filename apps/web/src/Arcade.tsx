@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ApiError,
   fetchArcade,
@@ -250,10 +250,12 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
             />
           ) : (
             <div className="arcade-play">
+              {/* Always the full 10 segments: guesses the tower has taken show as destroyed. */}
               <HealthBar
                 player={playerName ?? "Guest"}
                 used={run.guesses.length}
                 max={state.maxGuesses}
+                total={10}
               />
               <GuessInput
                 characters={characters}
@@ -317,6 +319,27 @@ function FloorTitle({ floor, falling = false }: { floor: number; falling?: boole
     const timer = setTimeout(() => setLeaving(undefined), falling ? 160 : 700);
     return () => clearTimeout(timer);
   }, [floor, falling]);
+  // While falling, the title area holds its height, so the buttons below stay
+  // still as floors of different sizes roll past. When the fall ends, it eases
+  // to the last floor's own height, then lets go.
+  const roll = useRef<HTMLDivElement>(null);
+  const [heldHeight, setHeldHeight] = useState<number>();
+  useLayoutEffect(() => {
+    const box = roll.current;
+    if (!box) return;
+    if (falling) {
+      setHeldHeight((held) => held ?? box.offsetHeight);
+      return;
+    }
+    if (heldHeight === undefined) return;
+    const current = box.lastElementChild as HTMLElement | null;
+    const padding = parseFloat(getComputedStyle(box).paddingTop) + parseFloat(getComputedStyle(box).paddingBottom);
+    setHeldHeight((current?.offsetHeight ?? 0) + padding);
+    const timer = setTimeout(() => setHeldHeight(undefined), 350);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [falling]);
+
   // Climbing: the new floor comes from above. Falling: from below, and fast.
   const out = falling ? "floor-fall-out" : "floor-roll-out";
   const into = falling ? "floor-fall-in" : "floor-roll-in";
@@ -340,7 +363,11 @@ function FloorTitle({ floor, falling = false }: { floor: number; falling?: boole
   };
 
   return (
-    <div className="floor-roll">
+    <div
+      className="floor-roll"
+      ref={roll}
+      style={heldHeight === undefined ? undefined : { height: heldHeight, transition: "height 0.3s ease" }}
+    >
       {leaving !== undefined && (
         <div aria-hidden="true">{block(leaving, out, false)}</div>
       )}

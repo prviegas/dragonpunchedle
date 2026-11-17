@@ -258,6 +258,28 @@ body {
   transition: background 0.35s;
 }
 
+/* Guesses the Tower took away for good: dark, cracked, jagged at the edges,
+   each one broken a little differently. Never lit, whatever the level. */
+.health-cell.is-destroyed {
+  background:
+    linear-gradient(115deg, transparent 46%, rgb(255 60 40 / 0.55) 47% 50%, transparent 51%),
+    linear-gradient(64deg, transparent 58%, rgb(0 0 0 / 0.7) 59% 62%, transparent 63%),
+    repeating-linear-gradient(135deg, #4a0910 0 3px, #1c0306 3px 6px);
+  opacity: 0.85;
+}
+
+.health-cell.wreck-1 {
+  clip-path: polygon(0 0, 38% 0, 46% 35%, 60% 0, 100% 0, 92% 55%, 100% 100%, 55% 100%, 48% 70%, 30% 100%, 0 100%, 8% 45%);
+}
+
+.health-cell.wreck-2 {
+  clip-path: polygon(6% 0, 100% 0, 88% 40%, 100% 72%, 70% 100%, 0 100%, 12% 62%, 0 30%);
+}
+
+.health-cell.wreck-3 {
+  clip-path: polygon(0 10%, 45% 0, 52% 30%, 100% 0, 95% 100%, 62% 85%, 40% 100%, 0 90%, 10% 50%);
+}
+
 .hud.is-high .health-cell.is-full {
   background: #1fa65a;
 }
@@ -2088,7 +2110,9 @@ body {
 .arcade-head {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  /* Top-aligned, not by text baseline: the floor title changes size as it
+     rolls, and a baseline would drag everything below it up and down. */
+  align-items: flex-start;
   justify-content: space-between;
   gap: 4px 16px;
   margin-bottom: 14px;
@@ -2691,8 +2715,8 @@ body {
   font-size: clamp(4rem, 14vw, 6.5rem);
   font-weight: 800;
   line-height: 1;
-  color: var(--you);
-  border: 5px solid var(--you);
+  color: #ff2a1a;
+  border: 5px solid #ff2a1a;
   border-radius: 6px;
   transform: rotate(-7deg);
   animation: ko-stamp 0.3s cubic-bezier(0.3, 1.6, 0.5, 1) both;
