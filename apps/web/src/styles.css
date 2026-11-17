@@ -2141,6 +2141,30 @@ body {
   animation: floor-in 0.65s 0.1s cubic-bezier(0.2, 0.9, 0.3, 1) both;
 }
 
+/* Game over: the fall back to floor 1. Each floor slides up and out as the
+   one below rises in, fast, so the whole drop takes about a second and a half. */
+.floor-fall-out {
+  animation: fall-out 0.14s linear both;
+}
+
+.floor-fall-in {
+  animation: fall-in 0.14s linear both;
+}
+
+@keyframes fall-out {
+  to {
+    transform: translateY(-110%);
+    opacity: 0;
+  }
+}
+
+@keyframes fall-in {
+  from {
+    transform: translateY(110%);
+    opacity: 0;
+  }
+}
+
 @keyframes floor-out {
   to {
     transform: translateY(130%);

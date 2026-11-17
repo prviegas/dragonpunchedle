@@ -63,6 +63,41 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
 
   const run = state?.run;
   const playing = run && !run.over;
+
+  // Game over: the floor title falls back down to floor 1, a floor at a time,
+  // in about a second and a half however high the climb got. Only when the
+  // run ends in front of the player: a reloaded Game Over just shows floor 1.
+  const [shownFloor, setShownFloor] = useState<number>();
+  const [falling, setFalling] = useState(false);
+  const sawPlaying = useRef(false);
+  const runFloor = run?.floor;
+  const runOver = run?.over;
+  useEffect(() => {
+    if (runFloor === undefined) return;
+    if (!runOver) {
+      sawPlaying.current = true;
+      setShownFloor(undefined);
+      setFalling(false);
+      return;
+    }
+    if (!sawPlaying.current || runFloor <= 1) {
+      setShownFloor(1);
+      return;
+    }
+    sawPlaying.current = false;
+    let floor = runFloor;
+    setFalling(true);
+    const step = Math.max(35, Math.min(170, 1500 / floor));
+    const timer = setInterval(() => {
+      floor -= 1;
+      setShownFloor(floor);
+      if (floor <= 1) {
+        clearInterval(timer);
+        setTimeout(() => setFalling(false), 300);
+      }
+    }, step);
+    return () => clearInterval(timer);
+  }, [runFloor, runOver]);
   const guessedIds = useMemo(
     () => new Set(run?.guesses.map((g) => g.guess.id) ?? []),
     [run],
@@ -167,7 +202,7 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
   }
 
   // How menacing the floor title and panel look: they darken toward blood red as the tower climbs.
-  const danger = run ? floorDanger(run.floor) : 1;
+  const danger = floorDanger(shownFloor ?? run?.floor ?? 1);
 
   return (
     <section className="arcade" aria-labelledby="arcade-title">
@@ -179,7 +214,7 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
         <div className={`arcade-stage danger-${danger}${ko ? " is-hit" : ""}`}>
           <header className="arcade-head">
             {run ? (
-              <FloorTitle floor={run.floor} />
+              <FloorTitle floor={shownFloor ?? run.floor} falling={falling} />
             ) : (
               <h2 id="arcade-title" className="arcade-title">
                 {TOWER_NAME}
@@ -274,16 +309,19 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
  * up and out while the new one rises in from below, as if climbing the tower.
  * Its look comes from the floor's danger level (see floorDanger).
  */
-function FloorTitle({ floor }: { floor: number }) {
+function FloorTitle({ floor, falling = false }: { floor: number; falling?: boolean }) {
   const [leaving, setLeaving] = useState<number>();
   const shown = useRef(floor);
   useEffect(() => {
     if (floor === shown.current) return;
     setLeaving(shown.current);
     shown.current = floor;
-    const timer = setTimeout(() => setLeaving(undefined), 700);
+    const timer = setTimeout(() => setLeaving(undefined), falling ? 160 : 700);
     return () => clearTimeout(timer);
-  }, [floor]);
+  }, [floor, falling]);
+  // Climbing: the new floor comes from above. Falling: from below, and fast.
+  const out = falling ? "floor-fall-out" : "floor-roll-out";
+  const into = falling ? "floor-fall-in" : "floor-roll-in";
 
   // The current floor's title is the page heading; the one scrolling away isn't.
   const block = (n: number, extra: string, heading: boolean) => {
@@ -306,10 +344,10 @@ function FloorTitle({ floor }: { floor: number }) {
   return (
     <div className="floor-roll">
       {leaving !== undefined && (
-        <div aria-hidden="true">{block(leaving, "floor-roll-out", false)}</div>
+        <div aria-hidden="true">{block(leaving, out, false)}</div>
       )}
       <div key={floor}>
-        {block(floor, leaving !== undefined ? "floor-roll-in" : "", true)}
+        {block(floor, leaving !== undefined ? into : "", true)}
       </div>
     </div>
   );
