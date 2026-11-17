@@ -106,7 +106,8 @@ export function App() {
   const [user, setUser] = useState<User | null>(null);
   // A failed Discord/Google sign-in reopens the login panel with the reason.
   const [showAuth, setShowAuth] = useState(initialLoginError !== undefined);
-  const [showHelp, setShowHelp] = useState(false);
+  // Which way How to play was opened: from the header, or from a "what counts as close" link (opens that section).
+  const [showHelp, setShowHelp] = useState<false | "intro" | "close-rules">(false);
   const [guesses, setGuesses] = useState<GuessResult[]>([]);
   // Guesses picked but not yet answered by the server, in the order picked.
   const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(new Set());
@@ -227,7 +228,7 @@ export function App() {
   }
 
   const help = (
-    <button type="button" className="nav-link nav-help" onClick={() => setShowHelp(true)}>
+    <button type="button" className="nav-link nav-help" onClick={() => setShowHelp("intro")}>
       <span className="help-icon" aria-hidden="true">
         ?
       </span>
@@ -271,8 +272,8 @@ export function App() {
       <Modal open={showAuth && !user} onClose={() => setShowAuth(false)} label="Log in or sign up">
         <AuthPanel initialError={initialLoginError} onSignedIn={signedIn} onClose={() => setShowAuth(false)} />
       </Modal>
-      <Modal open={showHelp} onClose={() => setShowHelp(false)} label="How to play" wide>
-        <HowToPlay clues={puzzle.clues} maxGuesses={puzzle.maxGuesses} onClose={() => setShowHelp(false)} />
+      <Modal open={showHelp !== false} onClose={() => setShowHelp(false)} label="How to play" wide>
+        <HowToPlay clues={puzzle.clues} maxGuesses={puzzle.maxGuesses} showCloseRules={showHelp === "close-rules"} onClose={() => setShowHelp(false)} />
       </Modal>
     </>
   );
@@ -317,7 +318,7 @@ export function App() {
             </p>
           )}
           {/* Stays for the whole round, like other games' colour key. */}
-          <Legend onHelp={() => setShowHelp(true)} />
+          <Legend onHelp={() => setShowHelp("close-rules")} />
         </section>
       )}
 
@@ -326,7 +327,7 @@ export function App() {
         guesses={guesses}
         freshId={freshId}
         answer={winner ? undefined : answer}
-        onHelp={() => setShowHelp(true)}
+        onHelp={() => setShowHelp("close-rules")}
       />
       <Leaderboard version={standingsVersion} />
     </Shell>

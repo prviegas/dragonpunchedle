@@ -5,7 +5,15 @@ import type { ClueInfo } from "./api";
  * behind a "How to play" button rather than greeting everyone. The per-column
  * yellow rules come from the server, the same definitions it scores with.
  */
-export function HowToPlay({ clues, maxGuesses, onClose }: { clues: ClueInfo[]; maxGuesses: number; onClose: () => void }) {
+interface HowToPlayProps {
+  clues: ClueInfo[];
+  maxGuesses: number;
+  /** Start with "When each column turns yellow" open: the player asked about exactly that. */
+  showCloseRules?: boolean;
+  onClose: () => void;
+}
+
+export function HowToPlay({ clues, maxGuesses, showCloseRules = false, onClose }: HowToPlayProps) {
   return (
     <div className="panel how-to">
       <div className="panel-head">
@@ -41,15 +49,17 @@ export function HowToPlay({ clues, maxGuesses, onClose }: { clues: ClueInfo[]; m
         </li>
       </ul>
 
-      <h3 className="how-to-sub">When each column turns yellow</h3>
-      <dl className="close-rules">
-        {clues.map((clue) => (
-          <div key={clue.key} className="close-rule">
-            <dt>{clue.label}</dt>
-            <dd className={clue.close ? undefined : "is-never"}>{clue.close ?? "Never: right or wrong"}</dd>
-          </div>
-        ))}
-      </dl>
+      <details className="how-to-more" open={showCloseRules}>
+        <summary className="how-to-sub">When each column turns yellow</summary>
+        <dl className="close-rules">
+          {clues.map((clue) => (
+            <div key={clue.key} className="close-rule">
+              <dt>{clue.label}</dt>
+              <dd className={clue.close ? undefined : "is-never"}>{clue.close ?? "Never: right or wrong"}</dd>
+            </div>
+          ))}
+        </dl>
+      </details>
 
       <p className="how-to-foot">
         A new fighter every day at midnight UTC. Missed one? Play it from <a href="#past" onClick={onClose}>Past rounds</a>.

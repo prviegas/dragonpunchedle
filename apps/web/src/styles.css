@@ -23,6 +23,7 @@
   --partial: #d9a014;
   --partial-ink: #221800;
   --wrong: #343b55;
+  --ko: #c23b3b; /* red: a K.O. in past rounds */
 
   --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
   --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -1023,6 +1024,37 @@ body {
   color: var(--muted);
 }
 
+/* Closed by default: a summary line with a turning chevron. */
+.how-to-more > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.how-to-more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.how-to-more > summary::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s;
+}
+
+.how-to-more[open] > summary::after {
+  transform: rotate(45deg);
+}
+
+.how-to-more > summary:hover {
+  color: var(--text);
+}
+
 .close-rules {
   margin: 0;
 }
@@ -1460,8 +1492,8 @@ body {
 }
 
 .outcome--lost {
-  color: var(--text);
-  background: var(--wrong);
+  color: #fff;
+  background: var(--ko);
 }
 
 /* Still playable: shaped like a button, in the accent colour. */
