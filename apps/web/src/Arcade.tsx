@@ -187,12 +187,6 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
             </p>
           )}
 
-          {run && (run.guesses.length > 0 || run.over) && (
-            <div className="arcade-board">
-              <Board clues={state.clues} guesses={run.guesses} freshId={freshId} answer={run.over ? run.answer : undefined} />
-            </div>
-          )}
-
           {/* The moments: the floor announcement and the K.O. stamp. Screen readers get the words. */}
           {splash && (
             <div className="arcade-splash" key={splash.key} role="status">
@@ -210,6 +204,13 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
 
         {run && <Ladder run={run} />}
       </div>
+
+      {/* Full page width, like the daily board: inside the panel its 9 columns would overflow. */}
+      {run && (run.guesses.length > 0 || run.over) && (
+        <div className="arcade-board">
+          <Board clues={state.clues} guesses={run.guesses} freshId={freshId} answer={run.over ? run.answer : undefined} />
+        </div>
+      )}
 
       <ArcadeLeaderboard version={leaderboardVersion} />
     </section>

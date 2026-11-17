@@ -383,7 +383,24 @@ body {
 .board-scroll {
   overflow-x: auto;
   margin: 0 -4px 28px;
-  padding: 0 4px;
+  padding: 0 4px 6px;
+  /* On narrow screens the board scrolls sideways: a thin, quiet bar in the
+     site's colours instead of the browser's chunky default. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.board-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.board-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.board-scroll::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
 }
 
 .board {
@@ -2021,12 +2038,12 @@ body {
   grid-template-columns: minmax(0, 1fr) 240px;
   gap: 20px;
   align-items: start;
-  margin-bottom: 28px;
+  margin-bottom: 22px;
 }
 
 .arcade-stage {
   position: relative;
-  min-height: 280px;
+  min-height: 200px;
   padding: 20px 24px 24px;
   background: var(--panel);
   clip-path: var(--cut);
@@ -2142,11 +2159,7 @@ body {
 }
 
 .arcade-board {
-  margin-top: 18px;
-}
-
-.arcade-board .board-scroll {
-  margin-bottom: 0;
+  margin-bottom: 8px;
 }
 
 /* "FLOOR 3 / FIGHT!" slams in over the stage, then clears. Clicks pass through. */
@@ -2536,9 +2549,51 @@ body {
 @media (max-width: 760px) {
   .arcade-layout {
     grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   .arcade-stage {
     padding: 18px 16px 20px;
+  }
+
+  /* On a phone the ladder is a strip that climbs left to right: number and
+     portrait only, the last four beaten fighters, the next floors at the end. */
+  .ladder {
+    padding: 8px 10px;
+  }
+
+  .ladder-floors {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .ladder-floor {
+    display: grid;
+    grid-template-columns: auto;
+    justify-items: center;
+    gap: 2px;
+    min-width: 40px;
+    min-height: 0;
+    padding: 4px;
+  }
+
+  .ladder-number {
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+
+  .ladder-slot,
+  .ladder-thumb {
+    width: 26px;
+    height: 34px;
+  }
+
+  .ladder-name,
+  .ladder-guesses,
+  .ladder-more,
+  .ladder-floor.is-beaten:nth-child(n + 8) {
+    display: none;
   }
 }
