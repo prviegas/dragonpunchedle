@@ -55,6 +55,8 @@ export const SPECIES = [
   "Atlantean",
   // Hunter x Hunter
   "Chimera Ant",
+  // JoJo's Bizarre Adventure
+  "Pillar Man",
 ] as const;
 
 export const GENDERS = ["Male", "Female", "Other"] as const;

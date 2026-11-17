@@ -1,6 +1,6 @@
 # Dragonpunchedle
 
-A daily guessing game for fighting game characters. Every day there's one mystery fighter, picked from 654 characters across 23 franchises, from Street Fighter and Tekken to Guilty Gear, King of Fighters and Marvel Tōkon. You get 10 guesses. Each one shows how close you are, clue by clue: franchise, developer, debut year, archetypes, species, gender, home country and number of games.
+A daily guessing game for fighting game characters. Every day there's one mystery fighter, picked from 710 characters across 24 franchises, from Street Fighter and Tekken to Guilty Gear, King of Fighters and Marvel Tōkon. You get 10 guesses. Each one shows how close you are, clue by clue: franchise, developer, debut year, archetypes, species, gender, home country and number of games.
 
 **Play it at [dragonpunchedle.onrender.com](https://dragonpunchedle.onrender.com).** It runs on a free server that sleeps when nobody is playing, so the first visit after a quiet spell can take about a minute to load.
 
@@ -128,7 +128,7 @@ npm install
 cp apps/api/.env.example apps/api/.env
 npm run db:up        # PostgreSQL in Docker
 npm run db:migrate
-npm run db:seed      # load the 654 characters
+npm run db:seed      # load the 710 characters
 npm run dev:api      # API on http://localhost:3000
 npm run dev:web      # game on http://localhost:5180
 ```

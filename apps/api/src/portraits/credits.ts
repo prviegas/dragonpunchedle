@@ -12,6 +12,7 @@ export const CREDITS: Readonly<Record<string, string>> = {
   "Granblue Fantasy Versus": "© Cygames",
   "Guilty Gear": "© Arc System Works",
   "Hunter x Hunter": "© Yoshihiro Togashi/Shueisha; game © Bushiroad, Eighting",
+  "JoJo's Bizarre Adventure": "© Hirohiko Araki/Shueisha; game © Bandai Namco, CyberConnect2",
   "Killer Instinct": "© Microsoft",
   "Melty Blood": "© TYPE-MOON, French-Bread",
   "Mortal Kombat": "© Warner Bros. Games",
