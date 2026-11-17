@@ -280,7 +280,7 @@ export function App() {
         Past rounds
       </a>
       <a className="nav-link nav-tower" href={TOWER_HASH}>
-        {TOWER_NAME}
+        <span className="nav-tower-text">{TOWER_NAME}</span>
         <span className="nav-new">New</span>
       </a>
       {canSeeDashboard && (
@@ -306,7 +306,7 @@ export function App() {
         Past rounds
       </a>
       <a className="nav-link nav-tower" href={TOWER_HASH}>
-        {TOWER_NAME}
+        <span className="nav-tower-text">{TOWER_NAME}</span>
         <span className="nav-new">New</span>
       </a>
       {canSeeDashboard && (

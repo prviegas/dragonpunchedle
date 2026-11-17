@@ -205,21 +205,19 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
   const danger = floorDanger(shownFloor ?? run?.floor ?? 1);
 
   return (
-    <section className="arcade" aria-labelledby="arcade-title">
+    <section className="arcade" aria-labelledby="tower-title">
       <p className="history-nav">
         <a href="#">← Back to today's round</a>
       </p>
+      <h2 id="tower-title" className="tower-page-title">
+        {TOWER_NAME}
+      </h2>
 
       <div className="arcade-layout">
         <div className={`arcade-stage danger-${danger}${ko ? " is-hit" : ""}`}>
           <header className="arcade-head">
-            {run ? (
-              <FloorTitle floor={shownFloor ?? run.floor} falling={falling} />
-            ) : (
-              <h2 id="arcade-title" className="arcade-title">
-                {TOWER_NAME}
-              </h2>
-            )}
+            {/* Before a climb: floor 1, where it starts. */}
+            <FloorTitle floor={run ? (shownFloor ?? run.floor) : 1} falling={falling} />
             {run?.over && (
               <div className="arcade-over-head">
                 <p className="arcade-over-title">Game over</p>
@@ -325,7 +323,7 @@ function FloorTitle({ floor, falling = false }: { floor: number; falling?: boole
 
   // The current floor's title is the page heading; the one scrolling away isn't.
   const block = (n: number, extra: string, heading: boolean) => {
-    const Title = heading ? "h2" : "p";
+    const Title = heading ? "h3" : "p";
     return (
       <div className={`floor-block danger-${floorDanger(n)} ${extra}`}>
         <Title

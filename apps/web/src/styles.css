@@ -3141,3 +3141,27 @@ body {
   background: var(--correct);
   border-radius: 2px;
 }
+
+/* The page title of the Tower: big condensed capitals over a blood-red rule. */
+.tower-page-title {
+  margin: 4px 0 18px;
+  padding-bottom: 8px;
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 6vw, 3rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: linear-gradient(90deg, #ff2a1a, #b3121f 40%, rgb(179 18 31 / 0)) bottom left / 100% 3px no-repeat;
+}
+
+/* The header link: only the words get underlined on hover, never the NEW tag. */
+.nav-tower:hover {
+  text-decoration: none;
+}
+
+.nav-tower:hover .nav-tower-text {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
