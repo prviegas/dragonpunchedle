@@ -620,6 +620,21 @@ body {
   align-items: center;
 }
 
+/* The fighter's details sit on the right, opposite the portrait. */
+.result-text {
+  text-align: right;
+}
+
+.result-text .result-tags {
+  justify-content: flex-end;
+}
+
+/* The button on the right edge, its "Copied!" message to its left. */
+.result-text .share {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+}
+
 .result-text p {
   margin: 0;
 }
@@ -888,6 +903,7 @@ body {
 
 .chart-caption {
   margin: 4px 0 0;
+  text-align: right;
   font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1756,7 +1772,15 @@ body {
     text-align: center;
   }
 
-  .share {
+  /* Stacked under the portrait on a phone: centred, not right-aligned. */
+  .result-text {
+    text-align: center;
+  }
+
+  .share,
+  .result-text .share,
+  .result-text .result-tags {
+    flex-direction: row;
     justify-content: center;
   }
 
