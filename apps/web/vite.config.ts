@@ -10,6 +10,34 @@ function siteUrlPlugin(): Plugin {
   return {
     name: "site-url",
     transformIndexHtml: (html) => html.replaceAll("%SITE_URL%", siteUrl),
+    // Search engines need full addresses here too, so these two files are
+    // written at build time instead of living in public/.
+    generateBundle() {
+      this.emitFile({
+        type: "asset",
+        fileName: "robots.txt",
+        source: `User-agent: *
+Allow: /
+
+Sitemap: ${siteUrl}/sitemap.xml
+`,
+      });
+      this.emitFile({
+        type: "asset",
+        fileName: "sitemap.xml",
+        source:
+          `<?xml version="1.0" encoding="UTF-8"?>
+` +
+          `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+` +
+          `  <url><loc>${siteUrl}/</loc><changefreq>daily</changefreq></url>
+` +
+          `  <url><loc>${siteUrl}/privacy.html</loc><changefreq>monthly</changefreq></url>
+` +
+          `</urlset>
+`,
+      });
+    },
   };
 }
 

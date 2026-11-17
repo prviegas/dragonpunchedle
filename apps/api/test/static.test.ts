@@ -44,6 +44,13 @@ describe("serving the web app", () => {
     expect(response.body).toContain("<title>Dragonpunchedle</title>");
   });
 
+  it("answers missing files with a 404, not the page", async () => {
+    const response = await app.inject({ method: "GET", url: "/missing.xml" });
+
+    expect(response.statusCode).toBe(404);
+    expect(response.body).not.toContain("<title>Dragonpunchedle</title>");
+  });
+
   it("keeps unknown API paths as JSON 404s", async () => {
     const response = await app.inject({ method: "GET", url: "/api/nothing-here" });
 

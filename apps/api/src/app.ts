@@ -126,8 +126,12 @@ export function buildApp({
 
   // Unknown API paths get a JSON 404. Any other unknown path gets the page
   // itself, so a shared link to a route the page handles still opens the game.
+  // A missing file (a path ending in .txt, .xml, .png...) gets a real 404, so
+  // search engines asking for robots.txt or a sitemap never receive the page.
   app.setNotFoundHandler((request, reply) => {
-    if (staticDir && request.method === "GET" && !request.url.startsWith("/api/")) {
+    const path = request.url.split("?")[0] ?? "";
+    const looksLikeFile = /\.[a-z0-9]+$/i.test(path);
+    if (staticDir && request.method === "GET" && !path.startsWith("/api/") && !looksLikeFile) {
       return reply.header("cache-control", "no-cache").sendFile("index.html");
     }
     return reply.code(404).send({ error: "Not found." });
