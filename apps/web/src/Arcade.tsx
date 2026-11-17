@@ -10,7 +10,7 @@ import {
   type ArcadeState,
   type CharacterSummary,
 } from "./api";
-import { bestComboOf, buildArcadeShare, comboHeat, comboOf, COMBO_GUESSES } from "./arcadeRules";
+import { buildTowerShare, floorDanger, TOWER_NAME } from "./arcadeRules";
 import { Board } from "./Board";
 import { GuessInput } from "./GuessInput";
 import { HealthBar } from "./HealthBar";
@@ -27,7 +27,7 @@ interface ArcadeProps {
 }
 
 /**
- * Arcade Ladder: endless rounds against random fighters, one floor each,
+ * Tower of Endless Struggle: endless rounds against random fighters, one floor each,
  * until a floor is lost. Separate from the daily round in every way.
  */
 export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
@@ -53,7 +53,7 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
   };
 
   useEffect(() => {
-    fetchArcade().then(show, () => setError("Couldn't load the arcade. Please try again."));
+    fetchArcade().then(show, () => setError("Couldn't load the tower. Please try again."));
   }, [playerName]);
 
   // Clear the announcement and the stamp after their moment.
@@ -142,7 +142,8 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
     return <p className="status">{error ?? "Loading the arcade…"}</p>;
   }
 
-  const combo = run ? comboOf(run.cleared) : 0;
+  // How menacing the floor title and panel look: they darken toward blood red as the tower climbs.
+  const danger = playing ? floorDanger(run.floor) : 1;
 
   return (
     <section className="arcade" aria-labelledby="arcade-title">
@@ -151,9 +152,9 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
       </p>
 
       <div className="arcade-layout">
-        <div className={ko ? "arcade-stage is-hit" : "arcade-stage"}>
+        <div className={`arcade-stage danger-${danger}${ko ? " is-hit" : ""}`}>
           <header className="arcade-head">
-            <h2 id="arcade-title" className="arcade-title">
+            <h2 id="arcade-title" className={`arcade-title danger-${danger}`}>
               {playing ? (
                 <>
                   Floor{" "}
@@ -162,17 +163,9 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
                   </span>
                 </>
               ) : (
-                "Arcade"
+                TOWER_NAME
               )}
             </h2>
-            {/* The hit counter: bigger, hotter and wilder the longer the combo runs.
-                Keyed on the count, so every new hit slams in again. */}
-            {playing && combo >= 2 && (
-              <p className={`combo combo--${comboHeat(combo)}`} key={combo} aria-live="polite">
-                <span className="combo-hits">{combo}</span>
-                <span className="combo-word">hit combo</span>
-              </p>
-            )}
           </header>
 
           {!run ? (
@@ -180,9 +173,8 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
           ) : run.over ? (
             <GameOver
               floorsCleared={run.floorsCleared}
-              bestCombo={bestComboOf(run.cleared)}
               best={state.best}
-              share={buildArcadeShare(run.cleared, run.answer !== undefined, `${window.location.origin}/#arcade`)}
+              share={buildTowerShare(run.cleared, run.answer !== undefined, `${window.location.origin}/#tower`)}
               loggedIn={playerName !== null}
               onLogIn={onLogIn}
               onAgain={start}
@@ -192,7 +184,6 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
               <HealthBar player={playerName ?? "Guest"} used={run.guesses.length} max={state.maxGuesses} />
               <GuessInput characters={characters} excludedIds={guessedIds} busy={ko !== undefined} onGuess={guess} />
               <div className="arcade-under">
-                <p className="arcade-next">Solve in {COMBO_GUESSES} or fewer to keep a combo going.</p>
                 <GiveUp onGiveUp={giveUp} disabled={ko !== undefined} />
               </div>
             </div>
@@ -261,11 +252,11 @@ function Intro({ best, maxGuesses, onStart }: { best: number; maxGuesses: number
   return (
     <div className="arcade-intro">
       <p className="arcade-pitch">
-        Climb the ladder. Every floor is a random fighter and {maxGuesses} guesses. Win and the next one steps in; lose
-        one and the run is over.
+        Climb the tower. Every floor is a random fighter and {maxGuesses} guesses. Win and the next one steps in; lose
+        one and the climb is over.
       </p>
       <ul className="arcade-rules">
-        <li>Solve in 3 or fewer to build a combo.</li>
+        <li>It only gets harder to look at.</li>
         <li>Doesn't touch your daily streak.</li>
       </ul>
       <button type="button" className="button arcade-start" onClick={onStart}>
@@ -278,7 +269,6 @@ function Intro({ best, maxGuesses, onStart }: { best: number; maxGuesses: number
 
 function GameOver({
   floorsCleared,
-  bestCombo,
   best,
   share,
   loggedIn,
@@ -286,7 +276,6 @@ function GameOver({
   onAgain,
 }: {
   floorsCleared: number;
-  bestCombo: number;
   best: number;
   share: string;
   loggedIn: boolean;
@@ -322,12 +311,6 @@ function GameOver({
         <span className="arcade-over-floors">{floorsCleared}</span>
         <span>
           {floorsCleared === 1 ? "floor" : "floors"} cleared
-          {bestCombo >= 2 && (
-            <>
-              {" "}
-              · best combo <strong>{bestCombo} hits</strong>
-            </>
-          )}
         </span>
       </p>
       {newBest ? <p className="arcade-best is-new">New best!</p> : <p className="arcade-best">Your best: floor {best}</p>}
@@ -344,7 +327,7 @@ function GameOver({
           <button type="button" className="link" onClick={onLogIn}>
             Log in
           </button>{" "}
-          to put your runs on the ladder board.
+          to put your climbs on the highest floors board.
         </p>
       )}
     </div>
@@ -419,7 +402,7 @@ function ArcadeLeaderboard({ version }: { version: number }) {
   return (
     <section className="leaderboard arcade-leaderboard" aria-labelledby="arcade-board-title">
       <div className="leaderboard-head">
-        <h2 id="arcade-board-title">Ladder board</h2>
+        <h2 id="arcade-board-title">Highest floors</h2>
       </div>
       {rows.length === 0 ? (
         <p className="status">Nobody has cleared a floor yet. Be the first!</p>

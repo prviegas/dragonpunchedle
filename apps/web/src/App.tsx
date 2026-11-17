@@ -23,7 +23,7 @@ import { GuessInput } from "./GuessInput";
 import { HealthBar } from "./HealthBar";
 import { HowToPlay } from "./HowToPlay";
 import { Arcade } from "./Arcade";
-import { ARCADE_HASH } from "./arcadeRules";
+import { TOWER_HASH, TOWER_NAME } from "./arcadeRules";
 import { Dashboard, DASHBOARD_HASH } from "./Dashboard";
 import { History, HISTORY_HASH } from "./History";
 import { Leaderboard } from "./Leaderboard";
@@ -87,7 +87,7 @@ type View = { name: "today" } | { name: "history"; date?: string } | { name: "da
 
 function viewFromHash(hash: string): View {
   if (hash === DASHBOARD_HASH) return { name: "dashboard" };
-  if (hash === ARCADE_HASH) return { name: "arcade" };
+  if (hash === TOWER_HASH) return { name: "arcade" };
   if (hash === HISTORY_HASH) return { name: "history" };
   const date = hash.startsWith(`${HISTORY_HASH}/`) ? hash.slice(HISTORY_HASH.length + 1) : "";
   return /^\d{4}-\d{2}-\d{2}$/.test(date) ? { name: "history", date } : { name: "today" };
@@ -96,7 +96,7 @@ function viewFromHash(hash: string): View {
 /** The page name a view is counted under on the dashboard; one name for every past day. */
 function pageName(view: View): string | undefined {
   if (view.name === "dashboard") return undefined;
-  if (view.name === "arcade") return "/#arcade";
+  if (view.name === "arcade") return "/#tower";
   if (view.name === "history") return view.date ? "/#past/day" : "/#past";
   return "/";
 }
@@ -276,8 +276,9 @@ export function App() {
       <a className="nav-link" href={HISTORY_HASH}>
         Past rounds
       </a>
-      <a className="nav-link" href={ARCADE_HASH}>
-        Arcade
+      <a className="nav-link nav-tower" href={TOWER_HASH}>
+        {TOWER_NAME}
+        <span className="nav-new">New</span>
       </a>
       {canSeeDashboard && (
         <a className="nav-link" href={DASHBOARD_HASH}>
@@ -301,8 +302,9 @@ export function App() {
       <a className="nav-link" href={HISTORY_HASH}>
         Past rounds
       </a>
-      <a className="nav-link" href={ARCADE_HASH}>
-        Arcade
+      <a className="nav-link nav-tower" href={TOWER_HASH}>
+        {TOWER_NAME}
+        <span className="nav-new">New</span>
       </a>
       {canSeeDashboard && (
         <a className="nav-link" href={DASHBOARD_HASH}>
