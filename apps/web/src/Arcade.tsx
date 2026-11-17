@@ -429,7 +429,7 @@ function Intro({
     <div className="arcade-intro">
       <p className="arcade-pitch">
         Climb the tower. Every floor is a random fighter and {maxGuesses}{" "}
-        guesses, one fewer at floors 10, 20 and 100. Win and the next one steps in; lose one and the climb is over.
+        guesses. Win and the next one steps in; lose one and the climb is over.
       </p>
       <ul className="arcade-rules">
         <li>It only gets harder to look at.</li>
