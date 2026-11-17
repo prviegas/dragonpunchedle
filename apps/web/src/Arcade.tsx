@@ -10,7 +10,7 @@ import {
   type ArcadeState,
   type CharacterSummary,
 } from "./api";
-import { buildArcadeShare, comboOf, nextRank, rankFor } from "./arcadeRules";
+import { bestComboOf, buildArcadeShare, comboHeat, comboOf, COMBO_GUESSES } from "./arcadeRules";
 import { Board } from "./Board";
 import { GuessInput } from "./GuessInput";
 import { HealthBar } from "./HealthBar";
@@ -143,8 +143,6 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
   }
 
   const combo = run ? comboOf(run.cleared) : 0;
-  const rank = rankFor(run?.floorsCleared ?? 0);
-  const upcoming = run ? nextRank(run.floorsCleared) : null;
 
   return (
     <section className="arcade" aria-labelledby="arcade-title">
@@ -167,14 +165,12 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
                 "Arcade"
               )}
             </h2>
-            {playing && (
-              <p className="arcade-meta">
-                <span className="arcade-rank">{rank}</span>
-                {combo >= 2 && (
-                  <span className="combo" key={combo}>
-                    {combo} hit combo
-                  </span>
-                )}
+            {/* The hit counter: bigger, hotter and wilder the longer the combo runs.
+                Keyed on the count, so every new hit slams in again. */}
+            {playing && combo >= 2 && (
+              <p className={`combo combo--${comboHeat(combo)}`} key={combo} aria-live="polite">
+                <span className="combo-hits">{combo}</span>
+                <span className="combo-word">hit combo</span>
               </p>
             )}
           </header>
@@ -184,6 +180,7 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
           ) : run.over ? (
             <GameOver
               floorsCleared={run.floorsCleared}
+              bestCombo={bestComboOf(run.cleared)}
               best={state.best}
               share={buildArcadeShare(run.cleared, run.answer !== undefined, `${window.location.origin}/#arcade`)}
               loggedIn={playerName !== null}
@@ -195,11 +192,7 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
               <HealthBar player={playerName ?? "Guest"} used={run.guesses.length} max={state.maxGuesses} />
               <GuessInput characters={characters} excludedIds={guessedIds} busy={ko !== undefined} onGuess={guess} />
               <div className="arcade-under">
-                <p className="arcade-next">
-                  {upcoming
-                    ? `${upcoming.floorsLeft} more ${upcoming.floorsLeft === 1 ? "floor" : "floors"} to ${upcoming.name}`
-                    : "Top title reached"}
-                </p>
+                <p className="arcade-next">Solve in {COMBO_GUESSES} or fewer to keep a combo going.</p>
                 <GiveUp onGiveUp={giveUp} disabled={ko !== undefined} />
               </div>
             </div>
@@ -273,7 +266,6 @@ function Intro({ best, maxGuesses, onStart }: { best: number; maxGuesses: number
       </p>
       <ul className="arcade-rules">
         <li>Solve in 3 or fewer to build a combo.</li>
-        <li>Titles from Rookie to Final Boss.</li>
         <li>Doesn't touch your daily streak.</li>
       </ul>
       <button type="button" className="button arcade-start" onClick={onStart}>
@@ -286,6 +278,7 @@ function Intro({ best, maxGuesses, onStart }: { best: number; maxGuesses: number
 
 function GameOver({
   floorsCleared,
+  bestCombo,
   best,
   share,
   loggedIn,
@@ -293,6 +286,7 @@ function GameOver({
   onAgain,
 }: {
   floorsCleared: number;
+  bestCombo: number;
   best: number;
   share: string;
   loggedIn: boolean;
@@ -327,7 +321,13 @@ function GameOver({
       <p className="arcade-over-score">
         <span className="arcade-over-floors">{floorsCleared}</span>
         <span>
-          {floorsCleared === 1 ? "floor" : "floors"} cleared · <strong>{rankFor(floorsCleared)}</strong>
+          {floorsCleared === 1 ? "floor" : "floors"} cleared
+          {bestCombo >= 2 && (
+            <>
+              {" "}
+              · best combo <strong>{bestCombo} hits</strong>
+            </>
+          )}
         </span>
       </p>
       {newBest ? <p className="arcade-best is-new">New best!</p> : <p className="arcade-best">Your best: floor {best}</p>}
@@ -433,7 +433,7 @@ function ArcadeLeaderboard({ version }: { version: number }) {
                 {row.you && <span className="you-tag"> (you)</span>}
               </span>
               <span className="score">
-                Floor {row.floor} · {rankFor(row.floor)}
+                Floor {row.floor}
               </span>
             </li>
           ))}

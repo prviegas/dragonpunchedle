@@ -88,7 +88,7 @@ The comparison logic is written once per kind. Adding a clue is one line in [`cl
 - applied files are recorded, so running again only applies new ones;
 - a Postgres advisory lock stops two server instances from migrating at once.
 
-**Arcade Ladder.** Endless rounds against random fighters, 8 guesses a floor, until one is lost; quick floors build a combo, and runs earn titles from Rookie to Final Boss. Each floor's fighter is picked on the server and stays there until the floor is cleared or lost, under the same per-player advisory lock as daily guesses ([`db/arcade.ts`](apps/api/src/db/arcade.ts)). Arcade play never touches the daily chart, leaderboards or streaks.
+**Arcade Ladder.** Endless rounds against random fighters, 8 guesses a floor, until one is lost; quick floors build a combo counter that grows hotter the longer it runs. Each floor's fighter is picked on the server and stays there until the floor is cleared or lost, under the same per-player advisory lock as daily guesses ([`db/arcade.ts`](apps/api/src/db/arcade.ts)). Arcade play never touches the daily chart, leaderboards or streaks.
 
 **Ten guesses a day, enforced by the database.** The checks (already solved? already guessed? out of guesses?) and the insert run in one transaction that first takes a Postgres advisory lock for that player, so two guesses sent at the same moment can't both become the 10th. A test fires 15 at once and gets exactly 10 ([`db/guesses.ts`](apps/api/src/db/guesses.ts)). The answer is sent only with a missed 10th guess.
 
