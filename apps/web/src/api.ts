@@ -317,6 +317,8 @@ export interface ArcadeGuessResponse extends GuessResult {
 
 export const fetchArcade = () => request<ArcadeState>("/api/arcade");
 export const startArcade = () => request<ArcadeState>("/api/arcade/start", { method: "POST" });
+/** Ends the run on the current floor, like losing it. */
+export const giveUpArcade = () => request<ArcadeState>("/api/arcade/give-up", { method: "POST" });
 export const submitArcadeGuess = (characterId: string) =>
   request<ArcadeGuessResponse>("/api/arcade/guess", postJson({ characterId }));
 

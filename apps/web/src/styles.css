@@ -2171,6 +2171,20 @@ body {
   color: var(--dim);
 }
 
+/* Under the guess box: how far the next title is, and Give up on the right. */
+.arcade-under {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+
+.arcade-giveup {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
 .arcade-board {
   margin-bottom: 8px;
 }

@@ -87,6 +87,18 @@ async function addFloor(client: pg.PoolClient, runId: number, floor: number): Pr
   if (inserted.rowCount === 0) await client.query("UPDATE arcade_runs SET ended_at = now() WHERE id = $1", [runId]);
 }
 
+/**
+ * Gives up the run in progress: it ends on the current floor, like losing it,
+ * and the floors cleared so far still count. False if there was nothing to end.
+ */
+export async function giveUpRun(pool: pg.Pool, player: Player): Promise<boolean> {
+  const { column, value } = playerColumn(player);
+  return withPlayerLock(pool, player, async (client) => {
+    const ended = await client.query(`UPDATE arcade_runs SET ended_at = now() WHERE ${column} = $1 AND ended_at IS NULL`, [value]);
+    return (ended.rowCount ?? 0) > 0;
+  });
+}
+
 /** Starts a new run, ending any run still in progress. */
 export async function startRun(pool: pg.Pool, player: Player): Promise<ArcadeRun> {
   const { column, value } = playerColumn(player);

@@ -7,6 +7,7 @@ import {
   arcadeGuess,
   arcadeLeaderboard,
   bestFloor,
+  giveUpRun,
   latestRun,
   startRun,
   type ArcadeRun,
@@ -135,6 +136,14 @@ export const arcadeRoutes: FastifyPluginAsync<ArcadeRouteOptions> = async (
       };
     },
   );
+
+  // Give up: the run ends on the current floor and that fighter is revealed,
+  // exactly as if the floor were lost. Floors already cleared still count.
+  app.post("/api/arcade/give-up", async (request, reply) => {
+    const player = existingPlayer(request);
+    if (!player || !(await giveUpRun(pool, player))) return reply.code(409).send({ error: "There's no run to give up." });
+    return state(player);
+  });
 
   app.get("/api/arcade/leaderboard", async (request) => arcadeLeaderboard(pool, request.user?.id ?? null));
 };

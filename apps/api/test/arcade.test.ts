@@ -114,6 +114,17 @@ describe.skipIf(!process.env.DATABASE_URL)("arcade ladder", () => {
     expect(JSON.stringify(board)).not.toContain(guestCookie);
   });
 
+  it("gives up a run: it ends on the current floor and the cleared floors count", async () => {
+    // The account's run from the test above: 2 floors cleared, on floor 3.
+    const secret = await opponent("user_id", userId);
+    const giveUp = () => app.inject({ method: "POST", url: "/api/arcade/give-up", cookies: as("user") });
+
+    const body = (await giveUp()).json();
+    expect(body.run).toMatchObject({ over: true, floorsCleared: 2, floor: 3, answer: expect.objectContaining({ id: secret }) });
+    expect(body.best).toBe(2);
+    expect((await giveUp()).statusCode).toBe(409); // nothing left to give up
+  });
+
   it("never touches the daily game", async () => {
     const { rows } = await pool.query("SELECT count(*)::int AS n FROM guesses WHERE user_id = $1", [userId]);
     expect(rows[0].n).toBe(0);

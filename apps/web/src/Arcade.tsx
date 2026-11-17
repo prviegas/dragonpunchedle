@@ -3,6 +3,7 @@ import {
   ApiError,
   fetchArcade,
   fetchArcadeLeaderboard,
+  giveUpArcade,
   startArcade,
   submitArcadeGuess,
   type ArcadeLadderEntry,
@@ -74,6 +75,18 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
       setSplash({ floor: 1, key: Date.now() });
     } catch {
       setError("Couldn't start a run. Please try again.");
+    }
+  }
+
+  // Give up: the run ends on this floor, like losing it, and goes to Game Over.
+  async function giveUp() {
+    setError(undefined);
+    try {
+      floorRound.current++; // anything still queued was for this floor
+      show(await giveUpArcade());
+      setLeaderboardVersion((v) => v + 1);
+    } catch (failure) {
+      setError(failure instanceof ApiError ? failure.message : "Couldn't give up. Please try again.");
     }
   }
 
@@ -181,11 +194,14 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
             <div className="arcade-play">
               <HealthBar player={playerName ?? "Guest"} used={run.guesses.length} max={state.maxGuesses} />
               <GuessInput characters={characters} excludedIds={guessedIds} busy={ko !== undefined} onGuess={guess} />
-              {upcoming && (
+              <div className="arcade-under">
                 <p className="arcade-next">
-                  {upcoming.floorsLeft} more {upcoming.floorsLeft === 1 ? "floor" : "floors"} to {upcoming.name}
+                  {upcoming
+                    ? `${upcoming.floorsLeft} more ${upcoming.floorsLeft === 1 ? "floor" : "floors"} to ${upcoming.name}`
+                    : "Top title reached"}
                 </p>
-              )}
+                <GiveUp onGiveUp={giveUp} disabled={ko !== undefined} />
+              </div>
             </div>
           )}
 
@@ -222,6 +238,29 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
 
       <ArcadeLeaderboard version={leaderboardVersion} />
     </section>
+  );
+}
+
+/** A quiet "Give up" that asks once, so a stray click can't throw a run away. */
+function GiveUp({ onGiveUp, disabled }: { onGiveUp: () => void; disabled: boolean }) {
+  const [asking, setAsking] = useState(false);
+  if (!asking) {
+    return (
+      <button type="button" className="link link--quiet arcade-giveup" onClick={() => setAsking(true)} disabled={disabled}>
+        Give up
+      </button>
+    );
+  }
+  return (
+    <span className="arcade-giveup">
+      End this run?{" "}
+      <button type="button" className="link" onClick={onGiveUp}>
+        Yes, give up
+      </button>{" "}
+      <button type="button" className="link link--quiet" onClick={() => setAsking(false)}>
+        Keep fighting
+      </button>
+    </span>
   );
 }
 
