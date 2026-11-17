@@ -10,7 +10,8 @@ function playerColumn(player: Player): { column: "user_id" | "guest_id"; value: 
 }
 
 export type SaveGuessResult =
-  | { saved: true; guessNumber: number }
+  /** firstSolve: this guess made the player the day's first logged-in solver. */
+  | { saved: true; guessNumber: number; firstSolve: boolean }
   | { saved: false; reason: "solved" | "duplicate" | "out-of-guesses" | "revealed" };
 
 /**
@@ -67,7 +68,21 @@ export async function saveGuess(
         characterId,
         late,
       ]);
-      result = { saved: true, guessNumber: count + 1 };
+
+      // The day's first logged-in solve, on the day, earns the badge for good.
+      // The primary key on the day settles a tie: if two players solve at the
+      // same moment, only one insert lands. Guests and late plays never qualify.
+      let firstSolve = false;
+      if ("userId" in player && !late) {
+        const award = await client.query(
+          `INSERT INTO first_solves (puzzle_date, user_id)
+           SELECT $1, $2 FROM daily_puzzles WHERE puzzle_date = $1 AND character_id = $3
+           ON CONFLICT (puzzle_date) DO NOTHING`,
+          [date, player.userId, characterId],
+        );
+        firstSolve = (award.rowCount ?? 0) > 0;
+      }
+      result = { saved: true, guessNumber: count + 1, firstSolve };
     }
 
     await client.query("COMMIT");
@@ -78,6 +93,16 @@ export async function saveGuess(
   } finally {
     client.release();
   }
+}
+
+/** Whether this account earned the day's first-solve badge. Guests never have it. */
+export async function hasFirstSolve(pool: pg.Pool, player: Player, date: string): Promise<boolean> {
+  if (!("userId" in player)) return false;
+  const { rows } = await pool.query("SELECT 1 FROM first_solves WHERE puzzle_date = $1 AND user_id = $2", [
+    date,
+    player.userId,
+  ]);
+  return rows.length > 0;
 }
 
 /** The player's guesses for a day, oldest first. */

@@ -56,4 +56,23 @@ describe("buildShareText", () => {
     const text = buildShareText("2026-11-13", [guess("Ryu", ["correct"], true)], 10, "https://example.com");
     expect(text).not.toContain("Ryu");
   });
+
+  it("brags: first solve on the title line, and who the result beat", () => {
+    const won = [guess("Answer", ["correct"], true), guess("First", ["wrong"])];
+    expect(buildShareText("2026-11-15", won, 10, "https://example.com", { firstSolve: true, beaten: 71 })).toBe(
+      ["Dragonpunchedle #3 2/10 🥇 First solve", "⬛", "🟩", "Better than 71% of today's players", "https://example.com"].join("\n"),
+    );
+  });
+
+  it("leaves out a brag that isn't one", () => {
+    const won = [guess("Answer", ["correct"], true)];
+    const lost = [guess("Miss", ["wrong"])];
+    // Beat nobody, or nobody else played: no line.
+    expect(buildShareText("2026-11-15", won, 10, "u", { beaten: 0 })).not.toContain("Better than");
+    expect(buildShareText("2026-11-15", won, 10, "u", { beaten: null })).not.toContain("Better than");
+    // A loss never brags, even if the flags are set.
+    const text = buildShareText("2026-11-15", lost, 10, "u", { firstSolve: true, beaten: 50 });
+    expect(text).not.toContain("First solve");
+    expect(text).not.toContain("Better than");
+  });
 });

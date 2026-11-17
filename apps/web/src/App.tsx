@@ -151,6 +151,8 @@ export function App() {
   // The guess just made, whose tiles flip in on the board.
   const [freshId, setFreshId] = useState<string>();
   const [stats, setStats] = useState<PlayerStats>();
+  // This account was today's first logged-in solver.
+  const [firstSolve, setFirstSolve] = useState(false);
   // Bumped whenever the leaderboard may have changed, so it fetches again.
   const [standingsVersion, setStandingsVersion] = useState(0);
   const refreshStandings = () => setStandingsVersion((v) => v + 1);
@@ -165,6 +167,7 @@ export function App() {
         const [mine, myStats] = await Promise.all([fetchMyGuesses(), me ? fetchMyStats() : undefined]);
         showGuesses(mine.guesses);
         revealAnswer(mine.answer);
+        setFirstSolve(mine.firstSolve === true);
         setStats(myStats);
         setLoad({ state: "ready", puzzle, characters });
       })
@@ -214,7 +217,8 @@ export function App() {
     const done = guessesRef.current.some((g) => g.solved) || answerRef.current !== undefined;
     if (done || guessesRef.current.length >= puzzle.maxGuesses) return;
     try {
-      const { answer: revealed, guessNumber: _number, ...result } = await submitGuess(puzzle.date, characterId);
+      const { answer: revealed, guessNumber: _number, firstSolve: first, ...result } = await submitGuess(puzzle.date, characterId);
+      if (first) setFirstSolve(true);
       const next = [result, ...guessesRef.current]; // newest guess on top
       setFreshId(result.guess.id);
       showGuesses(next);
@@ -237,6 +241,7 @@ export function App() {
     const [mine, myStats] = await Promise.all([fetchMyGuesses(), fetchMyStats()]);
     showGuesses(mine.guesses);
     revealAnswer(mine.answer);
+    setFirstSolve(mine.firstSolve === true);
     setStats(myStats);
     refreshStandings();
   }
@@ -246,6 +251,7 @@ export function App() {
     setUser(null);
     fetchMe().then(({ dashboard }) => setCanSeeDashboard(dashboard === true), () => setCanSeeDashboard(false));
     setStats(undefined);
+    setFirstSolve(false);
     showGuesses([]);
     revealAnswer(undefined);
     refreshStandings();
@@ -350,6 +356,7 @@ export function App() {
           maxGuesses={puzzle.maxGuesses}
           loggedIn={user !== null}
           stats={stats}
+          firstSolve={firstSolve}
           onLogIn={() => setShowAuth(true)}
         />
       ) : (

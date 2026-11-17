@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { FirstSolveBadge } from "./FirstSolveBadge";
 import {
   ApiError,
   fetchHistory,
@@ -189,6 +190,7 @@ function RoundList({ loggedIn, onLogIn }: { loggedIn: boolean; onLogIn: () => vo
                     )}
                   </span>
                   <span className="round-link-result">
+                    {round.firstSolve && <FirstSolveBadge />}
                     <span className={`outcome outcome--${outcome.kind}`}>{outcomeText(outcome)}</span>
                     {when && <span className={`when when--${when}`}>{WHEN_TEXT[when]}</span>}
                   </span>
@@ -363,6 +365,7 @@ function PastDayView({
             </p>
             <p className="result-tags">
               <span className={`outcome outcome--${outcome.kind} outcome--large`}>{outcomeText(outcome)}</span>
+              {day.firstSolve && <FirstSolveBadge large />}
               {when && <span className={`when when--${when}`}>{WHEN_TEXT[when]}</span>}
             </p>
           </div>

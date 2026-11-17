@@ -55,6 +55,8 @@ export interface GuessResponse extends GuessResult {
   guessNumber: number;
   /** Present only when this was the last guess and it missed. */
   answer?: Character;
+  /** Present when this guess made the player the day's first logged-in solver. */
+  firstSolve?: true;
 }
 
 /** An error the API explained, with a message that's fine to show the player. */
@@ -108,7 +110,7 @@ export const submitGuess = (date: string, characterId: string) =>
 
 /** This player's guesses for today, account or guest, newest first, plus the answer if they ran out. */
 export const fetchMyGuesses = () =>
-  request<{ guesses: GuessResult[]; answer?: Character }>("/api/puzzles/today/guesses");
+  request<{ guesses: GuessResult[]; answer?: Character; firstSolve?: true }>("/api/puzzles/today/guesses");
 
 export interface PlayerStats {
   played: number;
@@ -188,6 +190,8 @@ export interface PastRound {
   late: boolean;
   /** The player chose "Show answer". */
   revealed: boolean;
+  /** This account was the day's first logged-in solver. */
+  firstSolve: boolean;
 }
 
 /** Finished days, newest first, with the answer and how this player did. */
@@ -201,6 +205,8 @@ export interface PastDay {
   guesses: GuessResult[];
   revealed: boolean;
   late: boolean;
+  /** This account was the day's first logged-in solver. */
+  firstSolve: boolean;
   /** Only once the round is over for this player. */
   answer?: Character;
   results?: TodayResults;

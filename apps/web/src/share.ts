@@ -22,14 +22,25 @@ export function puzzleNumber(date: string): number {
  * as on the board. The score reads like Wordle's: "4/10" for a solve in four,
  * "X/10" for running out.
  */
+export interface ShareBrag {
+  /** The day's first logged-in solve. */
+  firstSolve?: boolean;
+  /** Percent of today's other players this result beat; null or 0 adds no line. */
+  beaten?: number | null;
+}
+
 export function buildShareText(
   date: string,
   guesses: readonly GuessResult[],
   maxGuesses: number,
   url: string,
+  brag: ShareBrag = {},
 ): string {
   const solved = guesses.some((g) => g.solved);
   const score = `${solved ? guesses.length : "X"}/${maxGuesses}`;
+  const title = `Dragonpunchedle #${puzzleNumber(date)} ${score}${solved && brag.firstSolve ? " 🥇 First solve" : ""}`;
   const rows = [...guesses].reverse().map((g) => g.clues.map((clue) => SQUARES[clue.status]).join(""));
-  return [`Dragonpunchedle #${puzzleNumber(date)} ${score}`, ...rows, url].join("\n");
+  // Only a real brag: a solve that beat at least someone.
+  const beaten = solved && brag.beaten ? [`Better than ${brag.beaten}% of today's players`] : [];
+  return [title, ...rows, ...beaten, url].join("\n");
 }

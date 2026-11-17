@@ -4,7 +4,7 @@ import { findCharacter } from "../db/characters.js";
 import { findPuzzleAnswerId } from "../db/history.js";
 import rateLimit from "@fastify/rate-limit";
 import { ensureGuestId, readGuestId } from "../auth/guests.js";
-import { listGuessIds, saveGuess, type Player } from "../db/guesses.js";
+import { hasFirstSolve, listGuessIds, saveGuess, type Player } from "../db/guesses.js";
 import { publicClues } from "../game/clues.js";
 import { compareGuess } from "../game/compare.js";
 import { ensurePuzzle, MAX_GUESSES, puzzleDateFor } from "../game/puzzles.js";
@@ -79,7 +79,8 @@ export const puzzleRoutes: FastifyPluginAsync<PuzzleRouteOptions> = async (
       if (guess) results.push({ guess, ...compareGuess(guess, answer) });
     }
     const lost = results.length >= MAX_GUESSES && !results.some((r) => r.solved);
-    return { guesses: results.reverse(), ...(lost && { answer }) };
+    const firstSolve = await hasFirstSolve(pool, player, date);
+    return { guesses: results.reverse(), ...(lost && { answer }), ...(firstSolve && { firstSolve }) };
   });
 
   app.post<GuessRequest>(
@@ -127,13 +128,13 @@ export const puzzleRoutes: FastifyPluginAsync<PuzzleRouteOptions> = async (
         }[saved.reason];
         return reply.code(409).send({ error: message });
       }
-      const { guessNumber } = saved;
+      const { guessNumber, firstSolve } = saved;
 
       // The guess's own values are safe to send back: the player chose it.
       // The answer itself goes out only when this was the last guess and missed.
       const result = compareGuess(guess, answer);
       const lost = !result.solved && guessNumber >= MAX_GUESSES;
-      return { guess, ...result, guessNumber, ...(lost && { answer }) };
+      return { guess, ...result, guessNumber, ...(lost && { answer }), ...(firstSolve && { firstSolve }) };
     },
   );
 };

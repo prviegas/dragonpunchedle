@@ -12,6 +12,8 @@ export interface PastRound {
   late: boolean;
   /** The player chose "Show answer". */
   revealed: boolean;
+  /** This account was the day's first logged-in solver. Never true for guests. */
+  firstSolve: boolean;
 }
 
 /**
@@ -42,12 +44,14 @@ export async function listPastRounds(
     solved: boolean;
     late: boolean;
     revealed: boolean;
+    first_solve: boolean;
   }>(
     `SELECT p.puzzle_date::text AS date, c.id, c.name, c.franchise, cp.hash,
             count(g.id)::int AS guesses,
             coalesce(bool_or(g.character_id = p.character_id), false) AS solved,
             coalesce(bool_or(g.late), false) AS late,
-            EXISTS (SELECT 1 FROM round_reveals r WHERE r.puzzle_date = p.puzzle_date AND r.${column} = $1) AS revealed
+            EXISTS (SELECT 1 FROM round_reveals r WHERE r.puzzle_date = p.puzzle_date AND r.${column} = $1) AS revealed,
+            ${column === "user_id" ? "EXISTS (SELECT 1 FROM first_solves f WHERE f.puzzle_date = p.puzzle_date AND f.user_id = $1)" : "false"} AS first_solve
      FROM daily_puzzles p
      JOIN characters c ON c.id = p.character_id
      LEFT JOIN character_portraits cp ON cp.character_id = c.id
@@ -71,6 +75,7 @@ export async function listPastRounds(
     solved: row.solved,
     late: row.late,
     revealed: row.revealed,
+    firstSolve: row.first_solve,
   }));
 }
 

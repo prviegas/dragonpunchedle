@@ -1628,6 +1628,13 @@ body {
   border: 1px solid var(--line);
 }
 
+/* The day's first logged-in solve: gold, outlined, so it never reads as a yellow tile. */
+.outcome--first {
+  color: #f6cf5a;
+  border: 1px solid #b8901f;
+  background: rgb(246 207 90 / 0.08);
+}
+
 .round-link-result {
   display: grid;
   justify-items: end;

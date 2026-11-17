@@ -1,5 +1,6 @@
 import type { Character, GuessResult, PlayerStats } from "./api";
 import { Countdown } from "./Countdown";
+import { FirstSolveBadge } from "./FirstSolveBadge";
 import { Portrait } from "./Portrait";
 import { ResultsChart } from "./ResultsChart";
 import { ShareButton } from "./ShareButton";
@@ -14,11 +15,13 @@ interface ResultCardProps {
   maxGuesses: number;
   loggedIn: boolean;
   stats?: PlayerStats;
+  /** This account was the day's first logged-in solver. */
+  firstSolve?: boolean;
   onLogIn: () => void;
 }
 
 /** The end of a round, like a fighting game's victory screen. */
-export function ResultCard({ outcome, character, date, guesses, maxGuesses, loggedIn, stats, onLogIn }: ResultCardProps) {
+export function ResultCard({ outcome, character, date, guesses, maxGuesses, loggedIn, stats, firstSolve = false, onLogIn }: ResultCardProps) {
   const won = outcome === "win";
   const banner = !won ? "K.O." : guesses.length === 1 ? "Perfect!" : "You win!";
 
@@ -38,10 +41,15 @@ export function ResultCard({ outcome, character, date, guesses, maxGuesses, logg
             {character.franchise} · since {character.debutYear}
           </p>
           {!won && <p className="result-score">Out of guesses.</p>}
+          {won && firstSolve && (
+            <p className="result-tags">
+              <FirstSolveBadge large />
+            </p>
+          )}
           <p className="result-next">
             <Countdown date={date} />
           </p>
-          <ShareButton date={date} guesses={guesses} maxGuesses={maxGuesses} />
+          <ShareButton date={date} guesses={guesses} maxGuesses={maxGuesses} firstSolve={won && firstSolve} />
         </div>
       </div>
 

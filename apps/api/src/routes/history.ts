@@ -2,7 +2,7 @@ import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 import type pg from "pg";
 import { ensureGuestId, readGuestId } from "../auth/guests.js";
 import { findCharacter } from "../db/characters.js";
-import { hasRevealed, listGuessIds, playedLate, revealRound, type Player } from "../db/guesses.js";
+import { hasFirstSolve, hasRevealed, listGuessIds, playedLate, revealRound, type Player } from "../db/guesses.js";
 import { findPuzzleAnswerId, listPastRounds } from "../db/history.js";
 import { scoreDistribution } from "../db/stats.js";
 import { publicClues } from "../game/clues.js";
@@ -75,6 +75,8 @@ export const historyRoutes: FastifyPluginAsync<HistoryRouteOptions> = async (app
       revealed,
       /** Some guesses came after the day. */
       late: player ? await playedLate(pool, player, date) : false,
+      /** This account was the day's first logged-in solver. */
+      firstSolve: player ? await hasFirstSolve(pool, player, date) : false,
       // Until the round is over for this player, nothing gives the answer away.
       ...(over && { answer, results: await scoreDistribution(pool, date, player ?? null, MAX_GUESSES) }),
     };
