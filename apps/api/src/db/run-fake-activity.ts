@@ -8,7 +8,7 @@
 import "../env.js";
 import { randomBytes, randomInt } from "node:crypto";
 import type pg from "pg";
-import { ARCADE_GUESSES } from "./arcade.js";
+import { arcadeGuessesFor } from "./arcade.js";
 import { migrate } from "./migrate.js";
 import { createPool } from "./pool.js";
 import { ensurePuzzle, MAX_GUESSES, puzzleDateFor } from "../game/puzzles.js";
@@ -58,10 +58,11 @@ async function fakeClimb(pool: pg.Pool, characters: readonly { id: string }[], g
   const runId = rows[0]!.id;
   for (const [i, opponent] of opponents.entries()) {
     const last = i === opponents.length - 1;
-    // Cleared floors: solved in 1 to 8 guesses, quick ones more often. The last floor: 8 misses.
+    // Cleared floors: solved in a few guesses, quick ones more often. The last floor: every guess missed.
+    const allowed = arcadeGuessesFor(i + 1);
     const guesses = last
-      ? randomIds(characters, ARCADE_GUESSES, opponent)
-      : [...randomIds(characters, Math.min(randomInt(1, 5) + randomInt(0, 4), ARCADE_GUESSES) - 1, opponent), opponent];
+      ? randomIds(characters, allowed, opponent)
+      : [...randomIds(characters, Math.min(randomInt(1, 5) + randomInt(0, 4), allowed) - 1, opponent), opponent];
     await pool.query(
       "INSERT INTO arcade_floors (run_id, floor, character_id, guesses, solved) VALUES ($1, $2, $3, $4, $5)",
       [runId, i + 1, opponent, guesses, !last],

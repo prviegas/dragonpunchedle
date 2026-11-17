@@ -1,10 +1,18 @@
 import type pg from "pg";
 import type { Player } from "./guesses.js";
 
-// Arcade Ladder storage. See migrations/013_arcade.sql.
+// Tower of Endless Struggle storage (named "arcade" in code). See migrations/013_arcade.sql.
 
-/** Guesses per floor: fewer than the daily round's 10, to keep a run tense. */
-export const ARCADE_GUESSES = 8;
+/** Floors where the tower takes a guess away for good: one at each. */
+export const LIFE_LOSS_FLOORS = [10, 20, 100] as const;
+
+/**
+ * Guesses on a floor: 10, like the daily round, then one fewer from floor 10,
+ * from floor 20 and from floor 100 (so 9, 8, then 7).
+ */
+export function arcadeGuessesFor(floor: number): number {
+  return 10 - LIFE_LOSS_FLOORS.filter((from) => floor >= from).length;
+}
 
 export interface ArcadeFloor {
   floor: number;
@@ -162,7 +170,7 @@ export async function arcadeGuess(pool: pg.Pool, player: Player, characterId: st
       await client.query("UPDATE arcade_runs SET floors_cleared = floors_cleared + 1 WHERE id = $1", [runId]);
       await addFloor(client, runId, current.floor + 1);
       runOver = (await client.query("SELECT 1 FROM arcade_runs WHERE id = $1 AND ended_at IS NOT NULL", [runId])).rows.length > 0;
-    } else if (guessNumber >= ARCADE_GUESSES) {
+    } else if (guessNumber >= arcadeGuessesFor(current.floor)) {
       await client.query("UPDATE arcade_runs SET ended_at = now() WHERE id = $1", [runId]);
       runOver = true;
     }

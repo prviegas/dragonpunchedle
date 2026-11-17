@@ -3,8 +3,8 @@ import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 import type pg from "pg";
 import { ensureGuestId, readGuestId } from "../auth/guests.js";
 import {
-  ARCADE_GUESSES,
   arcadeGuess,
+  arcadeGuessesFor,
   arcadeLeaderboard,
   bestFloor,
   giveUpRun,
@@ -85,10 +85,17 @@ export const arcadeRoutes: FastifyPluginAsync<ArcadeRouteOptions> = async (
     };
   }
 
+  /** The floor a run is on: the one being played, or the one it ended on. */
+  function currentFloor(run: ArcadeRun): number {
+    const last = run.floors.at(-1);
+    return last && !last.solved ? last.floor : run.floorsCleared + 1;
+  }
+
   async function state(player: Player | undefined) {
     const run = player ? await latestRun(pool, player) : undefined;
     return {
-      maxGuesses: ARCADE_GUESSES,
+      // Guesses on the floor being played (or the one lost): fewer at floors 10, 20 and 100.
+      maxGuesses: arcadeGuessesFor(run ? currentFloor(run) : 1),
       clues: publicClues(),
       best: player ? await bestFloor(pool, player) : 0,
       run: run ? await runView(run) : null,

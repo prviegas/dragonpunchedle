@@ -15,6 +15,7 @@ import {
   DANGER_FLOORS,
   floorDanger,
   floorOmen,
+  LIFE_LOSS_FLOORS,
   TOWER_NAME,
 } from "./arcadeRules";
 import { Board } from "./Board";
@@ -297,6 +298,7 @@ function FloorTitle({ floor }: { floor: number }) {
         </Title>
         <span className="floor-flourish" aria-hidden="true" />
         {floorOmen(n) && <p className="floor-omen">{floorOmen(n)}</p>}
+        {LIFE_LOSS_FLOORS.includes(n) && <p className="floor-penalty">−1 guess from here on</p>}
       </div>
     );
   };
@@ -364,7 +366,7 @@ function Intro({
     <div className="arcade-intro">
       <p className="arcade-pitch">
         Climb the tower. Every floor is a random fighter and {maxGuesses}{" "}
-        guesses. Win and the next one steps in; lose one and the climb is over.
+        guesses, one fewer at floors 10, 20 and 100. Win and the next one steps in; lose one and the climb is over.
       </p>
       <ul className="arcade-rules">
         <li>It only gets harder to look at.</li>

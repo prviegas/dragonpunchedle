@@ -23,6 +23,9 @@ export function floorDanger(floor: number): Danger {
   return level as Danger;
 }
 
+/** Floors where the tower takes a guess away for good (the server enforces it: arcadeGuessesFor). */
+export const LIFE_LOSS_FLOORS: readonly number[] = [10, 20, 100];
+
 /** A line under the floor title that grows more ominous with it. */
 const OMENS: Record<Danger, string> = {
   1: "The climb begins.",

@@ -2,13 +2,19 @@ import "../src/env.js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildApp } from "../src/app.js";
 import { SESSION_COOKIE, createSession } from "../src/auth/sessions.js";
-import { ARCADE_GUESSES } from "../src/db/arcade.js";
+import { arcadeGuessesFor } from "../src/db/arcade.js";
 import { migrate } from "../src/db/migrate.js";
 import { createPool } from "../src/db/pool.js";
 import { seedCharacters } from "../src/db/seed.js";
 import { loadRoster, toCharacter } from "../src/game/roster.js";
 
 const PREFIX = "zz_arcade_";
+
+describe("guesses per floor", () => {
+  it("starts at 10 and loses one at floors 10, 20 and 100", () => {
+    expect([1, 9, 10, 19, 20, 99, 100, 500].map(arcadeGuessesFor)).toEqual([10, 10, 9, 9, 8, 8, 7, 7]);
+  });
+});
 
 describe.skipIf(!process.env.DATABASE_URL)("arcade ladder", () => {
   const pool = createPool();
@@ -68,7 +74,7 @@ describe.skipIf(!process.env.DATABASE_URL)("arcade ladder", () => {
     guestCookie = response.cookies.find((c) => c.name === "dp_guest")!.value;
 
     const body = response.json();
-    expect(body.maxGuesses).toBe(ARCADE_GUESSES);
+    expect(body.maxGuesses).toBe(10);
     expect(body.run).toMatchObject({ floor: 1, floorsCleared: 0, over: false, cleared: [], guesses: [] });
     const secret = await opponent("guest_id", guestCookie);
     expect(JSON.stringify(body)).not.toContain(secret);
@@ -90,7 +96,7 @@ describe.skipIf(!process.env.DATABASE_URL)("arcade ladder", () => {
 
   it("ends the run when a floor is lost, and only then shows who it was", async () => {
     const secret = await opponent("guest_id", guestCookie);
-    const misses = await others(secret, ARCADE_GUESSES);
+    const misses = await others(secret, arcadeGuessesFor(2));
     let last;
     for (const id of misses) last = (await guess("guest", id)).json();
     expect(last).toMatchObject({ solved: false, runOver: true, floor: 2, answer: expect.objectContaining({ id: secret }) });
@@ -123,6 +129,16 @@ describe.skipIf(!process.env.DATABASE_URL)("arcade ladder", () => {
     expect(body.run).toMatchObject({ over: true, floorsCleared: 2, floor: 3, answer: expect.objectContaining({ id: secret }) });
     expect(body.best).toBe(3);
     expect((await giveUp()).statusCode).toBe(409); // nothing left to give up
+  });
+
+  it("takes a guess away at floor 10", async () => {
+    await start("user");
+    for (let floor = 1; floor < 10; floor++) await guess("user", await opponent("user_id", userId));
+    expect((await get("user")).json()).toMatchObject({ maxGuesses: 9, run: { floor: 10 } });
+
+    const misses = await others(await opponent("user_id", userId), 9);
+    for (const id of misses.slice(0, 8)) expect((await guess("user", id)).json().runOver).toBe(false);
+    expect((await guess("user", misses[8]!)).json()).toMatchObject({ runOver: true, floor: 10 });
   });
 
   it("never touches the daily game", async () => {

@@ -2173,6 +2173,21 @@ body {
   color: var(--dim);
 }
 
+/* Floors 10, 20 and 100: a guess is gone for good. */
+.floor-penalty {
+  display: inline-block;
+  margin: 8px 0 0;
+  padding: 2px 9px;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #b3121f;
+  border-radius: 4px;
+}
+
 /* Plates: from floor 20 the title sits on a slab. */
 .danger-6.arcade-title,
 .danger-7.arcade-title,
