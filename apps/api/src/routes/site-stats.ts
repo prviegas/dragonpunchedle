@@ -9,6 +9,8 @@ interface SiteStatsOptions {
   now: () => Date;
   /** Who may open the dashboard (case-insensitive). Empty: nobody. */
   adminUsernames: readonly string[];
+  /** Local development: anyone, logged in or not, may open the dashboard. */
+  dashboardOpen?: boolean;
 }
 
 export function isAdmin(request: FastifyRequest, adminUsernames: readonly string[]): boolean {
@@ -31,7 +33,7 @@ const visitSchema = {
   },
 };
 
-export const siteStatsRoutes: FastifyPluginAsync<SiteStatsOptions> = async (app, { pool, now, adminUsernames }) => {
+export const siteStatsRoutes: FastifyPluginAsync<SiteStatsOptions> = async (app, { pool, now, adminUsernames, dashboardOpen = false }) => {
   await app.register(rateLimit, { global: false });
 
   // The page reports each view with this, so only real browsers that run the
@@ -60,7 +62,7 @@ export const siteStatsRoutes: FastifyPluginAsync<SiteStatsOptions> = async (app,
 
   // Anyone else gets the same 404 as a path that doesn't exist.
   app.get("/api/admin/dashboard", async (request, reply) => {
-    if (!isAdmin(request, adminUsernames)) return reply.code(404).send({ error: "Not found." });
+    if (!dashboardOpen && !isAdmin(request, adminUsernames)) return reply.code(404).send({ error: "Not found." });
     reply.header("cache-control", "no-store");
     return dashboard(pool, puzzleDateFor(now()), MAX_GUESSES);
   });

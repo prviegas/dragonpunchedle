@@ -499,6 +499,41 @@ body {
 .tile--partial {
   color: var(--partial-ink);
   background: var(--partial);
+  cursor: help;
+}
+
+/* Hovering a yellow tile says what "close" means in that column, like the column's own tip. */
+.tile-tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text);
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.45);
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+}
+
+.tile--partial:hover,
+.tile--partial:focus-visible {
+  z-index: 3;
+}
+
+.tile--partial:hover .tile-tip,
+.tile--partial:focus-visible .tile-tip {
+  opacity: 1;
 }
 
 .tile--wrong {
@@ -740,6 +775,24 @@ body {
 .chart-area {
   fill: var(--accent);
   fill-opacity: 0.14;
+}
+
+/* The players the viewer beat: pink hatching under the curve, right of the marker. */
+.chart-beaten-hatch {
+  stroke: var(--you);
+  stroke-width: 2px;
+  stroke-opacity: 0.85;
+}
+
+.beaten-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 8px;
+  vertical-align: -1px;
+  background: repeating-linear-gradient(45deg, rgb(224 74 120 / 0.75) 0 2px, transparent 2px 5px);
+  border: 1px solid rgb(224 74 120 / 0.6);
+  border-radius: 2px;
 }
 
 .chart-axis {
@@ -1035,6 +1088,10 @@ body {
 
 .how-to-more > summary::-webkit-details-marker {
   display: none;
+}
+
+.how-to-more > summary .swatch {
+  flex: none;
 }
 
 .how-to-more > summary::after {

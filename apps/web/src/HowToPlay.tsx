@@ -50,7 +50,10 @@ export function HowToPlay({ clues, maxGuesses, showCloseRules = false, onClose }
       </ul>
 
       <details className="how-to-more" open={showCloseRules}>
-        <summary className="how-to-sub">When each column turns yellow</summary>
+        <summary className="how-to-sub">
+          <span className="swatch tile--partial" aria-hidden="true" />
+          When each column turns yellow
+        </summary>
         <dl className="close-rules">
           {clues.map((clue) => (
             <div key={clue.key} className="close-rule">

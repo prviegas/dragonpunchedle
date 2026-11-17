@@ -114,6 +114,18 @@ describe.skipIf(!process.env.DATABASE_URL)("site stats", () => {
     expect(body.firstGuesses).toContainEqual({ label: "Ken", count: 1 });
   });
 
+  it("opens the dashboard to anyone in local open mode", async () => {
+    const open = buildApp({ pool, now: () => new Date(`${TODAY}T12:00:00Z`), dashboardOpen: true });
+    try {
+      expect((await open.inject({ method: "GET", url: "/api/admin/dashboard" })).statusCode).toBe(200);
+      expect((await open.inject({ method: "GET", url: "/api/auth/me" })).json()).toEqual({ user: null, dashboard: true });
+    } finally {
+      await open.close();
+    }
+    // Off by default: a guest gets no dashboard flag.
+    expect((await app.inject({ method: "GET", url: "/api/auth/me" })).json()).toEqual({ user: null });
+  });
+
   it("tells the page who the owner is", async () => {
     const me = (as: string) => app.inject({ method: "GET", url: "/api/auth/me", cookies: { [SESSION_COOKIE]: cookies[as]! } });
     expect((await me("owner")).json().user.admin).toBe(true);

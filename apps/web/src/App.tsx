@@ -123,6 +123,8 @@ export function App() {
   const view = useView();
   const [load, setLoad] = useState<Load>({ state: "loading" });
   const [user, setUser] = useState<User | null>(null);
+  // Whether to offer the dashboard link: the owner, or anyone on a local dev server.
+  const [canSeeDashboard, setCanSeeDashboard] = useState(false);
   // A failed Discord/Google sign-in reopens the login panel with the reason.
   const [showAuth, setShowAuth] = useState(initialLoginError !== undefined);
   // Which way How to play was opened: from the header, or from a "what counts as close" link (opens that section).
@@ -155,8 +157,9 @@ export function App() {
 
   useEffect(() => {
     Promise.all([fetchPuzzle(), fetchCharacters(), fetchMe()])
-      .then(async ([puzzle, characters, { user: me }]) => {
+      .then(async ([puzzle, characters, { user: me, dashboard }]) => {
         setUser(me);
+        setCanSeeDashboard(dashboard === true);
         await moveLegacyGuessesToServer(puzzle.date);
         // Guests and accounts alike: the server keeps the board.
         const [mine, myStats] = await Promise.all([fetchMyGuesses(), me ? fetchMyStats() : undefined]);
@@ -228,6 +231,7 @@ export function App() {
 
   async function signedIn(me: User) {
     setUser(me);
+    if (me.admin) setCanSeeDashboard(true);
     setShowAuth(false);
     // Logging in moved this browser's guest guesses for today into the account.
     const [mine, myStats] = await Promise.all([fetchMyGuesses(), fetchMyStats()]);
@@ -240,6 +244,7 @@ export function App() {
   async function signOut() {
     await logOut().catch(() => undefined);
     setUser(null);
+    fetchMe().then(({ dashboard }) => setCanSeeDashboard(dashboard === true), () => setCanSeeDashboard(false));
     setStats(undefined);
     showGuesses([]);
     revealAnswer(undefined);
@@ -261,7 +266,7 @@ export function App() {
       <a className="nav-link" href={HISTORY_HASH}>
         Past rounds
       </a>
-      {user.admin && (
+      {canSeeDashboard && (
         <a className="nav-link" href={DASHBOARD_HASH}>
           Dashboard
         </a>
@@ -283,6 +288,11 @@ export function App() {
       <a className="nav-link" href={HISTORY_HASH}>
         Past rounds
       </a>
+      {canSeeDashboard && (
+        <a className="nav-link" href={DASHBOARD_HASH}>
+          Dashboard
+        </a>
+      )}
       <button type="button" className="button button--small" onClick={() => setShowAuth(true)}>
         Log in
       </button>

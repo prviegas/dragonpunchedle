@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useId, useRef, useState, type PointerEvent } from "react";
 import { fetchTodayResults, type TodayResults } from "./api";
 import { percentBeaten, percentSolved, type RoundResult } from "./results";
 
@@ -39,6 +39,8 @@ export function ResultsChart({ maxGuesses, mine, pastResults }: ResultsChartProp
   const [hover, setHover] = useState<number>();
   const [width, setWidth] = useState(600);
   const box = useRef<HTMLDivElement>(null);
+  // Ids for the hatch pattern and its clip, unique per chart on the page.
+  const uid = useId().replace(/:/g, "");
 
   useEffect(() => {
     if (pastResults) return;
@@ -83,6 +85,9 @@ export function ResultsChart({ maxGuesses, mine, pastResults }: ResultsChartProp
   const youY = yAt(curve[Math.round((youIndex / (counts.length - 1)) * steps)] ?? 0);
 
   const beaten = percentBeaten(results, mine);
+  // Everyone to the right of the marker took more guesses, or ran out: the
+  // players the viewer beat. That part of the curve is hatched.
+  const showBeaten = mine !== "lost" && beaten !== null && beaten > 0;
   const caption = results.youLate
     ? results.players === 0
       ? "Nobody finished it on the day"
@@ -130,7 +135,20 @@ export function ResultsChart({ maxGuesses, mine, pastResults }: ResultsChartProp
           onPointerMove={onPointerMove}
           onPointerLeave={() => setHover(undefined)}
         >
+          {showBeaten && (
+            <defs>
+              <pattern id={`beaten-${uid}`} patternUnits="userSpaceOnUse" width={6} height={6} patternTransform="rotate(45)">
+                <line className="chart-beaten-hatch" x1={0} y1={0} x2={0} y2={6} />
+              </pattern>
+              <clipPath id={`beaten-clip-${uid}`}>
+                <rect x={xAt(youIndex)} y={0} width={Math.max(0, PAD.left + plotWidth - xAt(youIndex))} height={HEIGHT} />
+              </clipPath>
+            </defs>
+          )}
           <path className="chart-area" d={area} />
+          {showBeaten && (
+            <path d={area} fill={`url(#beaten-${uid})`} clipPath={`url(#beaten-clip-${uid})`} />
+          )}
           <path className="chart-line" d={line} />
           <line className="chart-axis" x1={PAD.left} x2={PAD.left + plotWidth} y1={yAt(0)} y2={yAt(0)} />
 
@@ -163,7 +181,10 @@ export function ResultsChart({ maxGuesses, mine, pastResults }: ResultsChartProp
         )}
       </div>
 
-      <p className="chart-caption">{caption}</p>
+      <p className="chart-caption">
+        {showBeaten && <span className="beaten-swatch" aria-hidden="true" />}
+        {caption}
+      </p>
 
       {/* The same numbers as a table, for screen readers. */}
       <table className="visually-hidden">

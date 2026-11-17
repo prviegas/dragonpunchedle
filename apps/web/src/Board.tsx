@@ -19,7 +19,8 @@ function Tile({ clue, result, character, delay }: { clue: ClueInfo; result: Clue
   const arrow = result.direction === "higher" ? "▲" : result.direction === "lower" ? "▼" : "";
   // Colour alone isn't enough (colour blindness, screen readers), so every tile
   // also says its status in words.
-  const label = `${clue.label}: ${text}, ${STATUS_TEXT[result.status]}${
+  const close = result.status === "partial" && clue.closeShort ? ` (${clue.closeShort})` : "";
+  const label = `${clue.label}: ${text}, ${STATUS_TEXT[result.status]}${close}${
     result.direction ? `, the answer is ${result.direction}` : ""
   }`;
 
@@ -27,7 +28,9 @@ function Tile({ clue, result, character, delay }: { clue: ClueInfo; result: Clue
     <td
       className={`tile tile--${result.status}`}
       aria-label={label}
-      title={label}
+      // Yellow tiles get their own tip below instead of the browser's.
+      title={result.status === "partial" ? undefined : label}
+      tabIndex={result.status === "partial" ? 0 : undefined}
       // Tiles of a new guess flip over one after another, left to right.
       style={delay === undefined ? undefined : { animationDelay: `${delay}ms` }}
     >
@@ -41,6 +44,12 @@ function Tile({ clue, result, character, delay }: { clue: ClueInfo; result: Clue
       {result.direction === "lower" && (
         <span className="tile-arrow" aria-hidden="true">
           {arrow}
+        </span>
+      )}
+      {result.status === "partial" && clue.closeShort && (
+        <span className="tile-tip" aria-hidden="true">
+          <span className="swatch tile--partial" />
+          Close: {clue.closeShort}
         </span>
       )}
     </td>

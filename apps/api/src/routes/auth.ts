@@ -44,6 +44,7 @@ interface AuthRouteOptions {
   oauth?: OAuthOptions;
   now: () => Date;
   adminUsernames?: readonly string[];
+  dashboardOpen?: boolean;
 }
 
 const credentialsSchema = {
@@ -80,7 +81,7 @@ function sameSecret(a: string, b: string) {
 
 export const authRoutes: FastifyPluginAsync<AuthRouteOptions> = async (
   app,
-  { pool, secureCookies, rateLimitPerMinute, oauth, now, adminUsernames = [] },
+  { pool, secureCookies, rateLimitPerMinute, oauth, now, adminUsernames = [], dashboardOpen = false },
 ) => {
   // Limits only the routes below that opt in, so the game itself is unaffected.
   await app.register(rateLimit, { global: false });
@@ -132,9 +133,14 @@ export const authRoutes: FastifyPluginAsync<AuthRouteOptions> = async (
   });
 
   // admin: true only for the owner, so the page knows to show the dashboard link.
-  app.get("/api/auth/me", async (request) => ({
-    user: request.user && { ...request.user, ...(isAdmin(request, adminUsernames) && { admin: true }) },
-  }));
+  // dashboard: true when this viewer may open it (the owner, or anyone locally).
+  app.get("/api/auth/me", async (request) => {
+    const admin = isAdmin(request, adminUsernames);
+    return {
+      user: request.user && { ...request.user, ...(admin && { admin: true }) },
+      ...((admin || dashboardOpen) && { dashboard: true }),
+    };
+  });
 
   // ---- Sign in with Discord / Google (see src/auth/oauth.ts) ----
 

@@ -34,6 +34,8 @@ export interface AppOptions extends FastifyServerOptions {
   staticDir?: string;
   /** Usernames that may open the owner's dashboard. */
   adminUsernames?: readonly string[];
+  /** Local development only: the dashboard without logging in. */
+  dashboardOpen?: boolean;
 }
 
 // Building the app separately from listening on a port lets tests send
@@ -49,6 +51,7 @@ export function buildApp({
   oauth,
   staticDir,
   adminUsernames = [],
+  dashboardOpen = false,
   ...fastifyOptions
 }: AppOptions = {}) {
   const app = Fastify({
@@ -106,12 +109,12 @@ export function buildApp({
       request.user = (token && (await findSessionUser(pool, token))) || null;
     });
 
-    app.register(authRoutes, { pool, secureCookies, rateLimitPerMinute: authRateLimitPerMinute, oauth, now, adminUsernames });
+    app.register(authRoutes, { pool, secureCookies, rateLimitPerMinute: authRateLimitPerMinute, oauth, now, adminUsernames, dashboardOpen });
     app.register(characterRoutes, { pool });
     app.register(puzzleRoutes, { pool, now, secureCookies, guessRateLimitPerMinute });
     app.register(statsRoutes, { pool, now });
     app.register(historyRoutes, { pool, now, secureCookies });
-    app.register(siteStatsRoutes, { pool, now, adminUsernames });
+    app.register(siteStatsRoutes, { pool, now, adminUsernames, dashboardOpen });
   }
 
   if (staticDir) {

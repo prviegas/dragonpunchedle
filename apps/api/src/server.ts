@@ -45,6 +45,10 @@ const app = buildApp({
   oauth,
   // Who may open the dashboard: comma-separated usernames.
   adminUsernames: (process.env.ADMIN_USERNAMES ?? "").split(",").map((name) => name.trim()).filter(Boolean),
+  // DASHBOARD_OPEN=true lets anyone open the dashboard without logging in, for
+  // local testing. Ignored in production (the Docker image sets NODE_ENV), so
+  // a stray copy of the setting can never make the live dashboard public.
+  dashboardOpen: process.env.DASHBOARD_OPEN === "true" && process.env.NODE_ENV !== "production",
 });
 
 let stopScheduler = () => {};

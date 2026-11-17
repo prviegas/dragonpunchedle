@@ -140,7 +140,8 @@ export const fetchTodayLeaderboard = () => request<TodayEntry[]>("/api/leaderboa
 
 export const fetchStreakLeaderboard = () => request<StreakEntry[]>("/api/leaderboards/streaks");
 
-export const fetchMe = () => request<{ user: User | null }>("/api/auth/me");
+/** dashboard: true when this viewer may open the dashboard (the owner, or anyone on a local dev server). */
+export const fetchMe = () => request<{ user: User | null; dashboard?: boolean }>("/api/auth/me");
 
 export const logIn = (username: string, password: string) =>
   request<{ user: User }>("/api/auth/login", postJson({ username, password }));
