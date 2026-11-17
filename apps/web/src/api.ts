@@ -272,6 +272,15 @@ export interface Dashboard {
   languages: CountRow[];
   pages: CountRow[];
   firstGuesses: CountRow[];
+  tower: {
+    runs: number;
+    players: number;
+    highestFloor: number;
+    averageFloor: number | null;
+    /** Finished climbs per floor they ended on, lowest floor first. */
+    floorsReached: { floor: number; runs: number }[];
+    runsByDay: { day: string; runs: number }[];
+  };
 }
 
 export const fetchDashboard = () => request<Dashboard>("/api/admin/dashboard");

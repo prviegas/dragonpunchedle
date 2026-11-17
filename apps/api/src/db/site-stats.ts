@@ -224,6 +224,51 @@ export interface Dashboard {
   languages: Count[];
   pages: Count[];
   firstGuesses: Count[];
+  tower: TowerStats;
+}
+
+export interface TowerStats {
+  /** Climbs started in the 30 days, and the players (accounts and guests) behind them. */
+  runs: number;
+  players: number;
+  /** Over finished climbs: the highest floor reached, and the average. */
+  highestFloor: number;
+  averageFloor: number | null;
+  /** How many finished climbs ended on each floor, lowest floor first. */
+  floorsReached: { floor: number; runs: number }[];
+  /** Climbs started each day. */
+  runsByDay: { day: string; runs: number }[];
+}
+
+/**
+ * The Tower of Endless Struggle over the 30 days. "Reached" is the floor a
+ * climb ended on (floors cleared + 1), as the game itself counts it.
+ */
+async function towerStats(pool: pg.Pool, from: string, to: string, since: string): Promise<TowerStats> {
+  const window = `started_at >= (${"$1"}::date)::timestamp AT TIME ZONE 'UTC'
+    AND started_at < (${"$2"}::date)::timestamp AT TIME ZONE 'UTC' + interval '1 day'
+    AND started_at >= $3`;
+  const { rows: totals } = await pool.query<Omit<TowerStats, "floorsReached" | "runsByDay">>(
+    `SELECT count(*)::int AS runs,
+            count(DISTINCT coalesce(user_id::text, 'g:' || guest_id))::int AS players,
+            coalesce(max(floors_cleared + 1) FILTER (WHERE ended_at IS NOT NULL), 0)::int AS "highestFloor",
+            round(avg(floors_cleared + 1) FILTER (WHERE ended_at IS NOT NULL), 1)::float AS "averageFloor"
+     FROM arcade_runs WHERE ${window}`,
+    [from, to, since],
+  );
+  const { rows: floorsReached } = await pool.query<{ floor: number; runs: number }>(
+    `SELECT (floors_cleared + 1)::int AS floor, count(*)::int AS runs
+     FROM arcade_runs WHERE ended_at IS NOT NULL AND ${window}
+     GROUP BY 1 ORDER BY 1`,
+    [from, to, since],
+  );
+  const { rows: runsByDay } = await pool.query<{ day: string; runs: number }>(
+    `SELECT to_char((started_at AT TIME ZONE 'UTC')::date, 'YYYY-MM-DD') AS day, count(*)::int AS runs
+     FROM arcade_runs WHERE ${window}
+     GROUP BY 1 ORDER BY 1`,
+    [from, to, since],
+  );
+  return { ...totals[0]!, floorsReached, runsByDay };
 }
 
 async function topCounts(
@@ -323,5 +368,6 @@ export async function dashboard(pool: pg.Pool, today: string, maxGuesses: number
     languages: await topCounts(pool, "language", from, today, since),
     pages: await topCounts(pool, "path", from, today, since),
     firstGuesses,
+    tower: await towerStats(pool, from, today, after),
   };
 }

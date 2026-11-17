@@ -138,6 +138,8 @@ export function Dashboard({ canReset }: { canReset: boolean }) {
         />
       </div>
 
+      <TowerSection tower={data.tower} days={data.days} />
+
       <details className="dashboard-table-toggle">
         <summary>Show the 30 days as a table</summary>
         <div className="table-scroll">
@@ -354,6 +356,126 @@ function useWidth<T extends HTMLElement>(): [
 }
 
 /** One measure over 30 days. One series, so no legend: the title names it. */
+/** The Tower of Endless Struggle: how many climb, and how high they get. */
+function TowerSection({ tower, days }: { tower: DashboardData["tower"]; days: DayNumbers[] }) {
+  const runsOn = new Map(tower.runsByDay.map((row) => [row.day, row.runs]));
+  // One column per floor from 1 to the highest, empty floors included, so the shape reads true.
+  const highest = Math.max(1, ...tower.floorsReached.map((row) => row.floor));
+  const endedOn = new Map(tower.floorsReached.map((row) => [row.floor, row.runs]));
+  const floors = Array.from({ length: highest }, (_, i) => ({ label: `Floor ${i + 1}`, value: endedOn.get(i + 1) ?? 0 }));
+
+  return (
+    <>
+      <h3 className="dashboard-sub">Tower of Endless Struggle</h3>
+      <div className="stat-tiles">
+        <Tile label="Climbs" value={tower.runs} detail={`${tower.players} players`} />
+        <Tile label="Highest floor" value={tower.highestFloor} />
+        <Tile label="Average floor reached" value={tower.averageFloor ?? 0} />
+      </div>
+      <div className="dashboard-charts">
+        <ColumnChart
+          title="Floors reached"
+          points={floors}
+          unit="climbs ended here"
+          axisLabel={(i) => String(i + 1)}
+        />
+        <BarChart title="Tower climbs per day" days={days} pick={(d) => runsOn.get(d.day) ?? 0} unit="climbs" />
+      </div>
+    </>
+  );
+}
+
+/**
+ * A column per point (here, per floor): same look as the daily bar charts,
+ * one series so no legend, the value of a column on hover.
+ */
+function ColumnChart({
+  title,
+  points,
+  unit,
+  axisLabel,
+}: {
+  title: string;
+  points: { label: string; value: number }[];
+  unit: string;
+  axisLabel: (index: number) => string;
+}) {
+  const [hover, setHover] = useState<number>();
+  const [boxRef, measured] = useWidth<HTMLDivElement>();
+  const W = measured || 300;
+  const values = points.map((p) => p.value);
+  const max = Math.max(1, ...values);
+  const plotHeight = CHART.height - CHART.top - CHART.bottom;
+  const slot = (W - CHART.left - CHART.right) / Math.max(1, points.length);
+  const barWidth = Math.max(2, slot - 2);
+  const y = (v: number) => CHART.top + plotHeight - (v / max) * plotHeight;
+  const hovered = hover === undefined ? undefined : points[hover];
+  const ticks = [...new Set([0, Math.floor((points.length - 1) / 2), points.length - 1])];
+
+  return (
+    <figure className="bar-chart">
+      <figcaption className="bar-chart-title">
+        {title}
+        <span className="bar-chart-readout" aria-live="polite">
+          {hovered ? `${hovered.label}: ${hovered.value} ${unit}` : `Total ${values.reduce((a, b) => a + b, 0)}`}
+        </span>
+      </figcaption>
+      <div ref={boxRef}>
+        <svg
+          width={W}
+          height={CHART.height}
+          viewBox={`0 0 ${W} ${CHART.height}`}
+          role="img"
+          aria-label={`${title}: ${points.map((p) => `${p.label} ${p.value}`).join(", ")}`}
+          onMouseLeave={() => setHover(undefined)}
+        >
+          {[0, max].map((tick) => (
+            <g key={tick}>
+              <line className="chart-grid" x1={CHART.left} x2={W - CHART.right} y1={y(tick)} y2={y(tick)} />
+              <text className="chart-axis" x={CHART.left - 6} y={y(tick) + 4} textAnchor="end">
+                {tick}
+              </text>
+            </g>
+          ))}
+          {values.map((value, i) => {
+            const x = CHART.left + i * slot + 1;
+            const top = y(value);
+            return (
+              <g key={points[i]!.label}>
+                {value > 0 && (
+                  <path
+                    className={i === hover ? "chart-bar is-hover" : "chart-bar"}
+                    d={roundedTop(x, top, barWidth, CHART.top + plotHeight - top)}
+                  />
+                )}
+                <rect
+                  x={CHART.left + i * slot}
+                  y={CHART.top}
+                  width={slot}
+                  height={plotHeight}
+                  fill="transparent"
+                  onMouseEnter={() => setHover(i)}
+                />
+              </g>
+            );
+          })}
+          {ticks.map((i) => (
+            <text
+              key={i}
+              className="chart-axis"
+              x={i === 0 ? CHART.left : i === points.length - 1 ? W - CHART.right : CHART.left + i * slot + slot / 2}
+              y={CHART.height - 6}
+              textAnchor={i === 0 ? "start" : i === points.length - 1 ? "end" : "middle"}
+            >
+              {axisLabel(i)}
+            </text>
+          ))}
+        </svg>
+      </div>
+    </figure>
+  );
+}
+
 function BarChart({
   title,
   days,

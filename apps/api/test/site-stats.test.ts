@@ -192,4 +192,33 @@ describe.skipIf(!process.env.DATABASE_URL)("site stats", () => {
       else await pool.query("UPDATE site_settings SET value = $1 WHERE key = 'stats_since'", [before]);
     }
   });
+
+  it("adds up the Tower: climbs, players, and the floors they reached", async () => {
+    const before = (await pool.query("SELECT value FROM site_settings WHERE key = 'stats_since'")).rows[0]?.value;
+    await pool.query("DELETE FROM site_settings WHERE key = 'stats_since'");
+    const guests = ["zz_site_climber_a", "zz_site_climber_b"];
+    try {
+      // Two finished climbs that day: one ended on floor 3, one on floor 5.
+      for (const [guest, cleared] of [[guests[0], 2], [guests[1], 4]] as const) {
+        await pool.query(
+          "INSERT INTO arcade_runs (guest_id, started_at, ended_at, floors_cleared) VALUES ($1, $2, $2, $3)",
+          [guest, `${TODAY}T12:00:00Z`, cleared],
+        );
+      }
+      const body = (
+        await app.inject({ method: "GET", url: "/api/admin/dashboard", cookies: { [SESSION_COOKIE]: cookies.owner! } })
+      ).json();
+      expect(body.tower).toMatchObject({ runs: 2, players: 2, highestFloor: 5, averageFloor: 4 });
+      expect(body.tower.floorsReached).toEqual([
+        { floor: 3, runs: 1 },
+        { floor: 5, runs: 1 },
+      ]);
+      expect(body.tower.runsByDay).toEqual([{ day: TODAY, runs: 2 }]);
+    } finally {
+      await pool.query("DELETE FROM arcade_runs WHERE guest_id = ANY($1)", [guests]);
+      if (before !== undefined) {
+        await pool.query("INSERT INTO site_settings (key, value) VALUES ('stats_since', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value", [before]);
+      }
+    }
+  });
 });
