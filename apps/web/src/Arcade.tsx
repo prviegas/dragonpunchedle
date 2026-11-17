@@ -77,8 +77,15 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
     }
   }
 
+  // Which floor a pick was made on. A pick made while the K.O. plays, or typed
+  // ahead before the winning guess came back, was meant for the floor that
+  // just ended: it's dropped, never carried onto the next opponent.
+  const floorRound = useRef(0);
+
   function guess(characterId: string) {
-    queue.current = queue.current.then(() => sendGuess(characterId));
+    if (koRef.current) return;
+    const round = floorRound.current;
+    queue.current = queue.current.then(() => (round === floorRound.current ? sendGuess(characterId) : undefined));
   }
 
   async function sendGuess(characterId: string) {
@@ -91,6 +98,7 @@ export function Arcade({ characters, playerName, onLogIn }: ArcadeProps) {
       const run = { ...current.run, guesses: [result, ...current.run.guesses] };
 
       if (result.solved) {
+        floorRound.current++; // anything picked from here on was for the floor that just ended
         // K.O.: the beaten fighter joins the ladder, then the next one steps in.
         const cleared = [
           ...run.cleared,
