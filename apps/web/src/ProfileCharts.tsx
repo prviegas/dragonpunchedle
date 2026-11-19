@@ -23,7 +23,8 @@ function useWidth(fallback = 600) {
 
 // ---- How you compare: four tiles ----
 
-function StandingLine({ standing, empty }: { standing: Standing | null; empty: string }) {
+/** "players" for the daily tiles, "Tower climbers" for the Tower: who the player is compared with. */
+function StandingLine({ standing, empty, group = "player" }: { standing: Standing | null; empty: string; group?: string }) {
   if (!standing) return <p className="pc-tile-note">{empty}</p>;
   return (
     <>
@@ -31,7 +32,7 @@ function StandingLine({ standing, empty }: { standing: Standing | null; empty: s
         <span style={{ width: `${standing.betterThan}%` }} />
       </span>
       <p className="pc-tile-note">
-        Better than <strong>{standing.betterThan}%</strong> of {standing.of} {standing.of === 1 ? "player" : "players"}
+        Better than <strong>{standing.betterThan}%</strong> of {standing.of.toLocaleString("en")} {standing.of === 1 ? group : `${group}s`}
       </p>
     </>
   );
@@ -52,8 +53,8 @@ export function CompareTiles({ profile }: { profile: PlayerProfile }) {
   const { everyone, standing } = profile.compare;
   const solved = profile.solvedIn.reduce((a, b) => a + b, 0);
   const finished = solved + profile.lost;
-  // No standing means too few rounds: the player's own, or nobody else's yet (the server's MIN_ROUNDS_TO_COMPARE).
-  const enough = finished >= 3 ? "Not enough other regular players to compare with yet" : "Finish 3 rounds on their day to compare";
+  // No standing: this player hasn't finished a round on its day yet, or nobody else has.
+  const enough = finished > 0 ? "Nobody else to compare with yet" : "Finish a round on its day to compare";
   return (
     <div className="pc-tiles">
       <Tile label="Average guesses" value={profile.stats.averageGuesses ?? "–"} everyone={everyone.averageGuesses ?? "–"}>
@@ -67,10 +68,10 @@ export function CompareTiles({ profile }: { profile: PlayerProfile }) {
         <StandingLine standing={standing.solveRate} empty={enough} />
       </Tile>
       <Tile label="Best streak" value={profile.stats.maxStreak}>
-        <StandingLine standing={standing.maxStreak} empty="Solve a round to compare" />
+        <StandingLine standing={standing.maxStreak} empty={enough} />
       </Tile>
       <Tile label="Tower best floor" value={profile.tower.bestFloor || "–"}>
-        <StandingLine standing={standing.towerFloor} empty="Climb the Tower to compare" />
+        <StandingLine standing={standing.towerFloor} empty="Climb the Tower to compare" group="Tower climber" />
       </Tile>
     </div>
   );

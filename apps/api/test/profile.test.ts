@@ -14,6 +14,7 @@ const TODAY = "2097-03-10";
 const day = (n: number) => `2097-03-${String(n).padStart(2, "0")}`;
 const ANSWER = "street-fighter-ryu";
 const MAX = 10;
+const GUEST = "zz-profile-guest";
 
 describe.skipIf(!process.env.DATABASE_URL)("private profile", () => {
   const pool = createPool();
@@ -73,6 +74,7 @@ describe.skipIf(!process.env.DATABASE_URL)("private profile", () => {
   });
 
   async function cleanUp() {
+    await pool.query("DELETE FROM guesses WHERE guest_id = $1", [GUEST]);
     await pool.query("DELETE FROM users WHERE username LIKE $1", [`${PREFIX}%`]);
     await pool.query("DELETE FROM daily_puzzles WHERE puzzle_date BETWEEN $1 AND $2", [day(1), day(4)]);
   }
@@ -99,6 +101,21 @@ describe.skipIf(!process.env.DATABASE_URL)("private profile", () => {
       { date: day(3), you: "lost", everyoneAverage: null, players: 1 },
       { date: day(4), you: null, everyoneAverage: null, players: 0 },
     ]);
+  });
+
+  it("compares every daily tile with everyone who finished a round, guests with one round included", async () => {
+    const before = (await playerProfile(pool, ids.pat!, TODAY, MAX))!.compare.standing;
+    await pool.query("INSERT INTO guesses (guest_id, puzzle_date, character_id) VALUES ($1, $2, $3)", [GUEST, day(1), ANSWER]);
+    const after = (await playerProfile(pool, ids.pat!, TODAY, MAX))!.compare.standing;
+
+    // One group for all three daily tiles...
+    expect(after.solveRate!.of).toBe(after.averageGuesses!.of);
+    expect(after.maxStreak!.of).toBe(after.averageGuesses!.of);
+    // ...and a guest who played once is in it, for streaks too.
+    expect(after.averageGuesses!.of).toBe(before.averageGuesses!.of + 1);
+    expect(after.maxStreak!.of).toBe(before.maxStreak!.of + 1);
+    // The Tower compares with climbers only.
+    expect(after.towerFloor).toEqual(before.towerFloor);
   });
 
   it("starts empty for a new account", async () => {

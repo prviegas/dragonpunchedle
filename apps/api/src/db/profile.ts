@@ -43,7 +43,11 @@ export interface Comparison {
     /** 0-100. */
     solveRate: number | null;
   };
-  /** Null until there's enough to compare: see MIN_ROUNDS_TO_COMPARE. */
+  /**
+   * The daily tiles compare with every player, account or guest, who finished
+   * at least one round on its day; the Tower tile with everyone who climbed.
+   * Null when the player hasn't played that part yet, or nobody else has.
+   */
   standing: {
     averageGuesses: Standing | null;
     solveRate: Standing | null;
@@ -54,8 +58,6 @@ export interface Comparison {
   rounds: RoundComparison[];
 }
 
-/** One or two lucky rounds say little: averages are compared from this many finished rounds. */
-export const MIN_ROUNDS_TO_COMPARE = 3;
 const ROUNDS_SHOWN = 30;
 
 /** The share of `others` that `mine` beats; `better(a, b)` says whether a beats b. */
@@ -209,20 +211,21 @@ async function comparison(pool: pg.Pool, userId: number, today: string, maxGuess
        GROUP BY d.puzzle_date ORDER BY d.puzzle_date`,
       [today, maxGuesses, me, ROUNDS_SHOWN],
     ),
-    // Each account's best streak, worked out like playerStats does it.
-    pool.query<{ user_id: string; best: number }>(
+    // Every player's best streak, guests included (their rounds are kept under
+    // their cookie id), worked out like playerStats does it.
+    pool.query<{ player: string; best: number }>(
       `WITH solves AS (
-         SELECT DISTINCT g.user_id, g.puzzle_date
+         SELECT DISTINCT coalesce('u' || g.user_id::text, 'g' || g.guest_id) AS player, g.puzzle_date
          FROM guesses g JOIN daily_puzzles p ON p.puzzle_date = g.puzzle_date AND p.character_id = g.character_id
-         WHERE g.user_id IS NOT NULL AND NOT g.late AND g.puzzle_date <= $1
+         WHERE NOT g.late AND g.puzzle_date <= $1
        ),
        runs AS (
-         SELECT user_id, puzzle_date - (row_number() OVER (PARTITION BY user_id ORDER BY puzzle_date))::int AS run_id
+         SELECT player, puzzle_date - (row_number() OVER (PARTITION BY player ORDER BY puzzle_date))::int AS run_id
          FROM solves
        )
-       SELECT user_id, max(length)::int AS best
-       FROM (SELECT user_id, count(*) AS length FROM runs GROUP BY user_id, run_id) s
-       GROUP BY user_id`,
+       SELECT player, max(length)::int AS best
+       FROM (SELECT player, count(*) AS length FROM runs GROUP BY player, run_id) s
+       GROUP BY player`,
       [today],
     ),
     pool.query<{ player: string; best: number }>(
@@ -245,16 +248,15 @@ async function comparison(pool: pg.Pool, userId: number, today: string, maxGuess
   const solved = solvedIn.reduce((a, b) => a + b, 0);
   const rounds = solved + lost;
 
-  // Averages are compared only between players with enough finished rounds.
-  const regulars = players.rows.filter((p) => p.rounds >= MIN_ROUNDS_TO_COMPARE);
-  const mine = regulars.find((p) => p.player === me);
-  const others = regulars.filter((p) => p.player !== me);
+  // The daily tiles all compare with the same group: everyone else who finished a round on its day.
+  const mine = players.rows.find((p) => p.player === me);
+  const others = players.rows.filter((p) => p.player !== me);
   const average = (p: { solved: number; solved_guesses: number }) => (p.solved > 0 ? p.solved_guesses / p.solved : null);
   const myAverage = mine && average(mine);
   const fewerGuesses = (a: number, b: number) => a < b;
   const higher = (a: number, b: number) => a > b;
 
-  const myStreak = streaks.rows.find((r) => Number(r.user_id) === userId)?.best ?? 0;
+  const bestStreak = new Map(streaks.rows.map((r) => [r.player, r.best]));
   const myFloor = towers.rows.find((r) => r.player === me)?.best ?? 0;
 
   return {
@@ -272,10 +274,8 @@ async function comparison(pool: pg.Pool, userId: number, today: string, maxGuess
           ? null
           : standing(myAverage, others.map((p) => average(p) ?? Infinity), fewerGuesses),
       solveRate: mine ? standing(mine.solved / mine.rounds, others.map((p) => p.solved / p.rounds), higher) : null,
-      maxStreak:
-        myStreak > 0
-          ? standing(myStreak, streaks.rows.filter((r) => Number(r.user_id) !== userId).map((r) => r.best), higher)
-          : null,
+      // A player who never solved has a best streak of 0.
+      maxStreak: mine ? standing(bestStreak.get(me) ?? 0, others.map((p) => bestStreak.get(p.player) ?? 0), higher) : null,
       towerFloor:
         myFloor > 0 ? standing(myFloor, towers.rows.filter((r) => r.player !== me).map((r) => r.best), higher) : null,
     },
