@@ -1,6 +1,6 @@
 # Dragonpunchedle
 
-A daily guessing game for fighting game characters. Every day there's one mystery fighter, picked from 781 characters across 25 franchises, from Street Fighter and Tekken to Guilty Gear, King of Fighters and Marvel Tōkon. You get 10 guesses. Each one shows how close you are, clue by clue: franchise, developer, debut year, archetypes, species, gender, home country and number of games.
+A daily guessing game for fighting game characters. Every day there's one mystery fighter, picked from 1,130 characters across 25 franchises, from Street Fighter and Tekken to Guilty Gear, King of Fighters and Marvel Tōkon. You get 10 guesses. Each one shows how close you are, clue by clue: franchise, developer, debut year, archetypes, species, gender, home country and number of games.
 
 **Play it at [dragonpunchedle.onrender.com](https://dragonpunchedle.onrender.com).** It runs on a free server that sleeps when nobody is playing, so the first visit after a quiet spell can take about a minute to load.
 
@@ -108,7 +108,7 @@ npm run portraits -- remove --franchise "Tekken"     # takedown
 
 **Typed-ahead guesses are queued.** A guess picked while the previous one is still being checked waits its turn, instead of being dropped. Enter matches against what's actually in the box at that moment, so a paste followed by Enter works too ([`App.tsx`](apps/web/src/App.tsx), [`GuessInput.tsx`](apps/web/src/GuessInput.tsx)).
 
-**The roster is validated before it reaches the database.** 781 characters live in JSON files under [`apps/api/data/roster`](apps/api/data/roster), and they're checked with zod on every load:
+**The roster is validated before it reaches the database.** 1,130 characters live in JSON files under [`apps/api/data/roster`](apps/api/data/roster), and they're checked with zod on every load:
 - archetypes and species must come from fixed lists;
 - a misspelled country fails;
 - duplicate characters fail.

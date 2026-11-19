@@ -36,6 +36,7 @@ const CONTINENT_BY_COUNTRY: Readonly<Record<string, Continent>> = {
   // Europe
   Austria: "Europe",
   Belgium: "Europe",
+  Croatia: "Europe",
   Denmark: "Europe",
   Finland: "Europe",
   France: "Europe",
@@ -51,6 +52,7 @@ const CONTINENT_BY_COUNTRY: Readonly<Record<string, Continent>> = {
   Portugal: "Europe",
   Romania: "Europe",
   Russia: "Europe",
+  Serbia: "Europe",
   Spain: "Europe",
   Sweden: "Europe",
   Switzerland: "Europe",
@@ -81,23 +83,30 @@ export const FICTIONAL_PLACES: ReadonlySet<string> = new Set([
   "Chaosrealm",
   "Edenia",
   "Netherrealm",
+  "Orderrealm",
   "Outworld",
   // Guilty Gear
   "Illyria",
   "Zepp",
   // Marvel
   "Asgard",
+  "Attilan",
   "Dark Dimension",
+  "Hala",
   "Halfworld",
   "Hell",
   "Latveria",
   "Titan",
   "Wakanda",
   "Zen-Whoberi",
+  "Zenn-La",
   // Skullgirls
   "Canopy Kingdom",
   // Samurai Shodown
   "Green Hell",
+  "Lesphia",
+  "Makai",
+  "Mondschein Drache Empire",
   // DC (Injustice)
   "Apokolips",
   "Atlantis",
