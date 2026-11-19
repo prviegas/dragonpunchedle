@@ -91,6 +91,8 @@ export const FICTIONAL_PLACES: ReadonlySet<string> = new Set([
   "Wakanda",
   // Skullgirls
   "Canopy Kingdom",
+  // Samurai Shodown
+  "Green Hell",
   // DC (Injustice)
   "Apokolips",
   "Atlantis",
