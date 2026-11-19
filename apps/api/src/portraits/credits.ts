@@ -15,6 +15,9 @@ export const CREDITS: Readonly<Record<string, string>> = {
   "JoJo's Bizarre Adventure": "© Hirohiko Araki/Shueisha; game © Bandai Namco, CyberConnect2",
   "Killer Instinct": "© Microsoft",
   "Melty Blood": "© TYPE-MOON, French-Bread",
+  // Only its Capcom characters have portraits. Marvel's art is left out by
+  // choice (like Marvel Tōkon), and would need a Marvel credit, not this one.
+  "Marvel vs. Capcom": "© Capcom",
   "Mortal Kombat": "© Warner Bros. Games",
   "Persona 4 Arena": "© Atlus, Sega",
   "Samurai Shodown": "© SNK",
