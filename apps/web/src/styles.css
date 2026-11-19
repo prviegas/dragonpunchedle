@@ -1779,6 +1779,20 @@ body {
   text-decoration: underline;
 }
 
+.footer .footer-studio {
+  margin-bottom: 8px;
+}
+
+.footer .footer-studio a {
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footer .footer-studio a:hover {
+  text-decoration: underline;
+}
+
 /* ---- Small screens ---- */
 
 @media (max-width: 640px) {

@@ -458,7 +458,13 @@ function Shell({ date, account, children }: { date?: string; account?: ReactNode
         <p className="footer-maker">
           Made by{" "}
           <a href="https://www.linkedin.com/in/pedro--viegas/" target="_blank" rel="noopener noreferrer">
-            pedromakesstuff
+            Pedro Viegas
+          </a>
+        </p>
+        <p className="footer-studio">
+          New from twocatsandarat:{" "}
+          <a href="https://twocatsandarat.itch.io/restocker-simulator" target="_blank" rel="noopener noreferrer">
+            Restocker Simulator, a free demo →
           </a>
         </p>
         <p>Unofficial fan game. Characters and art belong to their owners.</p>
