@@ -21,6 +21,7 @@ import {
 import { Board } from "./Board";
 import { GuessInput } from "./GuessInput";
 import { HealthBar } from "./HealthBar";
+import { ZoomThumb } from "./ZoomThumb";
 
 /** How long the K.O. stamp shows. It never holds the game up: the next floor loads at once. */
 const KO_MS = 900;
@@ -564,14 +565,7 @@ function Ladder({ run: given }: { run: NonNullable<ArcadeState["run"]> }) {
 
 function LadderThumb({ name, url }: { name: string; url?: string }) {
   return url ? (
-    <img
-      className="ladder-thumb"
-      src={url}
-      alt=""
-      width={30}
-      height={40}
-      loading="lazy"
-    />
+    <ZoomThumb className="ladder-thumb" src={url} name={name} width={30} height={40} />
   ) : (
     <span className="ladder-thumb ladder-thumb--empty" aria-hidden="true">
       {name

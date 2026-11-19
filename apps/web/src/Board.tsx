@@ -1,4 +1,5 @@
 import type { Character, ClueInfo, ClueResult, ClueStatus, GuessResult } from "./api";
+import { ZoomThumb } from "./ZoomThumb";
 
 const STATUS_TEXT: Record<ClueStatus, string> = {
   correct: "correct",
@@ -68,7 +69,7 @@ function Tile({ clue, result, character, delay }: { clue: ClueInfo; result: Clue
 /** A small face for the guess's row: the portrait if there is one, initials if not. */
 function Thumb({ character }: { character: Character }) {
   if (character.portrait) {
-    return <img className="thumb" src={character.portrait.url} alt="" width={36} height={48} loading="lazy" />;
+    return <ZoomThumb className="thumb" src={character.portrait.url} name={character.name} width={36} height={48} />;
   }
   const initials = character.name
     .split(/\s+/)

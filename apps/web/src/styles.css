@@ -3858,3 +3858,45 @@ body {
     justify-content: space-around;
   }
 }
+
+/* A character's picture, enlarged while the pointer is on its small one. */
+.thumb-zoom {
+  position: fixed;
+  z-index: 50;
+  margin: 0;
+  padding: 6px 6px 4px;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.55);
+  pointer-events: none;
+  animation: thumb-zoom-in 0.12s ease-out;
+}
+
+.thumb-zoom img {
+  display: block;
+  width: 180px;
+  height: 240px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.thumb-zoom figcaption {
+  padding-top: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+@keyframes thumb-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb-zoom {
+    animation: none;
+  }
+}
