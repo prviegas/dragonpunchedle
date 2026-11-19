@@ -1,0 +1,15 @@
+[
+  { "id": "capcom-saturday-night-slam-masters", "title": "Saturday Night Slam Masters", "year": 1993, "note": "Arcade wrestling game; Wikipedia genre: fighting (pro wrestling)." },
+  { "id": "capcom-muscle-bomber-duo", "title": "Muscle Bomber Duo: Ultimate Team Battle", "year": 1993, "versionOf": "capcom-saturday-night-slam-masters", "note": "A team-battle update of Slam Masters (Muscle Bomber in Japan)." },
+  { "id": "capcom-ring-of-destruction-slam-masters-ii", "title": "Ring of Destruction: Slam Masters II", "year": 1994, "note": "Arcade only; a one-on-one fighter." },
+  { "id": "capcom-cyberbots", "title": "Cyberbots: Full Metal Madness", "year": 1995 },
+  { "id": "capcom-mega-man-the-power-battle", "title": "Mega Man: The Power Battle", "year": 1995, "note": "Arcade; Wikipedia genre: fighting." },
+  { "id": "capcom-mega-man-2-the-power-fighters", "title": "Mega Man 2: The Power Fighters", "year": 1996, "note": "Arcade; Wikipedia genre: fighting. A new number, so a new game." },
+  { "id": "capcom-star-gladiator", "title": "Star Gladiator", "year": 1996 },
+  { "id": "capcom-rival-schools-united-by-fate", "title": "Rival Schools: United by Fate", "year": 1997, "note": "Sakura is a hidden, time-released character." },
+  { "id": "capcom-plasma-sword", "title": "Plasma Sword: Nightmare of Bilstein (Star Gladiator 2)", "year": 1998 },
+  { "id": "capcom-viewtiful-joe-red-hot-rumble", "title": "Viewtiful Joe: Red Hot Rumble", "year": 2005, "note": "Wikipedia genre: fighting, beat 'em up. The GameCube version counts; Dante is only in the PSP version (handheld), so he doesn't get it." },
+  { "id": "capcom-rockman-battle-and-fighters", "title": "Rockman Battle & Fighters", "year": 2000, "excluded": "handheld", "note": "Neo Geo Pocket Color version of the Power Battle games." },
+  { "id": "capcom-cannon-spike", "title": "Cannon Spike", "year": 2000, "excluded": "not-fighting", "note": "A shooter (Charlie, Cammy, Arthur, Mega Man Volnutt)." },
+  { "id": "capcom-namco-x-capcom", "title": "Namco × Capcom", "year": 2005, "excluded": "not-fighting", "note": "A tactical RPG." }
+]

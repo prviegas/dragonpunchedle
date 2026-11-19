@@ -108,7 +108,7 @@ npm run portraits -- remove --franchise "Tekken"     # takedown
 
 **Typed-ahead guesses are queued.** A guess picked while the previous one is still being checked waits its turn, instead of being dropped. Enter matches against what's actually in the box at that moment, so a paste followed by Enter works too ([`App.tsx`](apps/web/src/App.tsx), [`GuessInput.tsx`](apps/web/src/GuessInput.tsx)).
 
-**The roster is validated before it reaches the database.** 654 characters live in JSON files under [`apps/api/data/roster`](apps/api/data/roster), and they're checked with zod on every load:
+**The roster is validated before it reaches the database.** 781 characters live in JSON files under [`apps/api/data/roster`](apps/api/data/roster), and they're checked with zod on every load:
 - archetypes and species must come from fixed lists;
 - a misspelled country fails;
 - duplicate characters fail.

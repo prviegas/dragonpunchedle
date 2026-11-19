@@ -87,8 +87,13 @@ export const FICTIONAL_PLACES: ReadonlySet<string> = new Set([
   "Zepp",
   // Marvel
   "Asgard",
+  "Dark Dimension",
+  "Halfworld",
+  "Hell",
   "Latveria",
+  "Titan",
   "Wakanda",
+  "Zen-Whoberi",
   // Skullgirls
   "Canopy Kingdom",
   // Samurai Shodown
