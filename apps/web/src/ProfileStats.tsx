@@ -68,12 +68,12 @@ function SolveRing({ solved, finished }: { solved: number; finished: number }) {
   );
 }
 
-/** Average guesses on the health bar: each cell is a guess, the last one filled in part. */
+/** Average guesses on solved rounds (K.O.s left out), on the health bar: each cell is a guess, the last one filled in part. */
 function GuessBar({ average, max }: { average: number | null; max: number }) {
   return (
     <div className="ph-card">
       <p className="ph-big">{average ?? "–"}</p>
-      <p className="ph-label">Guesses per solve</p>
+      <p className="ph-label">Average guesses</p>
       <span className="ph-health" aria-hidden="true">
         {Array.from({ length: max }, (_, i) => {
           const fill = average === null ? 0 : Math.min(Math.max(average - i, 0), 1);
@@ -84,7 +84,7 @@ function GuessBar({ average, max }: { average: number | null; max: number }) {
           );
         })}
       </span>
-      <p className="ph-sub">out of {max}</p>
+      <p className="ph-sub">On solved rounds, out of {max}</p>
     </div>
   );
 }

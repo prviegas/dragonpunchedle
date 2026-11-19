@@ -12,12 +12,16 @@ export interface FirstSolveEntry {
   answer: { id: string; name: string; franchise: string; portraitUrl: string | null };
 }
 
-/** Where the player stands among others: the share of them strictly behind. */
+/** Where the player stands among others. */
 export interface Standing {
   /** 0-100: the percentage of other players this one beats outright (ties don't count). */
   betterThan: number;
   /** How many other players were compared. */
   of: number;
+  /** Other players doing strictly better: the player ranks just after them (rank = ahead + 1). */
+  ahead: number;
+  /** Other players with exactly the same result: they share the rank. */
+  tied: number;
 }
 
 /** A finished round on its own day: guesses taken, "lost", or null (not played or not finished). */
@@ -66,7 +70,13 @@ const ROUNDS_SHOWN = 30;
 export function standing(mine: number, others: number[], better: (a: number, b: number) => boolean): Standing | null {
   if (others.length === 0) return null;
   const beaten = others.filter((other) => better(mine, other)).length;
-  return { betterThan: Math.round((beaten / others.length) * 100), of: others.length };
+  const ahead = others.filter((other) => better(other, mine)).length;
+  return {
+    betterThan: Math.round((beaten / others.length) * 100),
+    of: others.length,
+    ahead,
+    tied: others.length - beaten - ahead,
+  };
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;

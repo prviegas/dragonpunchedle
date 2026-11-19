@@ -143,7 +143,13 @@ describe("standing", () => {
   const fewer = (a: number, b: number) => a < b;
 
   it("counts only players beaten outright, never ties", () => {
-    expect(standing(3, [2, 3, 4, 5], fewer)).toEqual({ betterThan: 50, of: 4 });
+    expect(standing(3, [2, 3, 4, 5], fewer)).toEqual({ betterThan: 50, of: 4, ahead: 1, tied: 1 });
+  });
+
+  it("ranks after everyone strictly ahead, sharing the rank with ties", () => {
+    // 2 players ahead (1 and 2 guesses), so this one is #3, tied with one other.
+    expect(standing(3, [1, 2, 3, 9], fewer)).toMatchObject({ ahead: 2, tied: 1 });
+    expect(standing(1, [1, 1], fewer)).toMatchObject({ betterThan: 0, ahead: 0, tied: 2 });
   });
 
   it("has nothing to say with nobody to compare against", () => {

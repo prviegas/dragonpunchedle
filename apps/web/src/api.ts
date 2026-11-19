@@ -167,8 +167,14 @@ export interface PlayerProfile {
 
 /** The share of other players this one beats outright (0-100), out of how many. */
 export interface Standing {
+  /** 0-100: the share of other players beaten outright. */
   betterThan: number;
+  /** How many other players were compared. */
   of: number;
+  /** Other players doing strictly better (rank = ahead + 1). */
+  ahead: number;
+  /** Other players with exactly the same result. */
+  tied: number;
 }
 
 export interface RoundComparison {

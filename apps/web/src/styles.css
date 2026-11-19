@@ -3506,27 +3506,78 @@ body {
   color: var(--dim);
 }
 
-/* Where the player stands: the pink fill is the share of players beaten. */
-.pc-meter {
+/* Where the player ranks, worst to best from left to right. Every block sits
+   at the bottom of its tile, so the four tiles line up whatever is above. */
+.pc-rank {
   display: block;
-  height: 6px;
-  margin: auto 0 6px;
-  padding-top: 0;
-  background: var(--panel-raised);
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.pc-rank-dots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.pc-rank-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+/* Tied with the viewer: ringed in pink. */
+.pc-rank-dot.is-tied {
+  opacity: 1;
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--you);
+}
+
+.pc-rank-dot.is-you {
+  width: 12px;
+  height: 12px;
+  opacity: 1;
+  background: var(--you);
+}
+
+/* Many players: a bar filled up to the viewer's place, with a pink pin there. */
+.pc-rank-bar {
+  position: relative;
+  display: block;
+  height: 8px;
   border-radius: 999px;
-  overflow: hidden;
+  background: var(--panel-raised);
 }
 
-.pc-tile-everyone + .pc-meter,
-.pc-tile-value + .pc-meter {
-  margin-top: 10px;
-}
-
-.pc-meter > span {
+.pc-rank-fill {
   display: block;
   height: 100%;
-  background: var(--you);
   border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.pc-rank-pin {
+  position: absolute;
+  top: -4px;
+  width: 4px;
+  height: 16px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--you);
+  box-shadow: 0 0 0 2px var(--panel);
+}
+
+.pc-rank-ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--dim);
 }
 
 .pc-tile-note {
