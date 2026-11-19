@@ -44,8 +44,10 @@ export interface Comparison {
     solveRate: number | null;
   };
   /**
-   * The daily tiles compare with every player, account or guest, who finished
-   * at least one round on its day; the Tower tile with everyone who climbed.
+   * Average guesses and solve rate compare with every player, account or
+   * guest, who finished at least one round on its day; best streak with the
+   * logged-in ones among them (a guest's streak doesn't carry across days);
+   * the Tower tile with everyone who climbed.
    * Null when the player hasn't played that part yet, or nobody else has.
    */
   standing: {
@@ -211,13 +213,12 @@ async function comparison(pool: pg.Pool, userId: number, today: string, maxGuess
        GROUP BY d.puzzle_date ORDER BY d.puzzle_date`,
       [today, maxGuesses, me, ROUNDS_SHOWN],
     ),
-    // Every player's best streak, guests included (their rounds are kept under
-    // their cookie id), worked out like playerStats does it.
+    // Every account's best streak, worked out like playerStats does it.
     pool.query<{ player: string; best: number }>(
       `WITH solves AS (
          SELECT DISTINCT coalesce('u' || g.user_id::text, 'g' || g.guest_id) AS player, g.puzzle_date
          FROM guesses g JOIN daily_puzzles p ON p.puzzle_date = g.puzzle_date AND p.character_id = g.character_id
-         WHERE NOT g.late AND g.puzzle_date <= $1
+         WHERE g.user_id IS NOT NULL AND NOT g.late AND g.puzzle_date <= $1
        ),
        runs AS (
          SELECT player, puzzle_date - (row_number() OVER (PARTITION BY player ORDER BY puzzle_date))::int AS run_id
@@ -248,7 +249,7 @@ async function comparison(pool: pg.Pool, userId: number, today: string, maxGuess
   const solved = solvedIn.reduce((a, b) => a + b, 0);
   const rounds = solved + lost;
 
-  // The daily tiles all compare with the same group: everyone else who finished a round on its day.
+  // Everyone else who finished a round on its day; streaks only count the accounts among them.
   const mine = players.rows.find((p) => p.player === me);
   const others = players.rows.filter((p) => p.player !== me);
   const average = (p: { solved: number; solved_guesses: number }) => (p.solved > 0 ? p.solved_guesses / p.solved : null);
@@ -274,8 +275,14 @@ async function comparison(pool: pg.Pool, userId: number, today: string, maxGuess
           ? null
           : standing(myAverage, others.map((p) => average(p) ?? Infinity), fewerGuesses),
       solveRate: mine ? standing(mine.solved / mine.rounds, others.map((p) => p.solved / p.rounds), higher) : null,
-      // A player who never solved has a best streak of 0.
-      maxStreak: mine ? standing(bestStreak.get(me) ?? 0, others.map((p) => bestStreak.get(p.player) ?? 0), higher) : null,
+      // An account that never solved has a best streak of 0.
+      maxStreak: mine
+        ? standing(
+            bestStreak.get(me) ?? 0,
+            others.filter((p) => p.player.startsWith("u")).map((p) => bestStreak.get(p.player) ?? 0),
+            higher,
+          )
+        : null,
       towerFloor:
         myFloor > 0 ? standing(myFloor, towers.rows.filter((r) => r.player !== me).map((r) => r.best), higher) : null,
     },

@@ -23,7 +23,7 @@ function useWidth(fallback = 600) {
 
 // ---- How you compare: four tiles ----
 
-/** "players" for the daily tiles, "Tower climbers" for the Tower: who the player is compared with. */
+/** Who the player is compared with: "players", "logged-in players" (streaks) or "Tower climbers". */
 function StandingLine({ standing, empty, group = "player" }: { standing: Standing | null; empty: string; group?: string }) {
   if (!standing) return <p className="pc-tile-note">{empty}</p>;
   return (
@@ -68,7 +68,7 @@ export function CompareTiles({ profile }: { profile: PlayerProfile }) {
         <StandingLine standing={standing.solveRate} empty={enough} />
       </Tile>
       <Tile label="Best streak" value={profile.stats.maxStreak}>
-        <StandingLine standing={standing.maxStreak} empty={enough} />
+        <StandingLine standing={standing.maxStreak} empty={enough} group="logged-in player" />
       </Tile>
       <Tile label="Tower best floor" value={profile.tower.bestFloor || "–"}>
         <StandingLine standing={standing.towerFloor} empty="Climb the Tower to compare" group="Tower climber" />

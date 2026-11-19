@@ -33,7 +33,7 @@ describe.skipIf(!process.env.DATABASE_URL)("private profile", () => {
     for (let n = 1; n <= 4; n++) {
       await pool.query("INSERT INTO daily_puzzles (puzzle_date, character_id) VALUES ($1, $2)", [day(n), ANSWER]);
     }
-    for (const name of ["pat", "sam"]) {
+    for (const name of ["pat", "sam", "kim"]) {
       const { rows } = await pool.query<{ id: string }>(
         "INSERT INTO users (username, password_hash) VALUES ($1, 'x') RETURNING id",
         [PREFIX + name],
@@ -105,18 +105,19 @@ describe.skipIf(!process.env.DATABASE_URL)("private profile", () => {
     ]);
   });
 
-  it("compares every daily tile with everyone who finished a round, guests with one round included", async () => {
+  it("compares with everyone who finished a round, and streaks with logged-in players only", async () => {
     await pool.query("INSERT INTO guesses (guest_id, puzzle_date, character_id) VALUES ($1, $2, $3)", [OTHER_GUEST, day(2), ANSWER]);
+    await pool.query("INSERT INTO guesses (user_id, puzzle_date, character_id) VALUES ($1, $2, $3)", [ids.kim, day(2), ANSWER]);
     const before = (await playerProfile(pool, ids.pat!, TODAY, MAX))!.compare.standing;
     await pool.query("INSERT INTO guesses (guest_id, puzzle_date, character_id) VALUES ($1, $2, $3)", [GUEST, day(1), ANSWER]);
     const after = (await playerProfile(pool, ids.pat!, TODAY, MAX))!.compare.standing;
 
-    // One group for all three daily tiles...
+    // Average guesses and solve rate: one group, and a guest who played once is in it.
     expect(after.solveRate!.of).toBe(after.averageGuesses!.of);
-    expect(after.maxStreak!.of).toBe(after.averageGuesses!.of);
-    // ...and a guest who played once is in it, for streaks too.
     expect(after.averageGuesses!.of).toBe(before.averageGuesses!.of + 1);
-    expect(after.maxStreak!.of).toBe(before.maxStreak!.of + 1);
+    // Best streak: accounts only (kim counts), so the new guest changes nothing.
+    expect(after.maxStreak).toEqual(before.maxStreak);
+    expect(after.maxStreak!.of).toBeLessThan(after.averageGuesses!.of);
     // The Tower compares with climbers only.
     expect(after.towerFloor).toEqual(before.towerFloor);
   });
