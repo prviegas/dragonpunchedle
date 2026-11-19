@@ -2,6 +2,7 @@ import type { Character, GuessResult, PlayerStats } from "./api";
 import { Countdown } from "./Countdown";
 import { FirstSolveBadge } from "./FirstSolveBadge";
 import { Portrait } from "./Portrait";
+import { PROFILE_HASH } from "./Profile";
 import { ResultsChart } from "./ResultsChart";
 import { ShareButton } from "./ShareButton";
 import { StatsPanel } from "./StatsPanel";
@@ -56,14 +57,19 @@ export function ResultCard({ outcome, character, date, guesses, maxGuesses, logg
       <ResultsChart maxGuesses={maxGuesses} mine={won ? guesses.length : "lost"} />
 
       {loggedIn && stats ? (
-        <StatsPanel stats={stats} />
+        <>
+          <StatsPanel stats={stats} />
+          <p className="result-profile">
+            <a href={PROFILE_HASH}>See how you compare with everyone on your profile →</a>
+          </p>
+        </>
       ) : (
         !loggedIn && (
           <p className="result-cta">
             <button type="button" className="link" onClick={onLogIn}>
               Log in or sign up
             </button>{" "}
-            to keep a streak and appear on the leaderboards.
+            to keep a streak, appear on the leaderboards and see how you compare with everyone.
           </p>
         )
       )}

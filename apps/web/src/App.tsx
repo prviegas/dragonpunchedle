@@ -23,13 +23,14 @@ import { GuessInput } from "./GuessInput";
 import { HealthBar } from "./HealthBar";
 import { HowToPlay } from "./HowToPlay";
 import { Arcade, TowerPreview } from "./Arcade";
-import { TOWER_HASH, TOWER_NAME } from "./arcadeRules";
+import { TOWER_HASH } from "./arcadeRules";
 import { Dashboard, DASHBOARD_HASH } from "./Dashboard";
 import { History, HISTORY_HASH } from "./History";
 import { Leaderboard } from "./Leaderboard";
 import { Modal } from "./Modal";
 import { Profile, PROFILE_HASH } from "./Profile";
 import { ResultCard } from "./ResultCard";
+import { TopNav, type Place } from "./TopNav";
 import { puzzleNumber } from "./share";
 
 type Load =
@@ -273,70 +274,18 @@ export function App() {
     refreshStandings();
   }
 
-  const help = (
-    <button type="button" className="nav-link nav-help" onClick={() => setShowHelp("intro")}>
-      <span className="help-icon" aria-hidden="true">
-        ?
-      </span>
-      <span className="nav-help-text">How to play</span>
-    </button>
-  );
-
-  const account = user ? (
-    <div className="account">
-      {help}
-      <a className="nav-link" href={HISTORY_HASH}>
-        Past rounds
-      </a>
-      <a className="nav-link nav-tower" href={TOWER_HASH}>
-        {/* The full name on wide screens; just "Tower" on phones, where it would wrap. */}
-        <span className="nav-tower-text">
-          <span className="nav-tower-full">{TOWER_NAME}</span>
-          <span className="nav-tower-short">Tower</span>
-        </span>
-        <span className="nav-new">New</span>
-      </a>
-      {canSeeDashboard && (
-        <a className="nav-link" href={DASHBOARD_HASH}>
-          Dashboard
-        </a>
-      )}
-      <a className="account-name" href={PROFILE_HASH} title="Your profile">
-        {user.username}
-      </a>
-      {stats && stats.currentStreak > 0 && (
-        <span className="streak" title={`${stats.currentStreak}-day streak`}>
-          {stats.currentStreak}
-          <span className="visually-hidden">-day streak</span>
-        </span>
-      )}
-      <button type="button" className="link" onClick={signOut}>
-        Log out
-      </button>
-    </div>
-  ) : (
-    <div className="account">
-      {help}
-      <a className="nav-link" href={HISTORY_HASH}>
-        Past rounds
-      </a>
-      <a className="nav-link nav-tower" href={TOWER_HASH}>
-        {/* The full name on wide screens; just "Tower" on phones, where it would wrap. */}
-        <span className="nav-tower-text">
-          <span className="nav-tower-full">{TOWER_NAME}</span>
-          <span className="nav-tower-short">Tower</span>
-        </span>
-        <span className="nav-new">New</span>
-      </a>
-      {canSeeDashboard && (
-        <a className="nav-link" href={DASHBOARD_HASH}>
-          Dashboard
-        </a>
-      )}
-      <button type="button" className="button button--small" onClick={() => setShowAuth(true)}>
-        Log in
-      </button>
-    </div>
+  const place: Place =
+    view.name === "tower-preview" ? "arcade" : view.name === "history" || view.name === "arcade" || view.name === "profile" || view.name === "dashboard" ? view.name : "today";
+  const account = (
+    <TopNav
+      place={place}
+      user={user}
+      streak={stats?.currentStreak ?? 0}
+      canSeeDashboard={canSeeDashboard}
+      onHelp={() => setShowHelp("intro")}
+      onLogIn={() => setShowAuth(true)}
+      onLogOut={signOut}
+    />
   );
 
   const roundOver = winner ?? answer;
@@ -456,14 +405,18 @@ export function App() {
 function Shell({ date, account, children }: { date?: string; account?: ReactNode; children: ReactNode }) {
   return (
     <div className="page">
-      <header className="topbar">
-        <h1 className="logo">
-          <a href="#">
-            Dragon<span className="logo-punch">punched</span>le
-          </a>
-        </h1>
-        {account}
-      </header>
+      {/* While loading, or on an error, there's only the logo. */}
+      {account ?? (
+        <header className="topbar">
+          <div className="topbar-row">
+            <h1 className="logo">
+              <a href="#">
+                Dragon<span className="logo-punch">punched</span>le
+              </a>
+            </h1>
+          </div>
+        </header>
+      )}
       {date && (
         <p className="round">
           <span className="round-number">Round {puzzleNumber(date)}</span>
