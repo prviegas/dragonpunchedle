@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import type pg from "pg";
 import { playerStats, scoreDistribution, streakLeaderboard, todayLeaderboard } from "../db/stats.js";
+import { playerProfile } from "../db/profile.js";
 import { readGuestId } from "../auth/guests.js";
 import { MAX_GUESSES, puzzleDateFor } from "../game/puzzles.js";
 
@@ -15,6 +16,16 @@ export const statsRoutes: FastifyPluginAsync<StatsRouteOptions> = async (app, { 
       return reply.code(401).send({ error: "Log in to see your stats." });
     }
     return playerStats(pool, request.user.id, puzzleDateFor(now()));
+  });
+
+  // The private profile: only ever the logged-in player's own, never anyone else's.
+  app.get("/api/me/profile", async (request, reply) => {
+    if (!request.user) {
+      return reply.code(401).send({ error: "Log in to see your profile." });
+    }
+    const profile = await playerProfile(pool, request.user.id, puzzleDateFor(now()), MAX_GUESSES);
+    if (!profile) return reply.code(401).send({ error: "Log in to see your profile." });
+    return profile;
   });
 
   // Leaderboards are public; the viewer's id only marks their own row.

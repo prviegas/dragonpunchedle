@@ -138,6 +138,71 @@ export interface StreakEntry {
 
 export const fetchMyStats = () => request<PlayerStats>("/api/me/stats");
 
+export interface FirstSolveEntry {
+  date: string;
+  answer: { id: string; name: string; franchise: string; portraitUrl: string | null };
+}
+
+/** The logged-in player's own profile. Private: there's no way to ask for someone else's. */
+export interface PlayerProfile {
+  username: string;
+  /** When the account was made (ISO). */
+  memberSince: string;
+  stats: PlayerStats;
+  /** Rounds solved on their day: solvedIn[0] in 1 guess, solvedIn[1] in 2, and so on. */
+  solvedIn: number[];
+  /** Rounds lost on their day. */
+  lost: number;
+  /** Days this account was the first logged-in solver, newest first. */
+  firstSolves: FirstSolveEntry[];
+  tower: {
+    runs: number;
+    bestFloor: number;
+    floorsCleared: number;
+    /** The floor a climb ends on, on average. */
+    averageFloor: number | null;
+  };
+  compare: Comparison;
+}
+
+/** The share of other players this one beats outright (0-100), out of how many. */
+export interface Standing {
+  betterThan: number;
+  of: number;
+}
+
+export interface RoundComparison {
+  date: string;
+  /** Guesses taken, "lost", or null (not played or not finished on the day). */
+  you: number | "lost" | null;
+  /** Average guesses among the day's solvers. */
+  everyoneAverage: number | null;
+  players: number;
+}
+
+/** How the player compares with everyone. Totals only, never other players' names. */
+export interface Comparison {
+  everyone: {
+    solvedIn: number[];
+    lost: number;
+    rounds: number;
+    averageGuesses: number | null;
+    /** 0-100. */
+    solveRate: number | null;
+  };
+  /** Null until there's enough to compare. */
+  standing: {
+    averageGuesses: Standing | null;
+    solveRate: Standing | null;
+    maxStreak: Standing | null;
+    towerFloor: Standing | null;
+  };
+  /** Recent rounds, oldest first. */
+  rounds: RoundComparison[];
+}
+
+export const fetchMyProfile = () => request<PlayerProfile>("/api/me/profile");
+
 export const fetchTodayLeaderboard = () => request<TodayEntry[]>("/api/leaderboards/today");
 
 export const fetchStreakLeaderboard = () => request<StreakEntry[]>("/api/leaderboards/streaks");

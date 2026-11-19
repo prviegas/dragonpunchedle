@@ -28,6 +28,7 @@ import { Dashboard, DASHBOARD_HASH } from "./Dashboard";
 import { History, HISTORY_HASH } from "./History";
 import { Leaderboard } from "./Leaderboard";
 import { Modal } from "./Modal";
+import { Profile, PROFILE_HASH } from "./Profile";
 import { ResultCard } from "./ResultCard";
 import { puzzleNumber } from "./share";
 
@@ -83,10 +84,17 @@ function takeLoginError(): string | undefined {
 const initialLoginError = takeLoginError();
 
 /** Which view the address asks for: today's game, the list of past rounds, or one past day. */
-type View = { name: "today" } | { name: "history"; date?: string } | { name: "dashboard" } | { name: "arcade" } | { name: "tower-preview" };
+type View =
+  | { name: "today" }
+  | { name: "history"; date?: string }
+  | { name: "dashboard" }
+  | { name: "arcade" }
+  | { name: "tower-preview" }
+  | { name: "profile" };
 
 function viewFromHash(hash: string): View {
   if (hash === DASHBOARD_HASH) return { name: "dashboard" };
+  if (hash === PROFILE_HASH) return { name: "profile" };
   if (hash === TOWER_HASH) return { name: "arcade" };
   // Development only: every floor level side by side.
   if (hash === "#tower-preview" && import.meta.env.DEV) return { name: "tower-preview" };
@@ -99,6 +107,7 @@ function viewFromHash(hash: string): View {
 function pageName(view: View): string | undefined {
   if (view.name === "dashboard") return undefined;
   if (view.name === "arcade") return "/#tower";
+  if (view.name === "profile") return "/#profile";
   if (view.name === "tower-preview") return undefined;
   if (view.name === "history") return view.date ? "/#past/day" : "/#past";
   return "/";
@@ -292,7 +301,9 @@ export function App() {
           Dashboard
         </a>
       )}
-      <span className="account-name">{user.username}</span>
+      <a className="account-name" href={PROFILE_HASH} title="Your profile">
+        {user.username}
+      </a>
       {stats && stats.currentStreak > 0 && (
         <span className="streak" title={`${stats.currentStreak}-day streak`}>
           {stats.currentStreak}
@@ -371,6 +382,16 @@ export function App() {
           playerName={user?.username ?? null}
           onLogIn={() => setShowAuth(true)}
         />
+      </Shell>
+    );
+  }
+
+  if (view.name === "profile") {
+    return (
+      <Shell account={account}>
+        {authModal}
+        {/* Remounted on login or logout, so it loads the right account. */}
+        <Profile key={user?.id ?? "guest"} loggedIn={user !== null} onLogIn={() => setShowAuth(true)} />
       </Shell>
     );
   }

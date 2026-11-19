@@ -122,6 +122,14 @@ body {
 .account-name {
   font-weight: 600;
   color: var(--text);
+  text-decoration: none;
+}
+
+/* The name opens the player's profile. */
+a.account-name:hover {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .streak {
@@ -3216,5 +3224,477 @@ body {
 
   .nav-tower-short {
     display: inline;
+  }
+}
+
+/* ---- Profile: stats, trophy case, first-solve badges ---- */
+
+.profile-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-section-title {
+  margin: 28px 0 12px;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.badge {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 96px;
+  padding: 10px 8px 8px;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--panel);
+  border: 1px solid #b8901f;
+  border-radius: var(--radius);
+  transition: background-color 0.15s;
+}
+
+.badge:hover {
+  background: var(--panel-raised);
+}
+
+.badge-portrait {
+  width: 72px;
+  height: 96px;
+  object-fit: cover;
+  background: var(--panel-raised);
+  border-radius: 3px;
+}
+
+.badge-portrait--empty {
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem;
+}
+
+.badge-medal {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 1.3rem;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.6));
+}
+
+.badge-round {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #f6cf5a;
+}
+
+.badge-date {
+  font-size: 0.75rem;
+  color: var(--dim);
+}
+
+/* ---- Profile charts: you (pink) against everyone (cyan) ---- */
+
+.pc-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.pc-tile {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  background: var(--panel);
+  border-radius: var(--radius);
+}
+
+.pc-tile p {
+  margin: 0;
+}
+
+.pc-tile-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.pc-tile-value {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.pc-tile-everyone {
+  font-size: 0.78rem;
+  color: var(--dim);
+}
+
+/* Where the player stands: the pink fill is the share of players beaten. */
+.pc-meter {
+  display: block;
+  height: 6px;
+  margin: auto 0 6px;
+  padding-top: 0;
+  background: var(--panel-raised);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pc-tile-everyone + .pc-meter,
+.pc-tile-value + .pc-meter {
+  margin-top: 10px;
+}
+
+.pc-meter > span {
+  display: block;
+  height: 100%;
+  background: var(--you);
+  border-radius: 999px;
+}
+
+.pc-tile-note {
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: var(--muted);
+}
+
+.pc-tile-value + .pc-tile-note,
+.pc-tile-everyone + .pc-tile-note {
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.pc-tile-note strong {
+  color: var(--text);
+}
+
+.pc-chart {
+  margin: 0;
+  padding: 14px 16px 12px;
+  background: var(--panel);
+  border-radius: var(--panel-radius);
+}
+
+.pc-legend {
+  display: flex;
+  gap: 16px;
+  margin: 0 0 6px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.pc-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pc-key {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.pc-key--you {
+  background: var(--you);
+}
+
+.pc-key--everyone {
+  background: var(--accent);
+}
+
+.pc-plot {
+  position: relative;
+}
+
+.pc-plot svg {
+  display: block;
+  overflow: visible;
+}
+
+.pc-grid {
+  stroke: var(--line);
+  stroke-width: 1px;
+}
+
+.pc-tick {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  fill: var(--dim);
+}
+
+.pc-line {
+  fill: none;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pc-line--everyone {
+  stroke: var(--accent);
+}
+
+.pc-line--you {
+  stroke: var(--you);
+  opacity: 0.55;
+}
+
+.pc-dot {
+  fill: var(--you);
+  stroke: var(--panel);
+  stroke-width: 2px;
+}
+
+.pc-crosshair {
+  stroke: var(--dim);
+  stroke-width: 1px;
+}
+
+.pc-tooltip {
+  display: grid;
+  gap: 1px;
+  top: -10px;
+  transform: translate(-50%, -100%);
+}
+
+.pc-tooltip strong {
+  font-weight: 600;
+}
+
+.pc-caption {
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  color: var(--dim);
+}
+
+@media (max-width: 640px) {
+  .pc-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---- Profile headline cards: each number drawn its own way ---- */
+
+.ph {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.ph-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 12px 12px;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid transparent;
+  border-radius: var(--panel-radius);
+}
+
+.ph-card p {
+  margin: 0;
+}
+
+.ph-big {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ph-big small {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.ph-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.ph-sub {
+  margin-top: auto !important;
+  padding-top: 6px;
+  font-size: 0.75rem;
+  color: var(--dim);
+}
+
+/* The streak: a flame that glows while the streak is alive. */
+.ph-streak.is-lit {
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgb(255 138 40 / 0.2), transparent 70%),
+    var(--panel);
+  border-color: rgb(255 138 40 / 0.35);
+}
+
+.ph-flame {
+  font-size: 1.7rem;
+  line-height: 1.2;
+}
+
+.ph-streak.is-lit .ph-flame {
+  filter: drop-shadow(0 0 8px rgb(255 138 40 / 0.7));
+}
+
+.ph-streak:not(.is-lit) .ph-flame {
+  filter: grayscale(1) brightness(0.5);
+}
+
+/* The solve rate: a ring in the winning tile's green. */
+.ph-ring {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.ph-ring-track,
+.ph-ring-fill {
+  fill: none;
+  stroke-width: 7px;
+}
+
+.ph-ring-track {
+  stroke: var(--panel-raised);
+}
+
+.ph-ring-fill {
+  stroke: var(--correct-ring);
+  stroke-linecap: round;
+}
+
+.ph-ring-text {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 800;
+  fill: var(--text);
+}
+
+/* Guesses per solve: the round's health bar, one cell per guess. */
+.ph-health {
+  display: flex;
+  gap: 3px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.ph-health-cell {
+  flex: 1;
+  height: 12px;
+  background: var(--panel-raised);
+}
+
+.ph-health-cell > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+/* Rounds played: the last few weeks, one square a day. */
+.ph-days {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ph-day {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+}
+
+.ph-day.is-solved {
+  background: var(--correct);
+}
+
+.ph-day.is-lost {
+  background: var(--ko);
+}
+
+.ph-day.is-missed {
+  background: var(--panel-raised);
+}
+
+/* The Tower: its own panel and floor title, by danger level. */
+.ph-tower {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 24px;
+  min-height: 0;
+  padding: 18px 22px;
+}
+
+.ph-tower .ph-label {
+  margin: 0 0 4px;
+}
+
+.ph-tower .arcade-title {
+  font-size: 2.4rem;
+}
+
+.ph-tower-numbers {
+  display: flex;
+  gap: 18px;
+  margin: 0;
+}
+
+.ph-tower-numbers div {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+}
+
+.ph-tower-numbers dt {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.ph-tower-numbers dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+@media (max-width: 640px) {
+  .ph {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ph-tower {
+    grid-template-columns: 1fr;
+  }
+
+  .ph-tower-numbers {
+    grid-column: 1 / -1;
+    justify-content: space-around;
   }
 }
