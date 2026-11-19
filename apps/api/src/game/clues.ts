@@ -19,7 +19,10 @@ export interface CharacterClues {
   franchise: string;
   /** The studio behind that series, e.g. "Capcom", "Arc System Works". */
   developer: string;
-  /** Year of the character's first playable appearance in any fighting game. */
+  /** Year of the character's first playable appearance in a game that gamesAppearedIn
+   *  counts, so the two clues never point at different games. A crossover the count
+   *  leaves out (e.g. J-Stars Victory VS and Jump Force for Hunter x Hunter) doesn't
+   *  set the debut either. */
   debutYear: number;
   archetypes: readonly string[];
   /** e.g. ["Human"], ["Robot"]; two for a half-and-half like Blade: ["Human", "Vampire"]. */
