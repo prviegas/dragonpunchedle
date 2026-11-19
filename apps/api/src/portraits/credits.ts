@@ -7,7 +7,7 @@ export const CREDITS: Readonly<Record<string, string>> = {
   BlazBlue: "© Arc System Works",
   Darkstalkers: "© Capcom",
   "Dead or Alive": "© Koei Tecmo Games",
-  "Dragon Ball FighterZ": "© Bird Studio/Shueisha, Toei Animation; game © Bandai Namco",
+  "Dragon Ball": "© Bird Studio/Shueisha, Toei Animation; game © Bandai Namco",
   "Fatal Fury": "© SNK",
   "Granblue Fantasy Versus": "© Cygames",
   "Guilty Gear": "© Arc System Works",
@@ -15,8 +15,8 @@ export const CREDITS: Readonly<Record<string, string>> = {
   "JoJo's Bizarre Adventure": "© Hirohiko Araki/Shueisha; game © Bandai Namco, CyberConnect2",
   "Killer Instinct": "© Microsoft",
   "Melty Blood": "© TYPE-MOON, French-Bread",
-  // Only its Capcom characters have portraits. Marvel's art is left out by
-  // choice (like Marvel Tōkon), and would need a Marvel credit, not this one.
+  // Its Capcom characters; Marvel's are filed under "Marvel", which has no
+  // portraits by choice, so it has no credit here.
   "Marvel vs. Capcom": "© Capcom",
   "Mortal Kombat": "© Warner Bros. Games",
   "Persona 4 Arena": "© Atlus, Sega",

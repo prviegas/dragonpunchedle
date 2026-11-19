@@ -1,6 +1,6 @@
 # Dragonpunchedle
 
-A daily guessing game for fighting game characters. Every day there's one mystery fighter, picked from 709 characters across 24 franchises, from Street Fighter and Tekken to Guilty Gear, King of Fighters and Marvel Tōkon. You get 10 guesses. Each one shows how close you are, clue by clue: franchise, developer, debut year, archetypes, species, gender, home country and number of games.
+A daily guessing game for fighting game characters. Every day there's one mystery fighter, picked from 781 characters across 25 franchises, from Street Fighter and Tekken to Guilty Gear, King of Fighters and Marvel Tōkon. You get 10 guesses. Each one shows how close you are, clue by clue: franchise, developer, debut year, archetypes, species, gender, home country and number of games.
 
 **Play it at [dragonpunchedle.onrender.com](https://dragonpunchedle.onrender.com).** It runs on a free server that sleeps when nobody is playing, so the first visit after a quiet spell can take about a minute to load.
 
@@ -96,7 +96,7 @@ The comparison logic is written once per kind. Adding a clue is one line in [`cl
 
 **The results chart** is a smooth curve of how everyone finished today, from 1 guess to K.O. One SQL query counts finished rounds only, so a round in progress isn't a loss ([`db/stats.ts`](apps/api/src/db/stats.ts)). The page draws it as an SVG at its real width (so labels stay readable on phones), adding a small Gaussian bump per result. Hovering shows exact counts, and a hidden table gives screen readers the numbers ([`ResultsChart.tsx`](apps/web/src/ResultsChart.tsx)).
 
-**Character portraits live in the database, not in this repository.** The art belongs to each game's publisher. Keeping it out of the public repo means a takedown request can never put the code at risk, and removing a franchise is one command with no redeploy. A small CLI ([`portraits/cli.ts`](apps/api/src/portraits/cli.ts)) downloads source images into a git-ignored folder, crops them to 240×320 WebP cards with sharp, and stores them with an ownership credit. Images are served with a one-day cache and a hash in the address, so a replaced image shows up at once and a removed one disappears within a day. Characters without a portrait (all of Marvel Tōkon, by choice) show an initials card instead:
+**Character portraits live in the database, not in this repository.** The art belongs to each game's publisher. Keeping it out of the public repo means a takedown request can never put the code at risk, and removing a franchise is one command with no redeploy. A small CLI ([`portraits/cli.ts`](apps/api/src/portraits/cli.ts)) downloads source images into a git-ignored folder, crops them to 240×320 WebP cards with sharp, and stores them with an ownership credit. Images are served with a one-day cache and a hash in the address, so a replaced image shows up at once and a removed one disappears within a day. Characters without a portrait (all Marvel characters, by choice) show an initials card instead:
 
 ```bash
 npm run portraits -- status                          # which characters still need one
