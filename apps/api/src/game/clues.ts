@@ -20,9 +20,8 @@ export interface CharacterClues {
   /** The studio behind that series, e.g. "Capcom", "Arc System Works". */
   developer: string;
   /** Year of the character's first playable appearance in a game that gamesAppearedIn
-   *  counts, so the two clues never point at different games. A crossover the count
-   *  leaves out (e.g. J-Stars Victory VS and Jump Force for Hunter x Hunter) doesn't
-   *  set the debut either. */
+   *  counts, so the two clues never point at different games. Can be later than that
+   *  game's release for a character added afterwards (DLC, an update). */
   debutYear: number;
   archetypes: readonly string[];
   /** e.g. ["Human"], ["Robot"]; two for a half-and-half like Blade: ["Human", "Vampire"]. */
@@ -33,17 +32,22 @@ export interface CharacterClues {
   gender: string | null;
   /** Can be a fictional place (e.g. "Outworld"); null when the games never say. */
   homeCountry: string | null;
-  /** Fighting games in their own franchise where they're playable.
-   *  Counts: spin-offs within the franchise (Street Fighter Alpha, Tekken Tag Tournament).
-   *  Counts once: updated versions of the same game (Super Turbo, Ultra, Street Fighter III's
-   *  2nd Impact and 3rd Strike).
-   *  Doesn't count: crossovers, ports, remasters, mobile and non-fighting spin-offs,
-   *  non-playable appearances.
-   *  Exceptions, by choice: the Marvel vs. Capcom series (X-Men vs. Street Fighter
-   *  through MvC Infinite) counts for both its Marvel and its Capcom characters, and
-   *  Mortal Kombat vs. DC Universe for both its DC and its Mortal Kombat characters.
-   *  Marvel and DC characters also count their other licensed fighters (e.g. Justice
-   *  League Task Force). */
+  /** Every fighting game where they're playable, from any series: their own games,
+   *  crossovers (Marvel vs. Capcom, Smash Bros., Capcom vs. SNK) and guest spots
+   *  (Akuma in Tekken 7, Baiken in Samurai Shodown). Worked out from each character's
+   *  list in the roster, against the games in data/games.
+   *  Counts once with an earlier game, as a version of it, when a release either:
+   *    - keeps that game's own name and adds an edition word (Super Turbo, Ultra SF4,
+   *      Xrd Rev 2, Granblue Fantasy Versus: Rising, Persona 4 Arena Ultimax); the series
+   *      name alone doesn't count (Mortal Kombat: Deception is a new game), or
+   *    - was released as an upgrade, expansion, arcade version or remaster of it
+   *      (Melty Blood: Act Cadenza, JoJo's All-Star Battle R).
+   *  A new number is always a new game (Under Night In-Birth II). Otherwise a new name is
+   *  a new game (each BlazBlue, Melty Blood: Actress Again). A character who only appears in
+   *  a version still gets that game counted once.
+   *  Doesn't count: ports, mobile and handheld-only games (Guilty Gear Petit, Soulcalibur:
+   *  Broken Destiny), games that aren't fighting games, non-playable appearances (bosses
+   *  you can't pick, assists, cameos). */
   gamesAppearedIn: number;
 }
 
@@ -90,7 +94,7 @@ export const CLUES: readonly ClueDefinition[] = [
     close: "Same continent. Fictional places are never close",
     closeShort: "Same continent",
   },
-  { key: "gamesAppearedIn", label: "Games appeared in", kind: "number", closeWithin: 2, close: "Within 2 games of the answer", closeShort: "±2 games" },
+  { key: "gamesAppearedIn", label: "Games appeared in", kind: "number", closeWithin: 3, close: "Within 3 games of the answer", closeShort: "±3 games" },
 ];
 
 /** The clue list as the page gets it: what each column is and when it turns yellow. */

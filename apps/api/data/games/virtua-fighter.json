@@ -1,0 +1,22 @@
+[
+  { "id": "virtua-fighter", "title": "Virtua Fighter", "year": 1993 },
+  { "id": "virtua-fighter-remix", "title": "Virtua Fighter Remix", "year": 1995, "versionOf": "virtua-fighter" },
+  { "id": "virtua-fighter-10th-anniversary", "title": "Virtua Fighter 10th Anniversary", "year": 2003, "versionOf": "virtua-fighter", "note": "A remake of the first game on the VF4 engine." },
+  { "id": "virtua-fighter-2", "title": "Virtua Fighter 2", "year": 1994 },
+  { "id": "virtua-fighter-2-1", "title": "Virtua Fighter 2.1", "year": 1995, "versionOf": "virtua-fighter-2", "note": "Makes Dural playable." },
+  { "id": "virtua-fighter-2-mega-drive", "title": "Virtua Fighter 2 (Mega Drive)", "year": 1996, "excluded": "port", "note": "A 2D conversion of VF2." },
+  { "id": "virtua-fighter-animation", "title": "Virtua Fighter Animation (Virtua Fighter Mini)", "year": 1996, "excluded": "handheld", "note": "Game Gear." },
+  { "id": "virtua-fighter-kids", "title": "Virtua Fighter Kids", "year": 1996, "note": "A spin-off fighting game with super-deformed versions of the VF2 cast." },
+  { "id": "virtua-fighter-3", "title": "Virtua Fighter 3", "year": 1996 },
+  { "id": "virtua-fighter-3tb", "title": "Virtua Fighter 3tb", "year": 1997, "versionOf": "virtua-fighter-3" },
+  { "id": "virtua-fighter-4", "title": "Virtua Fighter 4", "year": 2001 },
+  { "id": "virtua-fighter-4-evolution", "title": "Virtua Fighter 4: Evolution", "year": 2002, "versionOf": "virtua-fighter-4", "note": "Adds Goh and Brad." },
+  { "id": "virtua-fighter-4-final-tuned", "title": "Virtua Fighter 4: Final Tuned", "year": 2004, "versionOf": "virtua-fighter-4" },
+  { "id": "virtua-fighter-cyber-generation", "title": "Virtua Fighter: Cyber Generation (Virtua Quest)", "year": 2004, "excluded": "not-fighting", "note": "An action RPG." },
+  { "id": "virtua-fighter-5", "title": "Virtua Fighter 5", "year": 2006 },
+  { "id": "virtua-fighter-5-r", "title": "Virtua Fighter 5 R", "year": 2008, "versionOf": "virtua-fighter-5", "note": "Adds Jean Kujo and brings back Taka-Arashi." },
+  { "id": "virtua-fighter-5-final-showdown", "title": "Virtua Fighter 5 Final Showdown", "year": 2010, "versionOf": "virtua-fighter-5" },
+  { "id": "virtua-fighter-5-ultimate-showdown", "title": "Virtua Fighter 5 Ultimate Showdown", "year": 2021, "versionOf": "virtua-fighter-5" },
+  { "id": "virtua-fighter-5-revo", "title": "Virtua Fighter 5 R.E.V.O.", "year": 2025, "versionOf": "virtua-fighter-5" },
+  { "id": "virtua-fighter-5-revo-world-stage", "title": "Virtua Fighter 5 R.E.V.O. World Stage", "year": 2025, "versionOf": "virtua-fighter-5", "note": "Dural is playable DLC here, the first VF5 release where she is." }
+]

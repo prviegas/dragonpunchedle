@@ -1,0 +1,6 @@
+[
+  { "id": "persona-4-arena", "title": "Persona 4 Arena", "year": 2012 },
+  { "id": "persona-4-arena-ultimax", "title": "Persona 4 Arena Ultimax", "year": 2013, "versionOf": "persona-4-arena" },
+  { "id": "persona-q-shadow-of-the-labyrinth", "title": "Persona Q: Shadow of the Labyrinth", "year": 2014, "excluded": "not-fighting", "note": "A dungeon-crawler RPG (3DS)." },
+  { "id": "persona-4-dancing-all-night", "title": "Persona 4: Dancing All Night", "year": 2015, "excluded": "not-fighting", "note": "A rhythm game." }
+]

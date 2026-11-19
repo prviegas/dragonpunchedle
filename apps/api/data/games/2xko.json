@@ -1,0 +1,7 @@
+[
+  { "id": "2xko", "title": "2XKO", "year": 2025, "note": "PC early access October 2025, consoles 2026." },
+  { "id": "2xko-league-of-legends", "title": "League of Legends", "year": 2009, "excluded": "not-fighting", "note": "A MOBA; source of the champions." },
+  { "id": "2xko-league-of-legends-wild-rift", "title": "League of Legends: Wild Rift", "year": 2020, "excluded": "mobile", "note": "A mobile MOBA." },
+  { "id": "2xko-teamfight-tactics", "title": "Teamfight Tactics", "year": 2019, "excluded": "not-fighting", "note": "An auto battler." },
+  { "id": "2xko-legends-of-runeterra", "title": "Legends of Runeterra", "year": 2020, "excluded": "not-fighting", "note": "A card game." }
+]

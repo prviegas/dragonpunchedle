@@ -1,0 +1,18 @@
+[
+  { "id": "avengers-in-galactic-storm", "title": "Avengers in Galactic Storm", "year": 1995, "note": "Data East arcade. Iron Man, Thor, Vision and Giant-Man are assists only; Black Panther isn't in it." },
+  { "id": "marvel-nemesis-rise-of-the-imperfects", "title": "Marvel Nemesis: Rise of the Imperfects", "year": 2005, "note": "Console roster counts. Captain America and Doctor Doom are only in the PSP version (handheld), so they don't get it." },
+  { "id": "x-men-mutant-academy", "title": "X-Men: Mutant Academy", "year": 2000, "note": "PlayStation; the Game Boy Color version doesn't count on its own." },
+  { "id": "x-men-mutant-academy-2", "title": "X-Men: Mutant Academy 2", "year": 2001 },
+  { "id": "x-men-next-dimension", "title": "X-Men: Next Dimension", "year": 2002 },
+  { "id": "marvel-super-hero-squad", "title": "Marvel Super Hero Squad", "year": 2009, "note": "Wikipedia genre: beat 'em up, fighting (Battle Mode is a versus fighter). Wii/PS2 count; DS/PSP versions don't." },
+  { "id": "marvel-super-hero-squad-the-infinity-gauntlet", "title": "Marvel Super Hero Squad: The Infinity Gauntlet", "year": 2010, "note": "Wikipedia genre: fighting, beat 'em up. DLC added Captain America (Captain America Collection) and Doctor Doom (Doom on the Loose) on PS3/Xbox 360. The 3DS version (2011) is handheld." },
+  { "id": "marvel-super-hero-squad-comic-combat", "title": "Marvel Super Hero Squad: Comic Combat", "year": 2011, "note": "uDraw tablet game; Wikipedia genre: fighting, beat 'em up." },
+  { "id": "marvel-avengers-battle-for-earth", "title": "Marvel Avengers: Battle for Earth", "year": 2012, "note": "Kinect / Wii U fighting game, 20 playable characters." },
+  { "id": "marvel-tokon-fighting-souls", "title": "Marvel Tōkon: Fighting Souls", "year": 2026 },
+  { "id": "x-men-mutant-apocalypse", "title": "X-Men: Mutant Apocalypse", "year": 1994, "excluded": "not-fighting", "note": "An action platformer." },
+  { "id": "marvel-super-heroes-war-of-the-gems", "title": "Marvel Super Heroes in War of the Gems", "year": 1996, "excluded": "not-fighting", "note": "An action platformer." },
+  { "id": "marvel-ultimate-alliance", "title": "Marvel: Ultimate Alliance", "year": 2006, "excluded": "not-fighting", "note": "An action RPG (as are its sequels)." },
+  { "id": "marvel-contest-of-champions", "title": "Marvel Contest of Champions", "year": 2014, "excluded": "mobile" },
+  { "id": "marvel-rivals", "title": "Marvel Rivals", "year": 2024, "excluded": "not-fighting", "note": "A hero shooter." },
+  { "id": "marvel-vs-capcom-fighting-collection", "title": "Marvel vs. Capcom Fighting Collection: Arcade Classics", "year": 2024, "excluded": "port", "note": "A compilation of the arcade games." }
+]

@@ -2,6 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { z } from "zod";
 import type { Character } from "./clues.js";
 import { continentOf, FICTIONAL_PLACES } from "./continents.js";
+import { countGames, loadGames, type GameCatalog } from "./games.js";
 
 // The roster lives in apps/api/data/roster/*.json, one file per franchise.
 // Everything is validated here before it can reach the database, so a typo
@@ -82,15 +83,21 @@ const rosterEntrySchema = z.strictObject({
       (place) => place === null || continentOf(place) !== undefined || FICTIONAL_PLACES.has(place),
       "unknown place: add it to continents.ts (real country) or FICTIONAL_PLACES",
     ),
-  gamesAppearedIn: z.number().int().min(1),
+  // The games they're playable in (ids from data/games). gamesAppearedIn is worked
+  // out from this list, so the number can always be checked.
+  games: z
+    .array(z.string())
+    .min(1)
+    .refine((list) => new Set(list).size === list.length, "game listed twice"),
   // Review helpers, never stored: which values still need a human check, and why.
   check: z.array(z.string()).optional(),
   note: z.string().optional(),
 });
 
-export type RosterEntry = z.infer<typeof rosterEntrySchema>;
+export type RosterEntry = z.infer<typeof rosterEntrySchema> & { gamesAppearedIn: number };
 
-export async function loadRoster(dir: URL = ROSTER_DIR): Promise<RosterEntry[]> {
+export async function loadRoster(dir: URL = ROSTER_DIR, games?: GameCatalog): Promise<RosterEntry[]> {
+  const catalog = games ?? (await loadGames());
   const files = (await readdir(dir)).filter((file) => file.endsWith(".json")).sort();
   const roster: RosterEntry[] = [];
 
@@ -100,7 +107,9 @@ export async function loadRoster(dir: URL = ROSTER_DIR): Promise<RosterEntry[]> 
     if (!parsed.success) {
       throw new Error(`Invalid roster file ${file}:\n${z.prettifyError(parsed.error)}`);
     }
-    roster.push(...parsed.data);
+    for (const entry of parsed.data) {
+      roster.push(withCountedGames(entry, entry.games, catalog, file));
+    }
   }
 
   assertUnique(roster, (entry) => entry.id, "id");
@@ -108,7 +117,28 @@ export async function loadRoster(dir: URL = ROSTER_DIR): Promise<RosterEntry[]> 
   return roster;
 }
 
-export function toCharacter({ check: _check, note: _note, ...character }: RosterEntry): Character {
+function withCountedGames<T extends { id: string; debutYear: number }>(
+  entry: T,
+  games: readonly string[],
+  catalog: GameCatalog,
+  file: string,
+): T & { gamesAppearedIn: number } {
+  let counted: ReturnType<typeof countGames>;
+  try {
+    counted = countGames(games, catalog);
+  } catch (error) {
+    throw new Error(`Invalid roster file ${file}: ${entry.id}: ${(error as Error).message}`);
+  }
+  // The debut is the first counted game, or later for a character added after launch.
+  if (entry.debutYear < counted.firstYear) {
+    throw new Error(
+      `Invalid roster file ${file}: ${entry.id}: debutYear ${entry.debutYear} is before their first listed game (${counted.firstYear})`,
+    );
+  }
+  return { ...entry, gamesAppearedIn: counted.count };
+}
+
+export function toCharacter({ check: _check, note: _note, games: _games, ...character }: RosterEntry): Character {
   return character;
 }
 

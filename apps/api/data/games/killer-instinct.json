@@ -1,0 +1,9 @@
+[
+  { "id": "killer-instinct", "title": "Killer Instinct", "year": 1994 },
+  { "id": "killer-instinct-game-boy", "title": "Killer Instinct (Game Boy)", "year": 1995, "excluded": "handheld" },
+  { "id": "killer-instinct-2", "title": "Killer Instinct 2", "year": 1996 },
+  { "id": "killer-instinct-gold", "title": "Killer Instinct Gold", "year": 1996, "versionOf": "killer-instinct-2", "note": "Nintendo 64 version of Killer Instinct 2." },
+  { "id": "killer-instinct-2013", "title": "Killer Instinct (2013)", "year": 2013, "note": "Released in seasons through 2017; includes ports of the two arcade games (KI Classic, KI2 Classic), not counted separately." },
+  { "id": "killer-instinct-definitive-edition", "title": "Killer Instinct: Definitive Edition", "year": 2016, "versionOf": "killer-instinct-2013" },
+  { "id": "killer-instinct-anniversary-edition", "title": "Killer Instinct: Anniversary Edition", "year": 2024, "versionOf": "killer-instinct-2013" }
+]

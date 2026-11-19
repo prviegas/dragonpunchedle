@@ -1,0 +1,5 @@
+[
+  { "id": "hunter-x-hunter-nen-impact", "title": "Hunter x Hunter: Nen×Impact", "year": 2025 },
+  { "id": "hunter-x-hunter-wonder-adventure", "title": "Hunter × Hunter: Wonder Adventure", "year": 2012, "excluded": "handheld", "note": "PSP action game. The older licensed games (WonderSwan, Game Boy, PlayStation, PS2) are RPGs, strategy, action or adventure games, none fighting." },
+  { "id": "hunter-x-hunter-nen-x-survivor", "title": "Hunter × Hunter: Nen × Survivor", "year": 2026, "excluded": "mobile" }
+]

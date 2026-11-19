@@ -1,0 +1,9 @@
+[
+  { "id": "melty-blood", "title": "Melty Blood", "year": 2002 },
+  { "id": "melty-blood-re-act", "title": "Melty Blood Re-ACT", "year": 2004, "versionOf": "melty-blood", "note": "An upgrade disc for the first game." },
+  { "id": "melty-blood-act-cadenza", "title": "Melty Blood Act Cadenza", "year": 2005, "versionOf": "melty-blood", "note": "Arcade version of Re-ACT." },
+  { "id": "melty-blood-actress-again", "title": "Melty Blood Actress Again", "year": 2008 },
+  { "id": "melty-blood-actress-again-current-code", "title": "Melty Blood Actress Again Current Code", "year": 2010, "versionOf": "melty-blood-actress-again" },
+  { "id": "melty-blood-type-lumina", "title": "Melty Blood: Type Lumina", "year": 2021 },
+  { "id": "melty-blood-twi-lumina", "title": "Melty Blood: Twi-Lumina", "year": 2027, "versionOf": "melty-blood-type-lumina", "note": "Announced as an update of Type Lumina; due April 2027, so nobody lists it yet." }
+]

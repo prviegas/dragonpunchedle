@@ -1,0 +1,7 @@
+[
+  { "id": "under-night-in-birth", "title": "Under Night In-Birth", "year": 2012 },
+  { "id": "under-night-in-birth-exe-late", "title": "Under Night In-Birth Exe:Late", "year": 2013, "versionOf": "under-night-in-birth" },
+  { "id": "under-night-in-birth-exe-late-st", "title": "Under Night In-Birth Exe:Late[st]", "year": 2015, "versionOf": "under-night-in-birth", "note": "Arcade 2015, consoles 2017." },
+  { "id": "under-night-in-birth-exe-late-cl-r", "title": "Under Night In-Birth Exe:Late[cl-r]", "year": 2020, "versionOf": "under-night-in-birth" },
+  { "id": "under-night-in-birth-ii", "title": "Under Night In-Birth II Sys:Celes", "year": 2024 }
+]

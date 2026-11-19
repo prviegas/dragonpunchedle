@@ -1,0 +1,23 @@
+[
+  { "id": "samurai-shodown", "title": "Samurai Shodown", "year": 1993, "note": "Amakusa, the arcade boss, is playable in the 1994 Mega Drive and Super NES versions." },
+  { "id": "samurai-shodown-ii", "title": "Samurai Shodown II", "year": 1994 },
+  { "id": "samurai-shodown-iii", "title": "Samurai Shodown III: Blades of Blood", "year": 1995 },
+  { "id": "samurai-shodown-iv", "title": "Samurai Shodown IV: Amakusa's Revenge", "year": 1996, "note": "Cham Cham is playable in the PlayStation version (Amakusa Kourin Special)." },
+  { "id": "samurai-shodown-rpg", "title": "Samurai Shodown RPG", "year": 1997, "excluded": "not-fighting", "note": "A role-playing game." },
+  { "id": "samurai-shodown-64", "title": "Samurai Shodown 64", "year": 1997 },
+  { "id": "samurai-shodown-64-warriors-rage", "title": "Samurai Shodown 64: Warriors Rage", "year": 1998, "note": "A sequel to 64, not a version of it." },
+  { "id": "samurai-shodown-neo-geo-pocket", "title": "Samurai Shodown!", "year": 1998, "excluded": "handheld", "note": "Neo Geo Pocket." },
+  { "id": "samurai-shodown-2-neo-geo-pocket", "title": "Samurai Shodown! 2", "year": 1999, "excluded": "handheld", "note": "Neo Geo Pocket Color." },
+  { "id": "samurai-shodown-warriors-rage", "title": "Samurai Shodown: Warriors Rage", "year": 1999, "note": "PlayStation 3D game, set 20 years later; of the old cast only Haohmaru is playable (its Hanzo is the original's son)." },
+  { "id": "nakoruru-ano-hito-kara-no-okurimono", "title": "Nakoruru: Ano Hito kara no Okurimono", "year": 2001, "excluded": "not-fighting", "note": "A visual novel." },
+  { "id": "samurai-shodown-v", "title": "Samurai Shodown V", "year": 2003 },
+  { "id": "samurai-shodown-v-special", "title": "Samurai Shodown V Special", "year": 2004, "versionOf": "samurai-shodown-v", "note": "Adds Amakusa, Zankuro and Mizuki." },
+  { "id": "samurai-shodown-vi", "title": "Samurai Shodown VI", "year": 2005 },
+  { "id": "samurai-shodown-mobile", "title": "Samurai Shodown Mobile", "year": 2005, "excluded": "mobile" },
+  { "id": "samurai-shodown-sen", "title": "Samurai Shodown Sen (Edge of Destiny)", "year": 2008 },
+  { "id": "samurai-shodown-anthology", "title": "Samurai Shodown Anthology", "year": 2008, "excluded": "port", "note": "A compilation of I to VI." },
+  { "id": "samurai-shodown-slash", "title": "Samurai Shodown Slash", "year": 2014, "excluded": "mobile" },
+  { "id": "samurai-shodown-the-legend-of-samurai", "title": "Samurai Shodown: The Legend of Samurai", "year": 2018, "excluded": "mobile" },
+  { "id": "samurai-shodown-2019", "title": "Samurai Shodown", "year": 2019, "note": "The 2019 reboot." },
+  { "id": "samurai-shodown-neo-geo-collection", "title": "Samurai Shodown Neo Geo Collection", "year": 2020, "excluded": "port", "note": "A compilation of the Neo Geo games." }
+]

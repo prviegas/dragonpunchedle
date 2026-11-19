@@ -1,0 +1,10 @@
+[
+  { "id": "injustice-gods-among-us", "title": "Injustice: Gods Among Us", "year": 2013 },
+  { "id": "injustice-gods-among-us-ultimate-edition", "title": "Injustice: Gods Among Us – Ultimate Edition", "year": 2013, "versionOf": "injustice-gods-among-us" },
+  { "id": "injustice-gods-among-us-mobile", "title": "Injustice: Gods Among Us (mobile)", "year": 2013, "excluded": "mobile" },
+  { "id": "injustice-2", "title": "Injustice 2", "year": 2017 },
+  { "id": "injustice-2-legendary-edition", "title": "Injustice 2 – Legendary Edition", "year": 2018, "versionOf": "injustice-2" },
+  { "id": "injustice-2-mobile", "title": "Injustice 2 (mobile)", "year": 2017, "excluded": "mobile" },
+  { "id": "dc-unchained", "title": "DC Unchained", "year": 2018, "excluded": "mobile" },
+  { "id": "teen-titans-2006", "title": "Teen Titans (2006)", "year": 2006, "excluded": "not-fighting", "note": "A beat 'em up." }
+]

@@ -1,0 +1,11 @@
+[
+  { "id": "darkstalkers", "title": "Darkstalkers: The Night Warriors (Vampire)", "year": 1994, "note": "Huitzil and Pyron are unplayable bosses (selectable only by cheat device, or in the 2022 Capcom Fighting Collection re-release)." },
+  { "id": "darkstalkers-night-warriors", "title": "Night Warriors: Darkstalkers' Revenge (Vampire Hunter)", "year": 1995 },
+  { "id": "darkstalkers-vampire-hunter-2", "title": "Vampire Hunter 2: Darkstalkers' Revenge", "year": 1997, "versionOf": "darkstalkers-night-warriors", "note": "Japan-only arcade remake of Vampire Hunter on the Vampire Savior engine." },
+  { "id": "darkstalkers-3", "title": "Darkstalkers 3 (Vampire Savior: The Lord of Vampire)", "year": 1997, "note": "Arcade drops Donovan, Huitzil and Pyron; console versions bring all 18 back." },
+  { "id": "darkstalkers-vampire-savior-2", "title": "Vampire Savior 2: The Lord of Vampire", "year": 1997, "versionOf": "darkstalkers-3", "note": "Japan-only arcade; adds back Donovan, Huitzil and Pyron." },
+  { "id": "darkstalkers-vampire-chronicle-for-matching-service", "title": "Vampire Chronicle for Matching Service", "year": 2000, "versionOf": "darkstalkers-3", "note": "Dreamcast." },
+  { "id": "darkstalkers-chronicle-the-chaos-tower", "title": "Darkstalkers Chronicle: The Chaos Tower", "year": 2004, "excluded": "handheld", "note": "PSP." },
+  { "id": "darkstalkers-vampire-darkstalkers-collection", "title": "Vampire: Darkstalkers Collection", "year": 2005, "excluded": "port", "note": "PS2 compilation." },
+  { "id": "darkstalkers-resurrection", "title": "Darkstalkers Resurrection", "year": 2013, "excluded": "port", "note": "Compilation of Night Warriors and Darkstalkers 3." }
+]

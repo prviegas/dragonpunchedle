@@ -1,0 +1,23 @@
+[
+  { "id": "dead-or-alive", "title": "Dead or Alive", "year": 1996, "note": "Raidou is playable in the home versions (Saturn 1997, PlayStation 1998); the PlayStation version adds Ayane and Bass." },
+  { "id": "dead-or-alive-plus-plus", "title": "Dead or Alive++", "year": 1998, "versionOf": "dead-or-alive" },
+  { "id": "dead-or-alive-2", "title": "Dead or Alive 2", "year": 1999 },
+  { "id": "dead-or-alive-2-millennium", "title": "Dead or Alive 2 Millennium", "year": 2000, "versionOf": "dead-or-alive-2" },
+  { "id": "dead-or-alive-2-hardcore", "title": "Dead or Alive 2: Hardcore", "year": 2000, "versionOf": "dead-or-alive-2" },
+  { "id": "dead-or-alive-2-ultimate", "title": "Dead or Alive 2 Ultimate", "year": 2004, "versionOf": "dead-or-alive-2", "note": "The remake in the Xbox bundle Dead or Alive Ultimate (which also carries the Saturn DOA1); adds Hitomi." },
+  { "id": "dead-or-alive-3", "title": "Dead or Alive 3", "year": 2001 },
+  { "id": "dead-or-alive-xtreme-beach-volleyball", "title": "Dead or Alive Xtreme Beach Volleyball", "year": 2003, "excluded": "not-fighting", "note": "A sports game." },
+  { "id": "dead-or-alive-4", "title": "Dead or Alive 4", "year": 2005 },
+  { "id": "dead-or-alive-xtreme-2", "title": "Dead or Alive Xtreme 2", "year": 2006, "excluded": "not-fighting", "note": "A sports game." },
+  { "id": "dead-or-alive-paradise", "title": "Dead or Alive Paradise", "year": 2010, "excluded": "not-fighting", "note": "A PSP vacation game." },
+  { "id": "dead-or-alive-dimensions", "title": "Dead or Alive: Dimensions", "year": 2011, "excluded": "handheld", "note": "Nintendo 3DS." },
+  { "id": "dead-or-alive-5", "title": "Dead or Alive 5", "year": 2012 },
+  { "id": "dead-or-alive-5-plus", "title": "Dead or Alive 5 Plus", "year": 2013, "excluded": "handheld", "note": "PlayStation Vita version of 5." },
+  { "id": "dead-or-alive-5-ultimate", "title": "Dead or Alive 5 Ultimate", "year": 2013, "versionOf": "dead-or-alive-5" },
+  { "id": "dead-or-alive-5-ultimate-arcade", "title": "Dead or Alive 5 Ultimate: Arcade", "year": 2013, "versionOf": "dead-or-alive-5" },
+  { "id": "dead-or-alive-5-last-round", "title": "Dead or Alive 5 Last Round", "year": 2015, "versionOf": "dead-or-alive-5" },
+  { "id": "dead-or-alive-xtreme-3", "title": "Dead or Alive Xtreme 3", "year": 2016, "excluded": "not-fighting", "note": "A sports game." },
+  { "id": "dead-or-alive-xtreme-venus-vacation", "title": "Dead or Alive Xtreme Venus Vacation", "year": 2017, "excluded": "not-fighting" },
+  { "id": "dead-or-alive-6", "title": "Dead or Alive 6", "year": 2019 },
+  { "id": "dead-or-alive-6-last-round", "title": "Dead or Alive 6 Last Round", "year": 2026, "versionOf": "dead-or-alive-6" }
+]

@@ -1,0 +1,22 @@
+[
+  { "id": "guilty-gear", "title": "Guilty Gear", "year": 1998 },
+  { "id": "guilty-gear-x", "title": "Guilty Gear X", "year": 2000 },
+  { "id": "guilty-gear-x-plus", "title": "Guilty Gear X Plus", "year": 2001, "versionOf": "guilty-gear-x" },
+  { "id": "guilty-gear-x-advance-edition", "title": "Guilty Gear X: Advance Edition", "year": 2002, "excluded": "handheld", "note": "Game Boy Advance version of X." },
+  { "id": "guilty-gear-petit", "title": "Guilty Gear Petit", "year": 2001, "excluded": "handheld", "note": "WonderSwan." },
+  { "id": "guilty-gear-petit-2", "title": "Guilty Gear Petit 2", "year": 2001, "excluded": "handheld", "note": "WonderSwan." },
+  { "id": "guilty-gear-xx", "title": "Guilty Gear XX", "year": 2002 },
+  { "id": "guilty-gear-xx-reload", "title": "Guilty Gear XX #Reload", "year": 2003, "versionOf": "guilty-gear-xx" },
+  { "id": "guilty-gear-xx-slash", "title": "Guilty Gear XX Slash", "year": 2005, "versionOf": "guilty-gear-xx" },
+  { "id": "guilty-gear-xx-accent-core", "title": "Guilty Gear XX Accent Core", "year": 2006, "versionOf": "guilty-gear-xx" },
+  { "id": "guilty-gear-xx-accent-core-plus", "title": "Guilty Gear XX Accent Core Plus", "year": 2008, "versionOf": "guilty-gear-xx" },
+  { "id": "guilty-gear-xx-accent-core-plus-r", "title": "Guilty Gear XX Accent Core Plus R", "year": 2012, "versionOf": "guilty-gear-xx" },
+  { "id": "guilty-gear-isuka", "title": "Guilty Gear Isuka", "year": 2003 },
+  { "id": "guilty-gear-dust-strikers", "title": "Guilty Gear Dust Strikers", "year": 2006, "excluded": "handheld", "note": "Nintendo DS." },
+  { "id": "guilty-gear-judgment", "title": "Guilty Gear Judgment", "year": 2006, "excluded": "not-fighting", "note": "A PSP beat 'em up." },
+  { "id": "guilty-gear-2-overture", "title": "Guilty Gear 2: Overture", "year": 2007, "excluded": "not-fighting", "note": "An action strategy game." },
+  { "id": "guilty-gear-xrd-sign", "title": "Guilty Gear Xrd -SIGN-", "year": 2014 },
+  { "id": "guilty-gear-xrd-revelator", "title": "Guilty Gear Xrd -REVELATOR-", "year": 2015, "versionOf": "guilty-gear-xrd-sign" },
+  { "id": "guilty-gear-xrd-rev-2", "title": "Guilty Gear Xrd REV 2", "year": 2017, "versionOf": "guilty-gear-xrd-sign" },
+  { "id": "guilty-gear-strive", "title": "Guilty Gear -STRIVE-", "year": 2021 }
+]

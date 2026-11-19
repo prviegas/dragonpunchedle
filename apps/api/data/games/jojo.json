@@ -1,0 +1,15 @@
+[
+  { "id": "jojo-venture", "title": "JoJo's Venture", "year": 1998, "note": "Capcom arcade; JoJo no Kimyō na Bōken in Japan." },
+  { "id": "jojo-heritage-for-the-future", "title": "JoJo's Bizarre Adventure: Heritage for the Future", "year": 1999, "versionOf": "jojo-venture", "note": "The revised arcade version; the PlayStation and Dreamcast releases include its characters." },
+  { "id": "jojo-hd-ver", "title": "JoJo's Bizarre Adventure HD Ver.", "year": 2012, "excluded": "port", "note": "PS3/Xbox 360 port of the Dreamcast release." },
+  { "id": "jojo-all-star-battle", "title": "JoJo's Bizarre Adventure: All Star Battle", "year": 2013 },
+  { "id": "jojo-all-star-battle-r", "title": "JoJo's Bizarre Adventure: All Star Battle R", "year": 2022, "versionOf": "jojo-all-star-battle", "note": "A remaster of All Star Battle." },
+  { "id": "jojo-eyes-of-heaven", "title": "JoJo's Bizarre Adventure: Eyes of Heaven", "year": 2015 },
+  { "id": "jojo-snes-rpg", "title": "JoJo's Bizarre Adventure (Super Famicom)", "year": 1993, "excluded": "not-fighting", "note": "A role-playing game." },
+  { "id": "jojo-golden-wind-ps2", "title": "GioGio's Bizarre Adventure", "year": 2002, "excluded": "not-fighting", "note": "PS2 action-adventure." },
+  { "id": "jojo-golden-wind-gba", "title": "JoJo no Kimyō na Bōken: Ōgon no Kaze (GBA)", "year": 2002, "excluded": "handheld", "note": "Game Boy Advance." },
+  { "id": "jojo-phantom-blood-ps2", "title": "JoJo's Bizarre Adventure: Phantom Blood", "year": 2006, "excluded": "not-fighting", "note": "PS2 action-adventure." },
+  { "id": "jojo-stardust-shooters", "title": "JoJo's Bizarre Adventure: Stardust Shooters", "year": 2014, "excluded": "mobile" },
+  { "id": "jojo-diamond-records", "title": "JoJo's Bizarre Adventure: Diamond Records", "year": 2017, "excluded": "mobile" },
+  { "id": "jojo-last-survivor", "title": "JoJo's Bizarre Adventure: Last Survivor", "year": 2019, "excluded": "not-fighting", "note": "An arcade battle royale." }
+]

@@ -1,0 +1,7 @@
+[
+  { "id": "skullgirls", "title": "Skullgirls", "year": 2012 },
+  { "id": "skullgirls-encore", "title": "Skullgirls Encore", "year": 2013, "versionOf": "skullgirls" },
+  { "id": "skullgirls-2nd-encore", "title": "Skullgirls 2nd Encore", "year": 2015, "versionOf": "skullgirls" },
+  { "id": "skullgirls-mobile", "title": "Skullgirls Mobile", "year": 2017, "excluded": "mobile" },
+  { "id": "skullgirls-indivisible", "title": "Indivisible", "year": 2019, "excluded": "not-fighting", "note": "Lab Zero's action RPG; Annie is a playable guest there." }
+]

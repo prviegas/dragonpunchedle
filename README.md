@@ -113,7 +113,7 @@ npm run portraits -- remove --franchise "Tekken"     # takedown
 - a misspelled country fails;
 - duplicate characters fail.
 
-The rules for each clue are written next to it in [`clues.ts`](apps/api/src/game/clues.ts). For example, games appeared in counts a series' own fighting games, never crossovers, with one deliberate exception: the Marvel vs. Capcom series counts for both its Marvel and its Capcom characters.
+The rules for each clue are written next to it in [`clues.ts`](apps/api/src/game/clues.ts). For example, games appeared in counts every arcade, console and PC fighting game where the character is playable, crossovers and guest spots included (Ryu in Smash Bros., Akuma in Tekken 7). Updates, re-releases and remasters count once with the game they update: Street Fighter IV, Super and Ultra are one game, and so are Granblue Fantasy Versus and Rising. A new number is always a new game. Each character lists their games, and the number is worked out from that list against the games in [`apps/api/data/games`](apps/api/data/games).
 
 The server syncs the roster on every start, so corrected data only needs a redeploy.
 

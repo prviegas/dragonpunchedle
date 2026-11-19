@@ -1,0 +1,16 @@
+[
+  { "id": "blazblue-calamity-trigger", "title": "BlazBlue: Calamity Trigger", "year": 2008 },
+  { "id": "blazblue-calamity-trigger-portable", "title": "BlazBlue: Calamity Trigger Portable", "year": 2010, "excluded": "handheld", "note": "PSP version of Calamity Trigger." },
+  { "id": "blazblue-continuum-shift", "title": "BlazBlue: Continuum Shift", "year": 2009 },
+  { "id": "blazblue-continuum-shift-ii", "title": "BlazBlue: Continuum Shift II", "year": 2010, "versionOf": "blazblue-continuum-shift", "note": "Arcade revision; its PSP and 3DS releases are handheld ports." },
+  { "id": "blazblue-continuum-shift-extend", "title": "BlazBlue: Continuum Shift Extend", "year": 2011, "versionOf": "blazblue-continuum-shift" },
+  { "id": "blazblue-chrono-phantasma", "title": "BlazBlue: Chrono Phantasma", "year": 2012 },
+  { "id": "blazblue-chrono-phantasma-extend", "title": "BlazBlue: Chrono Phantasma Extend", "year": 2014, "versionOf": "blazblue-chrono-phantasma", "note": "Released in arcades as Chrono Phantasma 2.0 (2014), consoles 2015." },
+  { "id": "blazblue-central-fiction", "title": "BlazBlue: Central Fiction", "year": 2015 },
+  { "id": "blazblue-central-fiction-special-edition", "title": "BlazBlue: Centralfiction Special Edition", "year": 2019, "versionOf": "blazblue-central-fiction", "note": "Nintendo Switch release." },
+  { "id": "blazblue-clone-phantasma", "title": "BlazBlue: Clone Phantasma", "year": 2012, "excluded": "handheld", "note": "Nintendo 3DS." },
+  { "id": "xblaze-code-embryo", "title": "XBlaze Code: Embryo", "year": 2013, "excluded": "not-fighting", "note": "A visual novel." },
+  { "id": "xblaze-lost-memories", "title": "XBlaze Lost: Memories", "year": 2015, "excluded": "not-fighting", "note": "A visual novel." },
+  { "id": "blazblue-alternative-dark-war", "title": "BlazBlue Alternative: Dark War", "year": 2021, "excluded": "mobile" },
+  { "id": "blazblue-entropy-effect", "title": "BlazBlue Entropy Effect", "year": 2024, "excluded": "not-fighting", "note": "An action roguelite." }
+]

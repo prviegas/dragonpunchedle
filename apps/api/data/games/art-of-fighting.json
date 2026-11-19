@@ -1,0 +1,6 @@
+[
+  { "id": "art-of-fighting", "title": "Art of Fighting", "year": 1992, "note": "Mr. Big and Mr. Karate are playable in two-player mode once reached." },
+  { "id": "art-of-fighting-2", "title": "Art of Fighting 2", "year": 1994 },
+  { "id": "art-of-fighting-3", "title": "Art of Fighting 3: The Path of the Warrior", "year": 1996 },
+  { "id": "art-of-fighting-3-r", "title": "The Path of the Warrior: Art of Fighting 3 R", "year": 2026, "versionOf": "art-of-fighting-3", "note": "Announced June 2026, release date TBA; makes King and Yuri playable. Add them once it's out." }
+]

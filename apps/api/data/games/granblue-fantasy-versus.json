@@ -1,0 +1,6 @@
+[
+  { "id": "granblue-fantasy", "title": "Granblue Fantasy", "year": 2014, "excluded": "not-fighting", "note": "The browser/mobile RPG the fighters come from." },
+  { "id": "granblue-fantasy-versus", "title": "Granblue Fantasy Versus", "year": 2020 },
+  { "id": "granblue-fantasy-versus-rising", "title": "Granblue Fantasy Versus: Rising", "year": 2023, "versionOf": "granblue-fantasy-versus", "note": "Owner's ruling: counted once with Versus." },
+  { "id": "granblue-fantasy-relink", "title": "Granblue Fantasy: Relink", "year": 2024, "excluded": "not-fighting", "note": "An action RPG." }
+]

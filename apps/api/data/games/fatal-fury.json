@@ -1,0 +1,14 @@
+[
+  { "id": "fatal-fury", "title": "Fatal Fury: King of Fighters", "year": 1991, "note": "Only Terry, Andy and Joe are playable; the bosses are playable only in Takara's SNES/Genesis ports, which aren't counted." },
+  { "id": "fatal-fury-2", "title": "Fatal Fury 2", "year": 1992 },
+  { "id": "fatal-fury-special", "title": "Fatal Fury Special", "year": 1993, "versionOf": "fatal-fury-2" },
+  { "id": "fatal-fury-3", "title": "Fatal Fury 3: Road to the Final Victory", "year": 1995 },
+  { "id": "fatal-fury-real-bout", "title": "Real Bout Fatal Fury", "year": 1995 },
+  { "id": "fatal-fury-real-bout-special", "title": "Real Bout Fatal Fury Special", "year": 1997, "versionOf": "fatal-fury-real-bout" },
+  { "id": "fatal-fury-real-bout-special-dominated-mind", "title": "Real Bout Garou Densetsu Special: Dominated Mind", "year": 1998, "versionOf": "fatal-fury-real-bout", "note": "PlayStation version of Real Bout Special." },
+  { "id": "fatal-fury-real-bout-2", "title": "Real Bout Fatal Fury 2: The Newcomers", "year": 1998 },
+  { "id": "fatal-fury-wild-ambition", "title": "Fatal Fury: Wild Ambition", "year": 1999, "note": "Arcade January 1999; the PlayStation version adds Duck King and Mr. Karate (Ryo)." },
+  { "id": "fatal-fury-mark-of-the-wolves", "title": "Garou: Mark of the Wolves", "year": 1999 },
+  { "id": "fatal-fury-city-of-the-wolves", "title": "Fatal Fury: City of the Wolves", "year": 2025 },
+  { "id": "fatal-fury-first-contact", "title": "Fatal Fury: First Contact", "year": 1999, "excluded": "handheld", "note": "Neo Geo Pocket Color." }
+]

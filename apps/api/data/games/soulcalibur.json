@@ -1,0 +1,18 @@
+[
+  { "id": "soulcalibur-soul-edge", "title": "Soul Edge", "year": 1995 },
+  { "id": "soulcalibur-soul-edge-ver-ii", "title": "Soul Edge Ver. II", "year": 1996, "versionOf": "soulcalibur-soul-edge", "note": "Arcade update: Cervantes and a full Hwang become playable." },
+  { "id": "soulcalibur-soul-blade", "title": "Soul Blade", "year": 1996, "versionOf": "soulcalibur-soul-edge", "note": "PlayStation version (Soul Edge in Japan, December 1996) with extra unlockable characters, including the boss SoulEdge (Inferno)." },
+  { "id": "soulcalibur", "title": "Soulcalibur", "year": 1998 },
+  { "id": "soulcalibur-ii", "title": "Soulcalibur II", "year": 2002, "note": "Home versions (2003) added a guest per console: Link (GameCube), Spawn (Xbox), Heihachi (PS2)." },
+  { "id": "soulcalibur-ii-hd-online", "title": "Soulcalibur II HD Online", "year": 2013, "versionOf": "soulcalibur-ii" },
+  { "id": "soulcalibur-iii", "title": "Soulcalibur III", "year": 2005 },
+  { "id": "soulcalibur-iii-arcade-edition", "title": "Soulcalibur III: Arcade Edition", "year": 2006, "versionOf": "soulcalibur-iii" },
+  { "id": "soulcalibur-legends", "title": "Soulcalibur Legends", "year": 2007, "excluded": "not-fighting", "note": "A Wii action-adventure game." },
+  { "id": "soulcalibur-iv", "title": "Soulcalibur IV", "year": 2008 },
+  { "id": "soulcalibur-broken-destiny", "title": "Soulcalibur: Broken Destiny", "year": 2009, "excluded": "handheld", "note": "PSP." },
+  { "id": "soulcalibur-v", "title": "Soulcalibur V", "year": 2012 },
+  { "id": "soulcalibur-mobile", "title": "Soulcalibur (iOS/Android)", "year": 2012, "excluded": "port", "note": "Phone port of the 1999 Dreamcast game." },
+  { "id": "soulcalibur-lost-swords", "title": "Soulcalibur: Lost Swords", "year": 2014, "note": "Free-to-play, single-player PS3 fighting game (2014-2015); a console game, so it counts." },
+  { "id": "soulcalibur-unbreakable-soul", "title": "Soulcalibur: Unbreakable Soul", "year": 2016, "excluded": "mobile", "note": "Phone game." },
+  { "id": "soulcalibur-vi", "title": "Soulcalibur VI", "year": 2018 }
+]
