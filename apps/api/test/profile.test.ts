@@ -15,6 +15,8 @@ const day = (n: number) => `2097-03-${String(n).padStart(2, "0")}`;
 const ANSWER = "street-fighter-ryu";
 const MAX = 10;
 const GUEST = "zz-profile-guest";
+// Already played when the comparison test starts, so there's someone to compare with even on an empty database.
+const OTHER_GUEST = "zz-profile-guest-2";
 
 describe.skipIf(!process.env.DATABASE_URL)("private profile", () => {
   const pool = createPool();
@@ -74,7 +76,7 @@ describe.skipIf(!process.env.DATABASE_URL)("private profile", () => {
   });
 
   async function cleanUp() {
-    await pool.query("DELETE FROM guesses WHERE guest_id = $1", [GUEST]);
+    await pool.query("DELETE FROM guesses WHERE guest_id = ANY($1)", [[GUEST, OTHER_GUEST]]);
     await pool.query("DELETE FROM users WHERE username LIKE $1", [`${PREFIX}%`]);
     await pool.query("DELETE FROM daily_puzzles WHERE puzzle_date BETWEEN $1 AND $2", [day(1), day(4)]);
   }
@@ -104,6 +106,7 @@ describe.skipIf(!process.env.DATABASE_URL)("private profile", () => {
   });
 
   it("compares every daily tile with everyone who finished a round, guests with one round included", async () => {
+    await pool.query("INSERT INTO guesses (guest_id, puzzle_date, character_id) VALUES ($1, $2, $3)", [OTHER_GUEST, day(2), ANSWER]);
     const before = (await playerProfile(pool, ids.pat!, TODAY, MAX))!.compare.standing;
     await pool.query("INSERT INTO guesses (guest_id, puzzle_date, character_id) VALUES ($1, $2, $3)", [GUEST, day(1), ANSWER]);
     const after = (await playerProfile(pool, ids.pat!, TODAY, MAX))!.compare.standing;
